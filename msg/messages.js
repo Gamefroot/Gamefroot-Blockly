@@ -1508,6 +1508,13 @@ Blockly.Msg.KF_KEY_SPECIAL_MESSAGE = 'key:';
 Blockly.Msg.KF_KEY_SPECIAL_TOOLTIP = 'A keyboard key. These are not letters, but actual keys. For example, + and = are the same key. Not all keyboards may have all keys.';
 /// url - information on the special key block
 Blockly.Msg.KF_KEY_SPECIAL_HELPURL = '';
+
+// Key input sensing
+Blockly.Msg.KF_INPUT_KEY_DOWN_MESSAGE1 = "key";
+Blockly.Msg.KF_INPUT_KEY_DOWN_MESSAGE2 = "pressed?";
+Blockly.Msg.KF_INPUT_KEY_DOWN_TOOLTIP = "Is the specified key down?";
+Blockly.Msg.KF_INPUT_KEY_DOWN_HELPURL = "";
+
 /// Label for the mouse position block
 Blockly.Msg.KF_INPUT_MOUSE_MESSAGE = 'of mouse';
 /// tooltip - The position of the mouse in the level

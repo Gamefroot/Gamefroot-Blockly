@@ -140,6 +140,22 @@ Blockly.Blocks['kiwi_key_special'] = {
   }
 };
 
+Blockly.Blocks[ "kiwi_input_key_down" ] = {
+    init: function() {
+        this.setHelpUrl( Blockly.Msg.KF_INPUT_KEY_DOWN_HELPURL );
+        this.setTooltip( Blockly.Msg.KF_INPUT_KEY_DOWN_TOOLTIP );
+        this.setColour( Blockly.Variables.COLOUR.SENSING );
+        this.setOutput( true, "Boolean" );
+        this.setInputsInline( true );
+
+        this.appendValueInput( "KEY" )
+            .setCheck( "Number" )
+            .appendField( Blockly.Msg.KF_INPUT_KEY_DOWN_MESSAGE1 );
+        this.appendDummyInput()
+            .appendField( Blockly.Msg.KF_INPUT_KEY_DOWN_MESSAGE2 );
+    }
+};
+
 Blockly.Blocks['kiwi_input_mouse'] = {
   init: function() {
     this.setHelpUrl(Blockly.Msg.KF_INPUT_MOUSE_HELPURL);

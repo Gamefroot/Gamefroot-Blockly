@@ -33,6 +33,15 @@ Blockly.Kiwifroot['kiwi_key_special'] = function(block) {
   	return [code, Blockly.JavaScript.ORDER_ATOMIC];
 };
 
+Blockly.Kiwifroot[ "kiwi_input_key_down" ] = function( block ) {
+  var keycode = Blockly.Kiwifroot.valueToCode(
+    block, "KEY", Blockly.Kiwifroot.ORDER_ATOMIC ) || 0;
+
+  var code = "this.game.input.keyboard.isDown( " + keycode + " )";
+
+  return [ code, Blockly.JavaScript.ORDER_ATOMIC ];
+};
+
 Blockly.Kiwifroot['kiwi_input_mouse'] = function(block) {
 	var axis = block.getFieldValue('AXIS');
 	var code = 'this.game.input.mouse.' + axis;

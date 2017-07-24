@@ -1,6 +1,8 @@
 <xml id="toolbox">
 
-  <category name="Scratch" colour="#0f6bf0">
+  <category name="Scratch Blocks" colour="#0f6bf0">
+
+    <block type="kiwi_block_category" message="Help your transition from Scratch to Gamefroot!"></block>
 
     <block type="kiwi_block_category" message="Motion"></block>
 
@@ -48,7 +50,12 @@
     <block type="kiwi_block_category" message="Events"></block>
     <block type="kiwi_event_key_input">
       <value name="KEY">
-        <block type="kiwi_key_special"></block>
+        <shadow type="kiwi_key_special"></shadow>
+      </value>
+    </block>
+    <block type="kiwi_input_key_down">
+      <value name="KEY">
+        <shadow type="kiwi_key_special"></shadow>
       </value>
     </block>
     <block type="kiwi_event_level_start"></block>
@@ -79,11 +86,18 @@
       </block>
 
     <block type="kiwi_block_category" message="Keyboard"></block>
-      <block type="kiwi_event_key_input">
-        <value name="KEY">
-          <block type="kiwi_key_special"></block>
-        </value>
-      </block>
+
+    <block type="kiwi_event_key_input">
+      <value name="KEY">
+        <shadow type="kiwi_key_special"></shadow>
+      </value>
+    </block>
+
+    <block type="kiwi_input_key_down">
+      <value name="KEY">
+        <shadow type="kiwi_key_special"></shadow>
+      </value>
+    </block>
 
     <block type="kiwi_block_category" message="Touch"></block>
       <block type="kiwi_event_stage_touched_local"></block>
