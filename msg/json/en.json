@@ -1,7 +1,7 @@
 {
 	"@metadata": {
 		"author": "Ellen Spertus <ellen.spertus@gmail.com>",
-		"lastupdated": "2016-05-24 13:31:47.573981",
+		"lastupdated": "2017-07-24 16:32:02.098894",
 		"locale": "en",
 		"messagedocumentation" : "qqq"
 	},
@@ -423,7 +423,7 @@
 	"KF_EVENT_KEY_RELEASE_TOOLTIP": "The event triggered when the player releases the given key on their keyboard.",
 	"KF_EVENT_KEY_RELEASE_HELPURL": "",
 	"KF_EVENT_KEY_INPUT_HELPURL": "",
-	"KF_EVENT_KEY_INPUT_MESSAGE": "When the player",
+	"KF_EVENT_KEY_INPUT_MESSAGE": "When",
 	"KF_EVENT_KEY_INPUT_TOOLTIP": "The event is triggered when the player presses/releases the given key on their keyboard.",
 	"KF_EVENT_TIME_HELPURL": "",
 	"KF_EVENT_TIME_MESSAGE_AFTER": "milliseconds",
@@ -540,7 +540,7 @@
 	"KF_INTERSECTS_CONTAINS_HELPURL": "",
 	"KF_INTERSECTS_CONTAINS_MESSAGE": "contains",
 	"KF_KEY_SPECIAL_MESSAGE": "key:",
-	"KF_KEY_SPECIAL_TOOLTIP": "A special keyboard key",
+	"KF_KEY_SPECIAL_TOOLTIP": "A keyboard key. These are not letters, but actual keys. For example, + and = are the same key. Not all keyboards may have all keys.",
 	"KF_KEY_SPECIAL_HELPURL": "",
 	"KF_INPUT_MOUSE_MESSAGE": "of mouse",
 	"KF_INPUT_MOUSE_TOOLTIP": "The position of the mouse in the current level",
@@ -859,5 +859,24 @@
 	"KF_HITBOX_DIMENSIONS_GET_TOOLTIP": "Returns the selected dimensions of the hitbox in world coordinates.",
 	"KF_HITBOX_OFFSET_GET_HELPURL": "",
 	"KF_HITBOX_OFFSET_GET_MESSAGE": "get hitbox offset",
-	"KF_HITBOX_OFFSET_GET_TOOLTIP": "Returns the difference between the hitbox position and the instances position."
+	"KF_HITBOX_OFFSET_GET_TOOLTIP": "Returns the difference between the hitbox position and the instances position.",
+	"KF_SCRATCH_MOVE_STEPS_HELPURL": "",
+	"KF_SCRATCH_MOVE_STEPS_MESSAGE_BEFORE": "move",
+	"KF_SCRATCH_MOVE_STEPS_MESSAGE_AFTER": "steps",
+	"KF_SCRATCH_MOVE_STEPS_TOOLTIP": "Move this object by the specified value in the direction of its current rotation.",
+	"KF_SCRATCH_TURN_RIGHT_BY_DEGREE_HELPURL": "",
+	"KF_SCRATCH_TURN_RIGHT_BY_DEGREE_MESSAGE_BEFORE": "turn ",
+	"KF_SCRATCH_TURN_RIGHT_BY_DEGREE_MESSAGE_AFTER": "to the right",
+	"KF_SCRATCH_TURN_RIGHT_BY_DEGREE_TOOLTIP": "Turn the object to the right by this many degrees.",
+	"KF_SCRATCH_TURN_LEFT_BY_DEGREE_HELPURL": "",
+	"KF_SCRATCH_TURN_LEFT_BY_DEGREE_MESSAGE_BEFORE": "turn ",
+	"KF_SCRATCH_TURN_LEFT_BY_DEGREE_MESSAGE_AFTER": "to the left",
+	"KF_SCRATCH_TURN_LEFT_BY_DEGREE_TOOLTIP": "Turn the object to the left by this many degrees.",
+	"KF_SCRATCH_POINT_DIRECTION_HELPURL": "",
+	"KF_SCRATCH_POINT_DIRECTION_MESSAGE": "point in direction",
+	"KF_SCRATCH_POINT_DIRECTION_TOOLTIP": "Rotate this object so that it points in the specified direction.",
+	"KF_SCRATCH_GO_TO_XY_HELPURL": "",
+	"KF_SCRATCH_GO_TO_XY_MESSAGE_ONE": "go to x ",
+	"KF_SCRATCH_GO_TO_XY_MESSAGE_TWO": "y",
+	"KF_SCRATCH_GO_TO_XY_TOOLTIP": "Move this object to the position specified by x and y."
 }
