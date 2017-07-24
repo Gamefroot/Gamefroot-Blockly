@@ -49,13 +49,17 @@ Blockly.Blocks[ "kiwi_scratch_motion_move_steps" ] = {
 
 Blockly.Blocks[ "kiwi_scratch_motion_turn_right_by_degree" ] = {
 	init: function() {
+
+		var workspace = Blockly.mainWorkspace || this.workspace;
+
 		this.setHelpUrl( Blockly.Msg.KF_SCRATCH_TURN_RIGHT_BY_DEGREE_HELPURL );
 		this.setColour( Blockly.Variables.COLOUR.SOUND );
 		this.appendDummyInput()
 			.appendField(
 				Blockly.Msg.KF_SCRATCH_TURN_RIGHT_BY_DEGREE_MESSAGE_BEFORE )
 			.appendField( new Blockly.FieldImage(
-				"../media/rotate-right.png", 20, 20, "*" ) );
+				workspace.options.pathToMedia + "rotate-right.png",
+				20, 20, "*" ) );
 		this.appendValueInput( "DEGREE" )
 			.setCheck( "Number" );
 		this.appendDummyInput()
@@ -70,13 +74,17 @@ Blockly.Blocks[ "kiwi_scratch_motion_turn_right_by_degree" ] = {
 
 Blockly.Blocks[ "kiwi_scratch_motion_turn_left_by_degree" ] = {
 	init: function() {
+
+		var workspace = Blockly.mainWorkspace || this.workspace;
+
 		this.setHelpUrl( Blockly.Msg.KF_SCRATCH_TURN_LEFT_BY_DEGREE_HELPURL );
 		this.setColour( Blockly.Variables.COLOUR.SOUND );
 		this.appendDummyInput()
 			.appendField(
 				Blockly.Msg.KF_SCRATCH_TURN_LEFT_BY_DEGREE_MESSAGE_BEFORE )
 			.appendField( new Blockly.FieldImage(
-				"../media/rotate-left.png", 20, 20, "*" ) );
+				workspace.options.pathToMedia + "rotate-left.png",
+				20, 20, "*" ) );
 		this.appendValueInput( "DEGREE" )
 			.setCheck( "Number" );
 		this.appendDummyInput()
