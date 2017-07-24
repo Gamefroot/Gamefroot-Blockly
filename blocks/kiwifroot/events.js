@@ -106,14 +106,15 @@ Blockly.Blocks['kiwi_event_key_input'] = {
     this.setHelpUrl( Blockly.Msg.KF_EVENT_KEY_INPUT_HELPURL);
     this.setColour( Blockly.Variables.COLOUR.EVENT );
     this.appendDummyInput()
-      .appendField(Blockly.Msg.KF_EVENT_KEY_INPUT_MESSAGE)
-        .appendField(new Blockly.FieldDropdown([
-            ["presses", "onKeyDownOnce"], 
-            ["releases", "onKeyUp"],
-            ["pressing", "onKeyDown"]
-        ]), "TYPE");
-    this.appendValueInput("KEY")
-        .setCheck("Number");
+      .appendField( Blockly.Msg.KF_EVENT_KEY_INPUT_MESSAGE )
+    this.appendValueInput( "KEY" )
+      .setCheck( "Number" );
+    this.appendDummyInput()
+      .appendField( new Blockly.FieldDropdown( [
+        [ "pressed", "onKeyDownOnce" ],
+        [ "released", "onKeyUp" ],
+        [ "held", "onKeyDown" ],
+      ] ), "TYPE" );
     this.setTooltip(Blockly.Msg.KF_EVENT_KEY_INPUT_TOOLTIP);
     this.appendStatementInput('STACK');
     this.setInputsInline(true);

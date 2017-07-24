@@ -1252,7 +1252,7 @@ Blockly.Msg.KF_EVENT_KEY_RELEASE_HELPURL = '';
 /// url -
 Blockly.Msg.KF_EVENT_KEY_INPUT_HELPURL = '';
 /// Label -
-Blockly.Msg.KF_EVENT_KEY_INPUT_MESSAGE = 'When the player';
+Blockly.Msg.KF_EVENT_KEY_INPUT_MESSAGE = 'When';
 /// tooltip -
 Blockly.Msg.KF_EVENT_KEY_INPUT_TOOLTIP = 'The event is triggered when the player presses/releases the given key on their keyboard.';
 
@@ -1504,8 +1504,8 @@ Blockly.Msg.KF_INTERSECTS_CONTAINS_TOOLTIP = 'Checks to see if an x/y location i
 
 /// Label for the keyboard key block
 Blockly.Msg.KF_KEY_SPECIAL_MESSAGE = 'key:';
-/// tooltip - A special keyboard key
-Blockly.Msg.KF_KEY_SPECIAL_TOOLTIP = 'A special keyboard key';
+/// tooltip
+Blockly.Msg.KF_KEY_SPECIAL_TOOLTIP = 'A keyboard key. These are not letters, but actual keys. For example, + and = are the same key. Not all keyboards may have all keys.';
 /// url - information on the special key block
 Blockly.Msg.KF_KEY_SPECIAL_HELPURL = '';
 /// Label for the mouse position block
@@ -2231,6 +2231,8 @@ Blockly.Msg.KF_HITBOX_OFFSET_GET_HELPURL = '';
 Blockly.Msg.KF_HITBOX_OFFSET_GET_MESSAGE = 'get hitbox offset';
 /// tooltip -
 Blockly.Msg.KF_HITBOX_OFFSET_GET_TOOLTIP = 'Returns the difference between the hitbox position and the instances position.';
+
+// Scratch Motion
 
 /// helpurl -
 Blockly.Msg.KF_SCRATCH_MOVE_STEPS_HELPURL = '';
