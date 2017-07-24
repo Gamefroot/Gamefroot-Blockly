@@ -2231,3 +2231,46 @@ Blockly.Msg.KF_HITBOX_OFFSET_GET_HELPURL = '';
 Blockly.Msg.KF_HITBOX_OFFSET_GET_MESSAGE = 'get hitbox offset';
 /// tooltip -
 Blockly.Msg.KF_HITBOX_OFFSET_GET_TOOLTIP = 'Returns the difference between the hitbox position and the instances position.';
+
+/// helpurl -
+Blockly.Msg.KF_SCRATCH_MOVE_STEPS_HELPURL = '';
+/// message -
+Blockly.Msg.KF_SCRATCH_MOVE_STEPS_MESSAGE_BEFORE = 'move';
+/// message -
+Blockly.Msg.KF_SCRATCH_MOVE_STEPS_MESSAGE_AFTER = 'steps';
+/// tooltip -
+Blockly.Msg.KF_SCRATCH_MOVE_STEPS_TOOLTIP = 'Move this object by the specified value in the direction of its current rotation.';
+
+/// helpurl -
+Blockly.Msg.KF_SCRATCH_TURN_RIGHT_BY_DEGREE_HELPURL = '';
+/// message -
+Blockly.Msg.KF_SCRATCH_TURN_RIGHT_BY_DEGREE_MESSAGE_BEFORE = 'turn ';
+/// message -
+Blockly.Msg.KF_SCRATCH_TURN_RIGHT_BY_DEGREE_MESSAGE_AFTER = 'to the right';
+/// tooltip -
+Blockly.Msg.KF_SCRATCH_TURN_RIGHT_BY_DEGREE_TOOLTIP = 'Turn the object to the right by this many degrees.';
+
+/// helpurl -
+Blockly.Msg.KF_SCRATCH_TURN_LEFT_BY_DEGREE_HELPURL = '';
+/// message -
+Blockly.Msg.KF_SCRATCH_TURN_LEFT_BY_DEGREE_MESSAGE_BEFORE = 'turn ';
+/// message -
+Blockly.Msg.KF_SCRATCH_TURN_LEFT_BY_DEGREE_MESSAGE_AFTER = 'to the left';
+/// tooltip -
+Blockly.Msg.KF_SCRATCH_TURN_LEFT_BY_DEGREE_TOOLTIP = 'Turn the object to the left by this many degrees.';
+
+/// helpurl -
+Blockly.Msg.KF_SCRATCH_POINT_DIRECTION_HELPURL = '';
+/// message -
+Blockly.Msg.KF_SCRATCH_POINT_DIRECTION_MESSAGE = 'point in direction';
+//// tooltip -
+Blockly.Msg.KF_SCRATCH_POINT_DIRECTION_TOOLTIP = 'Rotate this object so that it points in the specified direction.';
+
+/// helpurl -
+Blockly.Msg.KF_SCRATCH_GO_TO_XY_HELPURL = '';
+/// message -
+Blockly.Msg.KF_SCRATCH_GO_TO_XY_MESSAGE_ONE = 'go to x ';
+/// message -
+Blockly.Msg.KF_SCRATCH_GO_TO_XY_MESSAGE_TWO = 'y';
+/// tooltip -
+Blockly.Msg.KF_SCRATCH_GO_TO_XY_TOOLTIP = 'Move this object to the position specified by x and y.';
