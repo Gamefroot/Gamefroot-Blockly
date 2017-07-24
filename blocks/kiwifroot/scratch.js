@@ -122,4 +122,3 @@ Blockly.Blocks[ "kiwi_scratch_motion_go_to_xy" ] = {
 		this.setTooltip( Blockly.Msg.KF_SCRATCH_GO_TO_XY_TOOLTIP );
 	}
 };
-

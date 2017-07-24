@@ -3,6 +3,7 @@
   <category name="Scratch" colour="#0f6bf0">
 
     <block type="kiwi_block_category" message="Motion"></block>
+
     <block type="kiwi_scratch_motion_move_steps">
       <value name="STEPS">
         <shadow type="math_number">
@@ -43,6 +44,14 @@
         </shadow>
       </value>
     </block>
+
+    <block type="kiwi_block_category" message="Events"></block>
+    <block type="kiwi_event_key_input">
+      <value name="KEY">
+        <block type="kiwi_key_special"></block>
+      </value>
+    </block>
+    <block type="kiwi_event_level_start"></block>
 
   </category>
 
