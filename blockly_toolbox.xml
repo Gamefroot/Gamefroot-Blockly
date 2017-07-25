@@ -68,6 +68,9 @@
     </block>
     <block type="kiwi_event_level_start"></block>
 
+    <block type="kiwi_block_category" message="Control Flow"></block>
+    <block type="controls_if"></block>
+
   </category>
 
   <category name="Events" colour="#edae00" >

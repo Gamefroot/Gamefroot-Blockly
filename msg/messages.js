@@ -2284,3 +2284,6 @@ Blockly.Msg.KF_SCRATCH_GO_TO_XY_MESSAGE_ONE = 'go to x ';
 Blockly.Msg.KF_SCRATCH_GO_TO_XY_MESSAGE_TWO = 'y';
 /// tooltip -
 Blockly.Msg.KF_SCRATCH_GO_TO_XY_TOOLTIP = 'Move this object to the position specified by x and y.';
+
+// Override default style
+Blockly.Msg.CONTROLS_IF_MSG_THEN = "then";
