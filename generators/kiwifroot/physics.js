@@ -284,30 +284,38 @@ Blockly.Kiwifroot['kiwi_arcadephysics_get_boolean_enabled'] = function(block) {
 };
 
 
-Blockly.Kiwifroot['kiwi_arcadephysics_get_collisions_touching'] = function(block) {
+Blockly.Kiwifroot[ "kiwi_arcadephysics_get_collisions_touching" ] =
+function( block ) {
   Blockly.Kiwifroot.arcadephysics.addArcadePhysicsToConstructor_.call( this );
 
-    var dropdown_prop = block.getFieldValue('PROP');
+  var dropdown_prop = block.getFieldValue( "PROP" );
 
-    var code = '( ' + Blockly.Kiwifroot.arcadephysics.COMPONENT_PREFIX + '.touching & ' + dropdown_prop + ' ) == ' + dropdown_prop;
+  var code = "!!( " + Blockly.Kiwifroot.arcadephysics.COMPONENT_PREFIX +
+    ".touching & " + dropdown_prop + " )";
 
-    return [code, Blockly.Kiwifroot.ORDER_ATOMIC];
+  return [ code, Blockly.Kiwifroot.ORDER_ATOMIC ];
 };
-Blockly.Kiwifroot['kiwi_arcadephysics_get_collisions_was_touching'] = function(block) {
+
+Blockly.Kiwifroot[ "kiwi_arcadephysics_get_collisions_was_touching" ] =
+function( block ) {
   Blockly.Kiwifroot.arcadephysics.addArcadePhysicsToConstructor_.call( this );
 
-    var dropdown_prop = block.getFieldValue('PROP');
+  var dropdown_prop = block.getFieldValue( "PROP" );
 
-    var code = '( ' + Blockly.Kiwifroot.arcadephysics.COMPONENT_PREFIX + '.wasTouching & ' + dropdown_prop + ' ) == ' + dropdown_prop;
+  var code = "!!( " + Blockly.Kiwifroot.arcadephysics.COMPONENT_PREFIX +
+    ".wasTouching & " + dropdown_prop + " )";
 
-    return [code, Blockly.Kiwifroot.ORDER_ATOMIC];
+  return [ code, Blockly.Kiwifroot.ORDER_ATOMIC ];
 };
-Blockly.Kiwifroot['kiwi_arcadephysics_get_collisions_can_collide'] = function(block) {
+
+Blockly.Kiwifroot[ "kiwi_arcadephysics_get_collisions_can_collide" ] =
+function( block ) {
   Blockly.Kiwifroot.arcadephysics.addArcadePhysicsToConstructor_.call( this );
 
-    var dropdown_prop = block.getFieldValue('PROP');
+  var dropdown_prop = block.getFieldValue( "PROP" );
 
-    var code = '( ' + Blockly.Kiwifroot.arcadephysics.COMPONENT_PREFIX + '.allowCollisions & ' + dropdown_prop + ' ) == ' + dropdown_prop;
+  var code = "!!( " + Blockly.Kiwifroot.arcadephysics.COMPONENT_PREFIX +
+    ".allowCollisions & " + dropdown_prop + " )";
 
-    return [code, Blockly.Kiwifroot.ORDER_ATOMIC];
+  return [ code, Blockly.Kiwifroot.ORDER_ATOMIC ];
 };

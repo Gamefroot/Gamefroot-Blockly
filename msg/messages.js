@@ -1864,7 +1864,9 @@ Blockly.Msg.KF_ARCADEPHYSICS_GET_COLLISIONS_MESSAGE_BEFORE = 'on';
 /// message -
 Blockly.Msg.KF_ARCADEPHYSICS_GET_COLLISIONS_MESSAGE_AFTER = 'side';
 /// tooltip -
-Blockly.Msg.KF_ARCADEPHYSICS_GET_COLLISIONS_TOOLTIP = 'Returns a Boolean indiciating the state of the selected statement for this gameobject.';
+Blockly.Msg.KF_ARCADEPHYSICS_GET_COLLISIONS_TOOLTIP = 'Is this gameobject touching on the selected side? "Any" means one or more sides. Collisions must be enabled.';
+Blockly.Msg.KF_ARCADEPHYSICS_GET_COLLISIONS_WAS_TOOLTIP = 'Was this gameobject touching on the selected side last frame? "Any" means one or more sides. Collisions must be enabled.';
+Blockly.Msg.KF_ARCADEPHYSICS_GET_COLLISIONS_CAN_TOOLTIP = 'Can this gameobject be touched on the selected side? "Any" means one or more sides. Collisions must be enabled.';
 
 /// url -
 Blockly.Msg.KF_ARCADEPHYSICS_SET_COLLISIONS_HELPURL = '';
