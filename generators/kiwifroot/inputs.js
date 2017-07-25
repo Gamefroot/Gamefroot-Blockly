@@ -21,6 +21,7 @@
 /**
  * @fileoverview Generating Kiwifroot Javascript that resolves keyboard keys
  * @author rani_sputnik@hotmail.com
+ * @author ben@gamefroot.com (Ben Richards)
  */
 'use strict';
 

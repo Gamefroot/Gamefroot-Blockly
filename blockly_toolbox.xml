@@ -47,6 +47,14 @@
       </value>
     </block>
 
+    <block type="kiwi_block_category" message="Looks"></block>
+
+    <block type="kiwi_game_stage_set_colour">
+      <value name="VALUE">
+        <shadow type="colour_picker"></shadow>
+      </value>
+    </block>
+
     <block type="kiwi_block_category" message="Events"></block>
     <block type="kiwi_event_key_input">
       <value name="KEY">
@@ -571,12 +579,12 @@
       </block>
 
     <block type="kiwi_block_category" message="Stage"></block>
-      <block type="kiwi_game_stage_set_colour">
-        <value name="VALUE">
-          <block type="colour_picker"></block>
-        </value>
-      </block>
-      <block type="kiwi_game_stage_get_colour"></block>
+    <block type="kiwi_game_stage_set_colour">
+      <value name="VALUE">
+        <shadow type="colour_picker"></shadow>
+      </value>
+    </block>
+    <block type="kiwi_game_stage_get_colour"></block>
 
     <block type="kiwi_block_category" message="Camera"></block>
       <block type="kiwi_camera_go_to">

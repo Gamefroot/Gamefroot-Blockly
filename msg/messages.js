@@ -1359,18 +1359,17 @@ Blockly.Msg.KF_GAME_STAGE_SET_SIZE_HELPURL = '';
 Blockly.Msg.KF_GAME_STAGE_GET_SIZE_TOOLTIP = 'Gets the size of the games viewport on the screen.';
 /// url - Information on the set position block
 Blockly.Msg.KF_GAME_STAGE_GET_SIZE_HELPURL = '';
-/// Label for the kiwifroot get stage colour block
-Blockly.Msg.KF_GAME_STAGE_SET_COLOUR_MESSAGE = 'set stage colour to';
-/// tooltip - Sets the size of the games viewport on the screen
+
+/// Kiwifroot set stage colour block
+Blockly.Msg.KF_GAME_STAGE_SET_COLOUR_MESSAGE = "set background colour to";
 Blockly.Msg.KF_GAME_STAGE_SET_COLOUR_TOOLTIP = 'Sets the colour of the game background.';
-/// url - Information on the set stage colour block
 Blockly.Msg.KF_GAME_STAGE_SET_COLOUR_HELPURL = '';
-/// Label for the kiwifroot get stage colour block
-Blockly.Msg.KF_GAME_STAGE_GET_COLOUR_MESSAGE = 'stage colour';
-/// tooltip - Gets the colour of the game background
+
+/// Kiwifroot get stage colour block
+Blockly.Msg.KF_GAME_STAGE_GET_COLOUR_MESSAGE = "background colour";
 Blockly.Msg.KF_GAME_STAGE_GET_COLOUR_TOOLTIP = 'Gets the colour of the game background.';
-/// url - Information on the get stage colour block
 Blockly.Msg.KF_GAME_STAGE_GET_COLOUR_HELPURL = '';
+
 /// url -
 Blockly.Msg.KF_GAME_GET_TIME_HELPURL = '';
 /// Label -

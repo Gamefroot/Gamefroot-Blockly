@@ -21,6 +21,7 @@
 /**
  * @fileoverview Keyboard key blocks for Kiwifroot.
  * @author rani_sputnik@hotmail.com (Ryan Loader)
+ * @author ben@gamefroot.com (Ben Richards)
  */
 'use strict';
 

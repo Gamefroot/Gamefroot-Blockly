@@ -22,6 +22,7 @@
  * @fileoverview Generating Kiwifroot javascript for all scratch functions
  * @author priyasodhi4s@gmail.com (Priya Sodhi)
  * @author benjamin.p.harding@gmail.com (Ben Harding)
+ * @author ben@gamefroot.com (Ben Richards)
  */
 "use strict";
 

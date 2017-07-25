@@ -21,6 +21,7 @@
 /**
  * @fileoverview Scratch blocks for Gamefroot
  * @author priyasodhi4s@gmail.com (Priya Sodhi)
+ * @author ben@gamefroot.com (Ben Richards)
  */
 "use strict";
 
