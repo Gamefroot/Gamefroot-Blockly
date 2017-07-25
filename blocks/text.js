@@ -51,12 +51,12 @@ Blockly.Blocks['text'] = {
    * @private
    */
   newQuote_: function(open) {
-    if (open == Blockly.RTL) {
+    var workspace = Blockly.mainWorkspace || this.workspace;
+    if ( open == workspace.RTL ) {
       var file = 'quote1.png';
     } else {
       var file = 'quote0.png';
     }
-    var workspace = Blockly.mainWorkspace || this.workspace;
     return new Blockly.FieldImage(workspace.options.pathToMedia + file, 12, 12, '"');
   }
 };
