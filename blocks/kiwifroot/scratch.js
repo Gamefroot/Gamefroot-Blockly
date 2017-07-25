@@ -131,3 +131,24 @@ Blockly.Blocks[ "kiwi_scratch_motion_go_to_xy" ] = {
 		this.setTooltip( Blockly.Msg.KF_SCRATCH_GO_TO_XY_TOOLTIP );
 	}
 };
+
+// Events category
+
+Blockly.Blocks[ "kiwi_scratch_events_wait" ] = {
+	init: function() {
+		this.setHelpUrl( Blockly.Msg.KF_SCRATCH_EVENTS_WAIT_HELPURL );
+		this.setTooltip( Blockly.Msg.KF_SCRATCH_EVENTS_WAIT_TOOLTIP );
+		this.setColour( Blockly.Variables.COLOUR.CONTROL );
+		this.setInputsInline( true );
+		this.setPreviousStatement( true );
+		this.setNextStatement( true );
+
+		this.appendDummyInput()
+			.appendField( Blockly.Msg.KF_SCRATCH_EVENTS_WAIT_MESSAGE1 );
+		this.appendValueInput( "SECS" )
+			.setCheck( "Number" );
+		this.appendDummyInput()
+			.appendField( Blockly.Msg.KF_SCRATCH_EVENTS_WAIT_MESSAGE2 );
+		this.appendStatementInput( "STACK" );
+	}
+};

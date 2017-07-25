@@ -92,3 +92,42 @@ Blockly.Kiwifroot[ "kiwi_scratch_motion_go_to_xy" ] = function( block ) {
 	code += ";\n";
 	return code;
 };
+
+// Events category
+
+Blockly.Kiwifroot[ "kiwi_scratch_events_wait" ] = function( block ) {
+
+	// Functionality copied from `kiwi_event_time_single`,
+	// except this takes seconds instead of millis.
+
+	var funcName = Blockly.Kiwifroot.variableDB_.getDistinctName(
+			"wait", Blockly.Procedures.NAME_TYPE );
+	var branch = Blockly.Kiwifroot.statementToCode( block, "STACK" );
+	var tick = Blockly.Kiwifroot.valueToCode(
+		block, "SECS", Blockly.Kiwifroot.ORDER_ASSIGNMENT ) || 1;
+	var code = "";
+	var destructorCode = "";
+
+	code += errorCheck(
+			this.workspace,
+			( "!" + tick ),
+			"`Wait` block is missing a numeric value." ) +
+		"this." + funcName + "_ = " +
+		"this.game.time.clock.setTimeout( function() {\n" +
+		Blockly.Kiwifroot.INDENT + Blockly.Kiwifroot.INDENT +
+		"if ( this.owner && this.owner.exists ) {\n" +
+		Blockly.Kiwifroot.INDENT + Blockly.Kiwifroot.INDENT +
+		branch +
+		Blockly.Kiwifroot.INDENT + Blockly.Kiwifroot.INDENT +
+		"}\n" +
+		Blockly.Kiwifroot.INDENT + "}, " + tick + " * 1000, this );\n";
+
+	destructorCode +=
+		"if ( this." + funcName + "_ ) this." + funcName + "_.stop();\n" +
+		"this.game.time.clock.removeTimer( this." + funcName + "_ );";
+
+	Blockly.Kiwifroot.provideAddition(
+		Blockly.Kiwifroot.DESTRUCTOR, destructorCode );
+
+	return code;
+};

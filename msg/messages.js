@@ -2285,5 +2285,12 @@ Blockly.Msg.KF_SCRATCH_GO_TO_XY_MESSAGE_TWO = 'y';
 /// tooltip -
 Blockly.Msg.KF_SCRATCH_GO_TO_XY_TOOLTIP = 'Move this object to the position specified by x and y.';
 
+// Scratch Events
+
+Blockly.Msg.KF_SCRATCH_EVENTS_WAIT_HELPURL = "";
+Blockly.Msg.KF_SCRATCH_EVENTS_WAIT_TOOLTIP = "Wait before running the code inside this block. Code after this block will run right away.";
+Blockly.Msg.KF_SCRATCH_EVENTS_WAIT_MESSAGE1 = "wait";
+Blockly.Msg.KF_SCRATCH_EVENTS_WAIT_MESSAGE2 = "seconds";
+
 // Override default style
 Blockly.Msg.CONTROLS_IF_MSG_THEN = "then";
