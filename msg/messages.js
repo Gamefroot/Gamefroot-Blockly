@@ -22,6 +22,9 @@
  * @fileoverview English strings.
  * @author fraser@google.com (Neil Fraser)
  *
+ * Note: To be built, strings must be in 'singlequotes' and
+ * come directly after a line with a /// descriptor.
+ *
  * After modifying this file, either run "build.py" from the parent directory,
  * or run (from this directory):
  * ../i18n/js_to_json.py
@@ -1360,14 +1363,18 @@ Blockly.Msg.KF_GAME_STAGE_GET_SIZE_TOOLTIP = 'Gets the size of the games viewpor
 /// url - Information on the set position block
 Blockly.Msg.KF_GAME_STAGE_GET_SIZE_HELPURL = '';
 
-/// Kiwifroot set stage colour block
-Blockly.Msg.KF_GAME_STAGE_SET_COLOUR_MESSAGE = "set background colour to";
+/// message -
+Blockly.Msg.KF_GAME_STAGE_SET_COLOUR_MESSAGE = 'set background colour to';
+/// tooltip -
 Blockly.Msg.KF_GAME_STAGE_SET_COLOUR_TOOLTIP = 'Sets the colour of the game background.';
+/// helpurl -
 Blockly.Msg.KF_GAME_STAGE_SET_COLOUR_HELPURL = '';
 
-/// Kiwifroot get stage colour block
-Blockly.Msg.KF_GAME_STAGE_GET_COLOUR_MESSAGE = "background colour";
+/// message -
+Blockly.Msg.KF_GAME_STAGE_GET_COLOUR_MESSAGE = 'background colour';
+/// tooltip -
 Blockly.Msg.KF_GAME_STAGE_GET_COLOUR_TOOLTIP = 'Gets the colour of the game background.';
+/// helpurl -
 Blockly.Msg.KF_GAME_STAGE_GET_COLOUR_HELPURL = '';
 
 /// url -
@@ -1509,10 +1516,14 @@ Blockly.Msg.KF_KEY_SPECIAL_TOOLTIP = 'A keyboard key. These are not letters, but
 Blockly.Msg.KF_KEY_SPECIAL_HELPURL = '';
 
 // Key input sensing
-Blockly.Msg.KF_INPUT_KEY_DOWN_MESSAGE1 = "key";
-Blockly.Msg.KF_INPUT_KEY_DOWN_MESSAGE2 = "pressed?";
-Blockly.Msg.KF_INPUT_KEY_DOWN_TOOLTIP = "Is the specified key down?";
-Blockly.Msg.KF_INPUT_KEY_DOWN_HELPURL = "";
+/// message -
+Blockly.Msg.KF_INPUT_KEY_DOWN_MESSAGE1 = 'key';
+/// message -
+Blockly.Msg.KF_INPUT_KEY_DOWN_MESSAGE2 = 'pressed?';
+/// tooltip -
+Blockly.Msg.KF_INPUT_KEY_DOWN_TOOLTIP = 'Is the specified key down?';
+/// helpurl -
+Blockly.Msg.KF_INPUT_KEY_DOWN_HELPURL = '';
 
 /// Label for the mouse position block
 Blockly.Msg.KF_INPUT_MOUSE_MESSAGE = 'of mouse';
@@ -1779,11 +1790,11 @@ Blockly.Msg.KF_MATH_UTILS_HELPURL = '';
 Blockly.Msg.KF_MATH_UTILS_TOOLTIP = '';
 
 /// message -
-Blockly.Msg.KF_WRITE_MSG = "write";
+Blockly.Msg.KF_WRITE_MSG = 'write';
 /// url -
-Blockly.Msg.KF_WRITE_URL = "";
+Blockly.Msg.KF_WRITE_URL = '';
 /// tooltip -
-Blockly.Msg.KF_WRITE_TOOLTIP = "Used to log a message in the console and to display it on the debug screen.";
+Blockly.Msg.KF_WRITE_TOOLTIP = 'Used to log a message in the console and to display it on the debug screen.';
 
 /// Label -
 Blockly.Msg.KF_CLASSES_INSTANCE_MESSAGE = 'class of';
@@ -1865,7 +1876,9 @@ Blockly.Msg.KF_ARCADEPHYSICS_GET_COLLISIONS_MESSAGE_BEFORE = 'on';
 Blockly.Msg.KF_ARCADEPHYSICS_GET_COLLISIONS_MESSAGE_AFTER = 'side';
 /// tooltip -
 Blockly.Msg.KF_ARCADEPHYSICS_GET_COLLISIONS_TOOLTIP = 'Is this gameobject touching on the selected side? "Any" means one or more sides. Collisions must be enabled.';
+/// tooltip -
 Blockly.Msg.KF_ARCADEPHYSICS_GET_COLLISIONS_WAS_TOOLTIP = 'Was this gameobject touching on the selected side last frame? "Any" means one or more sides. Collisions must be enabled.';
+/// tooltip -
 Blockly.Msg.KF_ARCADEPHYSICS_GET_COLLISIONS_CAN_TOOLTIP = 'Can this gameobject be touched on the selected side? "Any" means one or more sides. Collisions must be enabled.';
 
 /// url -
@@ -2240,7 +2253,9 @@ Blockly.Msg.KF_HITBOX_OFFSET_GET_MESSAGE = 'get hitbox offset';
 /// tooltip -
 Blockly.Msg.KF_HITBOX_OFFSET_GET_TOOLTIP = 'Returns the difference between the hitbox position and the instances position.';
 
-// Scratch Motion
+// Scratch
+
+// Motion category
 
 /// helpurl -
 Blockly.Msg.KF_SCRATCH_MOVE_STEPS_HELPURL = '';
@@ -2285,12 +2300,17 @@ Blockly.Msg.KF_SCRATCH_GO_TO_XY_MESSAGE_TWO = 'y';
 /// tooltip -
 Blockly.Msg.KF_SCRATCH_GO_TO_XY_TOOLTIP = 'Move this object to the position specified by x and y.';
 
-// Scratch Events
+// Event category
 
-Blockly.Msg.KF_SCRATCH_EVENTS_WAIT_HELPURL = "";
-Blockly.Msg.KF_SCRATCH_EVENTS_WAIT_TOOLTIP = "Wait before running the code inside this block. Code after this block will run right away.";
-Blockly.Msg.KF_SCRATCH_EVENTS_WAIT_MESSAGE1 = "wait";
-Blockly.Msg.KF_SCRATCH_EVENTS_WAIT_MESSAGE2 = "seconds";
+/// helpurl -
+Blockly.Msg.KF_SCRATCH_EVENTS_WAIT_HELPURL = '';
+/// tooltip -
+Blockly.Msg.KF_SCRATCH_EVENTS_WAIT_TOOLTIP = 'Wait before running the code inside this block. Code after this block will run right away.';
+/// message -
+Blockly.Msg.KF_SCRATCH_EVENTS_WAIT_MESSAGE1 = 'wait';
+/// message -
+Blockly.Msg.KF_SCRATCH_EVENTS_WAIT_MESSAGE2 = 'seconds';
 
-// Override default style
-Blockly.Msg.CONTROLS_IF_MSG_THEN = "then";
+// Overrides
+
+Blockly.Msg.CONTROLS_IF_MSG_THEN = 'then';
