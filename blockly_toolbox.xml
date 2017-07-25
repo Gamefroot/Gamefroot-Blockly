@@ -56,6 +56,7 @@
     </block>
 
     <block type="kiwi_block_category" message="Events"></block>
+    <block type="kiwi_event_level_start"></block>
     <block type="kiwi_event_key_input">
       <value name="KEY">
         <shadow type="kiwi_key_special"></shadow>
@@ -66,10 +67,12 @@
         <shadow type="kiwi_key_special"></shadow>
       </value>
     </block>
-    <block type="kiwi_event_level_start"></block>
 
     <block type="kiwi_block_category" message="Control Flow"></block>
     <block type="controls_if"></block>
+    <block type="controls_if">
+      <mutation else="1"></mutation>
+    </block>
 
   </category>
 
