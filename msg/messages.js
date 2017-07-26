@@ -2311,6 +2311,15 @@ Blockly.Msg.KF_SCRATCH_EVENTS_WAIT_MESSAGE1 = 'wait';
 /// message -
 Blockly.Msg.KF_SCRATCH_EVENTS_WAIT_MESSAGE2 = 'seconds';
 
+// Control category
+
+/// helpurl
+Blockly.Msg.KF_SCRATCH_CONTROL_REPEAT_FRAMES_HELPURL = '';
+/// tooltip
+Blockly.Msg.KF_SCRATCH_CONTROL_REPEAT_FRAMES_TOOLTIP = 'Run the code inside this block this many times. The first run happens immediately. Subsequent runs occur on subsequent game frames.';
+/// message1
+Blockly.Msg.KF_SCRATCH_CONTROL_REPEAT_FRAMES_MESSAGE1 = 'repeat';
+
 // Overrides
 
 Blockly.Msg.CONTROLS_IF_MSG_THEN = 'then';

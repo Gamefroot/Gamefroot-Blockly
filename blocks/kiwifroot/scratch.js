@@ -152,3 +152,20 @@ Blockly.Blocks[ "kiwi_scratch_events_wait" ] = {
 		this.appendStatementInput( "STACK" );
 	}
 };
+
+Blockly.Blocks[ "kiwi_scratch_control_repeat_frames" ] = {
+	init: function() {
+		this.setHelpUrl( Blockly.Msg.KF_SCRATCH_CONTROL_REPEAT_FRAMES_HELPURL );
+		this.setTooltip( Blockly.Msg.KF_SCRATCH_CONTROL_REPEAT_FRAMES_TOOLTIP );
+		this.setColour( Blockly.Variables.COLOUR.CONTROL );
+		this.setInputsInline( true );
+		this.setPreviousStatement( true );
+		this.setNextStatement( true );
+
+		this.appendDummyInput()
+			.appendField( Blockly.Msg.KF_SCRATCH_CONTROL_REPEAT_FRAMES_MESSAGE1 );
+		this.appendValueInput( "TIMES" )
+			.setCheck( "Number" );
+		this.appendStatementInput( "STACK" );
+	}
+};

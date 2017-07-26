@@ -131,3 +131,54 @@ Blockly.Kiwifroot[ "kiwi_scratch_events_wait" ] = function( block ) {
 
 	return code;
 };
+
+Blockly.Kiwifroot[ "kiwi_scratch_control_repeat_frames" ] = function( block ) {
+
+	var branch = Blockly.Kiwifroot.statementToCode( block, "STACK" );
+	var countdown = Blockly.Kiwifroot.valueToCode(
+			block, "TIMES", Blockly.Kiwifroot.ORDER_ASSIGNMENT ) || 1;
+	var code = "";
+
+	// Check countdown
+	code += errorCheck(
+		this.workspace,
+		( countdown + " < 1" ),
+		"`Repeat frames` block is missing a frame count." );
+	var countdownProp = Blockly.Kiwifroot.variableDB_.getDistinctName(
+			"countdownProp", Blockly.Variables.NAME_TYPE );
+
+	// Create unique component
+	var componentName = Blockly.Kiwifroot.variableDB_.getDistinctName(
+			"component", Blockly.Procedures.NAME_TYPE );
+	code += "var " + componentName + " = new Kiwi.Component( this.owner, \"" +
+		componentName + "\" );\n";
+
+	// Generate unique callback
+	var funcName = Blockly.Kiwifroot.variableDB_.getDistinctName(
+			"componentUpdate", Blockly.Procedures.NAME_TYPE );
+	code += "var " + funcName + " = function() {\n" +
+		branch + "\n" +
+		Blockly.Kiwifroot.INDENT +
+		"if ( this." + countdownProp + " > 0 ) {\n" +
+		Blockly.Kiwifroot.INDENT + Blockly.Kiwifroot.INDENT +
+		"this." + countdownProp + "--;\n" +
+		Blockly.Kiwifroot.INDENT + "} else {\n" +
+		Blockly.Kiwifroot.INDENT + Blockly.Kiwifroot.INDENT +
+		"this.owner.components.removeComponent( " + componentName + " );\n" +
+		Blockly.Kiwifroot.INDENT + "}\n" +
+		"};\n";
+
+	// Assign update to component
+	code += componentName + ".update = " + funcName + ".bind( this );\n";
+
+	// Add countdown data to component
+	code += "this." + countdownProp + " = " + countdown + ";\n";
+
+	// Assign component to owner
+	code += "this.owner.components.add( " + componentName + " );\n";
+
+	// Update once
+	code += componentName + ".update();\n";
+
+	return code;
+};
