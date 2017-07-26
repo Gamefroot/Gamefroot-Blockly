@@ -2320,6 +2320,13 @@ Blockly.Msg.KF_SCRATCH_CONTROL_REPEAT_FRAMES_TOOLTIP = 'Run the code inside this
 /// message1
 Blockly.Msg.KF_SCRATCH_CONTROL_REPEAT_FRAMES_MESSAGE1 = 'repeat';
 
+/// helpurl
+Blockly.Msg.KF_SCRATCH_CONTROL_FOREVER_FRAMES_HELPURL = '';
+/// tooltip
+Blockly.Msg.KF_SCRATCH_CONTROL_FOREVER_FRAMES_TOOLTIP = 'Run the code inside this block forever. The first run happens immediately. Subsequent runs occur on subsequent game frames.';
+/// message1
+Blockly.Msg.KF_SCRATCH_CONTROL_FOREVER_FRAMES_MESSAGE1 = 'forever';
+
 // Overrides
 
 Blockly.Msg.CONTROLS_IF_MSG_THEN = 'then';

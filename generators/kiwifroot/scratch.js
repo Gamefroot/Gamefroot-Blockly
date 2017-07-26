@@ -149,7 +149,7 @@ Blockly.Kiwifroot[ "kiwi_scratch_control_repeat_frames" ] = function( block ) {
 
 	// Create unique component
 	var componentName = Blockly.Kiwifroot.variableDB_.getDistinctName(
-			"component", Blockly.Procedures.NAME_TYPE );
+			"componentRepeatFrames", Blockly.Procedures.NAME_TYPE );
 	code += "var " + componentName + " = new Kiwi.Component( this.owner, \"" +
 		componentName + "\" );\n";
 
@@ -173,6 +173,40 @@ Blockly.Kiwifroot[ "kiwi_scratch_control_repeat_frames" ] = function( block ) {
 
 	// Add countdown data to component
 	code += "this." + countdownProp + " = " + countdown + ";\n";
+
+	// Assign component to owner
+	code += "this.owner.components.add( " + componentName + " );\n";
+
+	// Update once
+	code += componentName + ".update();\n";
+
+	return code;
+};
+
+Blockly.Kiwifroot[ "kiwi_scratch_control_forever_frames" ] =
+function( block ) {
+
+	// Very similar to `kiwi_scratch_control_repeat_frames`,
+	// only without a countdown.
+
+	var branch = Blockly.Kiwifroot.statementToCode( block, "STACK" );
+	var code = "";
+
+	// Create unique component
+	var componentName = Blockly.Kiwifroot.variableDB_.getDistinctName(
+			"componentForeverFrames", Blockly.Procedures.NAME_TYPE );
+	code += "var " + componentName + " = new Kiwi.Component( this.owner, \"" +
+		componentName + "\" );\n";
+
+	// Generate unique callback
+	var funcName = Blockly.Kiwifroot.variableDB_.getDistinctName(
+			"componentUpdate", Blockly.Procedures.NAME_TYPE );
+	code += "var " + funcName + " = function() {\n" +
+		branch + "\n" +
+		"};\n";
+
+	// Assign update to component
+	code += componentName + ".update = " + funcName + ".bind( this );\n";
 
 	// Assign component to owner
 	code += "this.owner.components.add( " + componentName + " );\n";

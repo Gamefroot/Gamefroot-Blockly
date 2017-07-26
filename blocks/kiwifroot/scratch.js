@@ -169,3 +169,21 @@ Blockly.Blocks[ "kiwi_scratch_control_repeat_frames" ] = {
 		this.appendStatementInput( "STACK" );
 	}
 };
+
+Blockly.Blocks[ "kiwi_scratch_control_forever_frames" ] = {
+	init: function() {
+		this.setHelpUrl(
+			Blockly.Msg.KF_SCRATCH_CONTROL_FOREVER_FRAMES_HELPURL );
+		this.setTooltip(
+			Blockly.Msg.KF_SCRATCH_CONTROL_FOREVER_FRAMES_TOOLTIP );
+		this.setColour( Blockly.Variables.COLOUR.CONTROL );
+		this.setInputsInline( true );
+		this.setPreviousStatement( true );
+		this.setNextStatement( true );
+
+		this.appendDummyInput()
+			.appendField(
+				Blockly.Msg.KF_SCRATCH_CONTROL_FOREVER_FRAMES_MESSAGE1 );
+		this.appendStatementInput( "STACK" );
+	}
+};

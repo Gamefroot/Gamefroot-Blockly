@@ -83,6 +83,7 @@
         </shadow>
       </value>
     </block>
+    <block type="kiwi_scratch_control_forever_frames"></block>
     <block type="controls_if"></block>
     <block type="controls_if">
       <mutation else="1"></mutation>
@@ -267,6 +268,7 @@
           </shadow>
         </value>
       </block>
+      <block type="kiwi_scratch_control_forever_frames"></block>
       <block type="controls_whileUntil"></block>
       <block type="controls_for_local">
         <value name="FROM">
