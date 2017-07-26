@@ -1,7 +1,7 @@
 {
 	"@metadata": {
 		"author": "Ellen Spertus <ellen.spertus@gmail.com>",
-		"lastupdated": "2017-07-26 11:13:38.100093",
+		"lastupdated": "2017-07-26 15:30:12.276945",
 		"locale": "en",
 		"messagedocumentation" : "qqq"
 	},
@@ -892,5 +892,11 @@
 	"KF_SCRATCH_EVENTS_WAIT_TOOLTIP": "Wait before running the code inside this block. Code after this block will run right away.",
 	"KF_SCRATCH_EVENTS_WAIT_MESSAGE1": "wait",
 	"KF_SCRATCH_EVENTS_WAIT_MESSAGE2": "seconds",
+	"KF_SCRATCH_CONTROL_REPEAT_FRAMES_HELPURL": "",
+	"KF_SCRATCH_CONTROL_REPEAT_FRAMES_TOOLTIP": "Run the code inside this block this many times. The first run happens immediately. Subsequent runs occur on subsequent game frames.",
+	"KF_SCRATCH_CONTROL_REPEAT_FRAMES_MESSAGE1": "repeat",
+	"KF_SCRATCH_CONTROL_FOREVER_FRAMES_HELPURL": "",
+	"KF_SCRATCH_CONTROL_FOREVER_FRAMES_TOOLTIP": "Run the code inside this block forever. The first run happens immediately. Subsequent runs occur on subsequent game frames.",
+	"KF_SCRATCH_CONTROL_FOREVER_FRAMES_MESSAGE1": "forever",
 	"CONTROLS_IF_MSG_THEN": "then"
 }
