@@ -63,7 +63,8 @@ function( block ) {
 			block, "DEGREE", Blockly.Kiwifroot.ORDER_ATOMIC ) || 0;
 	var code = "";
 	code += "this.owner.rotation -= ( " + val +
-		" ) *Kiwi.Utils.GameMath.DEG_TO_RAD";
+		" ) * Kiwi.Utils.GameMath.DEG_TO_RAD";
+	code += ";\n";
 	return code;
 };
 
