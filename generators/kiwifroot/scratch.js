@@ -139,6 +139,7 @@ Blockly.Kiwifroot[ "kiwi_scratch_control_repeat_frames" ] = function( block ) {
 	var countdown = Blockly.Kiwifroot.valueToCode(
 			block, "TIMES", Blockly.Kiwifroot.ORDER_ASSIGNMENT ) || 1;
 	var code = "";
+	var tab = Blockly.Kiwifroot.INDENT;
 
 	// Check countdown
 	code += errorCheck(
@@ -158,15 +159,14 @@ Blockly.Kiwifroot[ "kiwi_scratch_control_repeat_frames" ] = function( block ) {
 	var funcName = Blockly.Kiwifroot.variableDB_.getDistinctName(
 			"componentUpdate", Blockly.Procedures.NAME_TYPE );
 	code += "var " + funcName + " = function() {\n" +
+
+		tab + "this." + countdownProp + "--;\n" +
+		tab + "if ( this." + countdownProp + " < 0 ) {\n" +
+		tab + tab + "this.owner.components.removeComponent( " +
+			componentName + " );\n" +
+		tab + tab + "return;\n" +
+		tab + "}\n" +
 		branch + "\n" +
-		Blockly.Kiwifroot.INDENT +
-		"if ( this." + countdownProp + " > 0 ) {\n" +
-		Blockly.Kiwifroot.INDENT + Blockly.Kiwifroot.INDENT +
-		"this." + countdownProp + "--;\n" +
-		Blockly.Kiwifroot.INDENT + "} else {\n" +
-		Blockly.Kiwifroot.INDENT + Blockly.Kiwifroot.INDENT +
-		"this.owner.components.removeComponent( " + componentName + " );\n" +
-		Blockly.Kiwifroot.INDENT + "}\n" +
 		"};\n";
 
 	// Assign update to component
@@ -179,7 +179,7 @@ Blockly.Kiwifroot[ "kiwi_scratch_control_repeat_frames" ] = function( block ) {
 	code += "this.owner.components.add( " + componentName + " );\n";
 
 	// Update once
-	code += componentName + ".update();\n";
+	code += componentName + ".update();\n\n";
 
 	return code;
 };
@@ -213,7 +213,7 @@ function( block ) {
 	code += "this.owner.components.add( " + componentName + " );\n";
 
 	// Update once
-	code += componentName + ".update();\n";
+	code += componentName + ".update();\n\n";
 
 	return code;
 };
