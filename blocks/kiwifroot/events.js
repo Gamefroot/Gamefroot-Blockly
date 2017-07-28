@@ -165,8 +165,6 @@ Blockly.Blocks['kiwi_event_message'] = {
       .appendField( Blockly.Msg.KF_EVENT_MESSAGE_MESSAGE_BEFORE );
     this.appendValueInput( "MESSAGE" )
         .setCheck( "String" );
-    this.appendDummyInput()
-      .appendField(Blockly.Msg.KF_EVENT_MESSAGE_MESSAGE_AFTER );
     this.setTooltip( Blockly.Msg.KF_EVENT_MESSAGE_TOOLTIP );
     this.appendStatementInput('STACK');
     this.setInputsInline(true);

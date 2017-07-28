@@ -1313,19 +1313,17 @@ Blockly.Msg.KF_EVENT_REMOVE_MESSAGE = 'When removed';
 /// url -
 Blockly.Msg.KF_EVENT_MESSAGE_HELPURL = '';
 /// Label -
-Blockly.Msg.KF_EVENT_MESSAGE_MESSAGE_BEFORE = 'When a message of';
-/// Label -
-Blockly.Msg.KF_EVENT_MESSAGE_MESSAGE_AFTER = 'is retrieved';
+Blockly.Msg.KF_EVENT_MESSAGE_MESSAGE_BEFORE = 'When I receive';
 /// tooltip -
-Blockly.Msg.KF_EVENT_MESSAGE_TOOLTIP = 'Send events when the player';
+Blockly.Msg.KF_EVENT_MESSAGE_TOOLTIP = 'Run the enclosed code when the specified message is received. Useful for passing commands between game objects.';
 /// helpurl -
 Blockly.Msg.KF_EVENT_MESSAGE_VALUE_HELPURL = '';
 /// message one -
-Blockly.Msg.KF_EVENT_MESSAGE_VALUE_MESSAGE_ONE = 'When a message of';
+Blockly.Msg.KF_EVENT_MESSAGE_VALUE_MESSAGE_ONE = 'When I receive';
 /// message two -
-Blockly.Msg.KF_EVENT_MESSAGE_VALUE_MESSAGE_TWO = 'is retrieved';
+Blockly.Msg.KF_EVENT_MESSAGE_VALUE_MESSAGE_TWO = 'with a';
 /// tooltip -
-Blockly.Msg.KF_EVENT_MESSAGE_VALUE_TOOLTIP = 'Executed when a message is retrieved. You can use this block to get a value send from the message with value blocks.';
+Blockly.Msg.KF_EVENT_MESSAGE_VALUE_TOOLTIP = 'Run the enclosed code when the specified message is received. If a value was passed along with the message, it is stored in a variable. Useful for passing commands and data between game objects.';
 
 /// helpurl -
 Blockly.Msg.KF_EVENT_LEVEL_START_HELPURL = '';
@@ -1918,51 +1916,51 @@ Blockly.Msg.KF_ARCADEPHYSICS_GET_PHYSICS_ENABLED_TOOLTIP = 'A boolean indicating
 /// url -
 Blockly.Msg.KF_MESSAGING_INSTANCE_HELPURL = '';
 /// message -
-Blockly.Msg.KF_MESSAGING_INSTANCE_MESSAGE_BEFORE = 'send message';
+Blockly.Msg.KF_MESSAGING_INSTANCE_MESSAGE_BEFORE = 'send';
 /// message -
 Blockly.Msg.KF_MESSAGING_INSTANCE_MESSAGE_AFTER = 'to';
 /// tooltip -
-Blockly.Msg.KF_MESSAGING_INSTANCE_TOOLTIP = 'Sends a message to a singular instance you passed.';
+Blockly.Msg.KF_MESSAGING_INSTANCE_TOOLTIP = 'Send a message to another game object.';
 /// url -
 Blockly.Msg.KF_MESSAGING_CLASS_HELPURL = '';
 /// message -
-Blockly.Msg.KF_MESSAGING_CLASS_MESSAGE_BEFORE = 'send message';
+Blockly.Msg.KF_MESSAGING_CLASS_MESSAGE_BEFORE = 'send';
 /// message -
 Blockly.Msg.KF_MESSAGING_CLASS_MESSAGE_AFTER = 'to all';
 /// tooltip -
-Blockly.Msg.KF_MESSAGING_CLASS_TOOLTIP = 'Sends a message to all instances of a class you pass.';
+Blockly.Msg.KF_MESSAGING_CLASS_TOOLTIP = 'Send a message to all instances of a class you pass.';
 /// url -
 Blockly.Msg.KF_MESSAGING_EVERYONE_HELPURL = '';
 /// message -
-Blockly.Msg.KF_MESSAGING_EVERYONE_MESSAGE = 'send every gameobject a message of';
+Blockly.Msg.KF_MESSAGING_EVERYONE_MESSAGE = 'broadcast';
 /// tooltip -
-Blockly.Msg.KF_MESSAGING_EVERYONE_TOOLTIP = 'Sends a message to every gameobject.';
+Blockly.Msg.KF_MESSAGING_EVERYONE_TOOLTIP = 'Send a message to every gameobject.';
 /// url -
 Blockly.Msg.KF_MESSAGING_LIST_HELPURL = '';
 /// message -
-Blockly.Msg.KF_MESSAGING_LIST_MESSAGE_BEFORE = 'send message';
+Blockly.Msg.KF_MESSAGING_LIST_MESSAGE_BEFORE = 'send';
 /// message -
 Blockly.Msg.KF_MESSAGING_LIST_MESSAGE_AFTER = 'to each instance in';
 /// tooltip -
-Blockly.Msg.KF_MESSAGING_LIST_TOOLTIP = 'Sends a message to every instance in a list.';
+Blockly.Msg.KF_MESSAGING_LIST_TOOLTIP = 'Send a message to every instance in a list.';
 /// helpurl
 Blockly.Msg.KF_MESSAGING_EVERYONE_VALUE_HELPURL = '';
 /// message one -
-Blockly.Msg.KF_MESSAGING_EVERYONE_VALUE_MESSAGE_ONE = 'send message to everyone';
+Blockly.Msg.KF_MESSAGING_EVERYONE_VALUE_MESSAGE_ONE = 'broadcast';
 /// message two -
-Blockly.Msg.KF_MESSAGING_EVERYONE_VALUE_MESSAGE_TWO = 'with a value of';
+Blockly.Msg.KF_MESSAGING_EVERYONE_VALUE_MESSAGE_TWO = 'with';
 /// tooltip -
-Blockly.Msg.KF_MESSAGING_EVERYONE_VALUE_TOOLTIP = 'Sends a message and value defined to every gameobject.';
+Blockly.Msg.KF_MESSAGING_EVERYONE_VALUE_TOOLTIP = 'Send a message to every gameobject along with a value.';
 /// tooltip -
-Blockly.Msg.KF_MESSAGING_INSTANCE_VALUE_TOOLTIP = 'Sends a message and value to an instance.';
+Blockly.Msg.KF_MESSAGING_INSTANCE_VALUE_TOOLTIP = 'Send a message to an instance along with a value.';
 /// helpurl -
 Blockly.Msg.KF_MESSAGING_INSTANCE_VALUE_HELPURL = '';
 /// message one -
-Blockly.Msg.KF_MESSAGING_INSTANCE_VALUE_MESSAGE_ONE = 'send message';
+Blockly.Msg.KF_MESSAGING_INSTANCE_VALUE_MESSAGE_ONE = 'send';
 /// message two -
 Blockly.Msg.KF_MESSAGING_INSTANCE_VALUE_MESSAGE_TWO = 'to';
 /// message three -
-Blockly.Msg.KF_MESSAGING_INSTANCE_VALUE_MESSAGE_THREE = 'with a value of';
+Blockly.Msg.KF_MESSAGING_INSTANCE_VALUE_MESSAGE_THREE = 'with';
 
 /// url -
 Blockly.Msg.KF_ARCADEPHYSICS_PROBE_HELPURL = '';
