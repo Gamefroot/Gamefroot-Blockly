@@ -1,7 +1,7 @@
 {
 	"@metadata": {
 		"author": "Ellen Spertus <ellen.spertus@gmail.com>",
-		"lastupdated": "2017-07-28 12:32:44.861942",
+		"lastupdated": "2017-07-31 10:51:03.922746",
 		"locale": "en",
 		"messagedocumentation" : "qqq"
 	},
@@ -857,8 +857,8 @@
 	"KF_EVENT_CONSTANTLY_DROPDOWN_MESSAGE": "",
 	"KF_EVENT_CONSTANTLY_DROPDOWN_TOOLTIP": "Executes every frame. The order of execution depends on the choosen dropdown item.",
 	"KF_DEVICE_COCOON_URL": "",
-	"KF_DEVICE_COCOON_MESSAGE": "targeting cocoon",
-	"KF_DEVICE_COCOON_TOOLTIP": "Returns a boolean indicating if the game is currently targeting cocoon.",
+	"KF_DEVICE_COCOON_MESSAGE": "running on mobile?",
+	"KF_DEVICE_COCOON_TOOLTIP": "TRUE if the game is running in mobile mode. Mobile mode is set when you use Playtest On Mobile or create a Cocoon build. Mobile devices do not have keyboards, so use this block to set up alternate control schemes.",
 	"KF_HITBOX_POSITION_GET_HELPURL": "",
 	"KF_HITBOX_POSITION_GET_MESSAGE": "get hitbox",
 	"KF_HITBOX_POSITION_GET_TOOLTIP": "Returns the selected position of the hitbox in world coordinates.",
