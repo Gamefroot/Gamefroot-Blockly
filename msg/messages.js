@@ -2226,9 +2226,9 @@ Blockly.Msg.KF_EVENT_CONSTANTLY_DROPDOWN_TOOLTIP = 'Executes every frame. The or
 /// helpurl -
 Blockly.Msg.KF_DEVICE_COCOON_URL = '';
 /// message -
-Blockly.Msg.KF_DEVICE_COCOON_MESSAGE = 'targeting cocoon';
+Blockly.Msg.KF_DEVICE_COCOON_MESSAGE = 'running on mobile?';
 /// tooltip -
-Blockly.Msg.KF_DEVICE_COCOON_TOOLTIP = 'Returns a boolean indicating if the game is currently targeting cocoon.';
+Blockly.Msg.KF_DEVICE_COCOON_TOOLTIP = 'TRUE if the game is running in mobile mode. Mobile mode is set when you use Playtest On Mobile or create a Cocoon build. Mobile devices do not have keyboards, so use this block to set up alternate control schemes.';
 
 /// helpurl -
 Blockly.Msg.KF_HITBOX_POSITION_GET_HELPURL = '';
