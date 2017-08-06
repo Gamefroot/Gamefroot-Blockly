@@ -872,6 +872,8 @@
         </value>
       </block>
 
+      <block type="kiwi_mechanics_easing"></block>
+
   </category>
 
   <category name="Sound" colour="#0f6bf0" >

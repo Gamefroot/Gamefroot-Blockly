@@ -2325,6 +2325,14 @@ Blockly.Msg.KF_SCRATCH_CONTROL_FOREVER_FRAMES_TOOLTIP = 'Run the code inside thi
 /// message1
 Blockly.Msg.KF_SCRATCH_CONTROL_FOREVER_FRAMES_MESSAGE1 = 'forever';
 
+
+// Kiwifroot Game Mechanics
+Blockly.Msg.KIWI_MECHANICS_EASING_HELPURL = '';
+Blockly.Msg.KIWI_MECHANICS_EASING_TOOLTIP = 'Apply easing to a number from 0-1. Easing smooths out linear transitions and interpolations: it can make things start and/or stop smoothly, or create other cool effects. Useful in tweens.';
+Blockly.Msg.KIWI_MECHANICS_EASING_MESSAGE1 = 'ease';
+Blockly.Msg.KIWI_MECHANICS_EASING_MESSAGE2 = 'using';
+
+
 // Overrides
 
 Blockly.Msg.CONTROLS_IF_MSG_THEN = 'then';
