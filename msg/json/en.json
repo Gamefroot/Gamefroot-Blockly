@@ -1,7 +1,7 @@
 {
 	"@metadata": {
 		"author": "Ellen Spertus <ellen.spertus@gmail.com>",
-		"lastupdated": "2017-07-31 10:51:03.922746",
+		"lastupdated": "2017-08-07 11:04:26.764962",
 		"locale": "en",
 		"messagedocumentation" : "qqq"
 	},
@@ -897,5 +897,9 @@
 	"KF_SCRATCH_CONTROL_FOREVER_FRAMES_HELPURL": "",
 	"KF_SCRATCH_CONTROL_FOREVER_FRAMES_TOOLTIP": "Run the code inside this block forever. The first run happens immediately. Subsequent runs occur on subsequent game frames.",
 	"KF_SCRATCH_CONTROL_FOREVER_FRAMES_MESSAGE1": "forever",
+	"KIWI_MECHANICS_EASING_HELPURL": "",
+	"KIWI_MECHANICS_EASING_TOOLTIP": "Apply easing to a number from 0-1. Easing smooths out linear transitions and interpolations: it can make things start and/or stop smoothly, or create other cool effects. Useful in tweens.",
+	"KIWI_MECHANICS_EASING_MESSAGE1": "ease",
+	"KIWI_MECHANICS_EASING_MESSAGE2": "using",
 	"CONTROLS_IF_MSG_THEN": "then"
 }
