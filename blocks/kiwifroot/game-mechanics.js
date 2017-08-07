@@ -21,7 +21,7 @@ Blockly.Blocks[ "kiwi_mechanics_easing" ] = {
 				[ "quartic", "Quartic" ],
 				[ "quintic", "Quintic" ],
 				[ "exponential", "Exponential" ],
-				[ "sinusoidal", "Sinudoidal" ],
+				[ "sinusoidal", "Sinusoidal" ],
 				[ "circular", "Circular" ],
 				[ "back", "Back" ],
 				[ "elastic", "Elastic" ],
