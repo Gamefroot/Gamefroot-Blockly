@@ -333,23 +333,19 @@ Blockly.Blocks[ "kiwi_camera_shake_offset" ] = {
         this.setNextStatement( true );
 
         this.appendDummyInput()
-            .appendField( Blockly.Msg.KIWI_CAMERA_SHAKE_OFFSET_MESSAGE1 );
-        this.appendDummyInput()
             .appendField( new Blockly.FieldDropdown( [
-                [ "y", "y" ],
-                [ "x", "x" ]
+                [ "Vertically", "y" ],
+                [ "Horizontally", "x" ]
             ] ), "AXIS" );
         this.appendDummyInput()
-            .appendField( Blockly.Msg.KIWI_CAMERA_SHAKE_OFFSET_MESSAGE_DUR );
-        this.appendValueInput( "DURATION" )
-            .setCheck( "Number" );
-        this.appendDummyInput()
-            .appendField( Blockly.Msg.KIWI_CAMERA_SHAKE_OFFSET_MESSAGE_AMP );
+            .appendField( Blockly.Msg.KIWI_CAMERA_SHAKE_OFFSET_MESSAGE1 );
         this.appendValueInput( "AMPLITUDE" )
             .setCheck( "Number" );
         this.appendDummyInput()
-            .appendField( Blockly.Msg.KIWI_CAMERA_SHAKE_OFFSET_MESSAGE_FREQ );
-        this.appendValueInput( "FREQUENCY" )
+            .appendField( Blockly.Msg.KIWI_CAMERA_SHAKE_OFFSET_MESSAGE_AMP );
+        this.appendValueInput( "DURATION" )
             .setCheck( "Number" );
+        this.appendDummyInput()
+            .appendField( Blockly.Msg.KIWI_CAMERA_SHAKE_OFFSET_MESSAGE_DUR );
     }
 };

@@ -203,21 +203,9 @@ Blockly.Kiwifroot[ "kiwi_camera_shake_offset" ] = function( block ) {
 		amplitude = Blockly.Kiwifroot.valueToCode(
 			block,
 			"AMPLITUDE",
-			Blockly.Kiwifroot.ORDER_ATOMIC ) || 0,
-		frequency = Blockly.Kiwifroot.valueToCode(
-			block,
-			"FREQUENCY",
 			Blockly.Kiwifroot.ORDER_ATOMIC ) || 0;
 
 	Blockly.Kiwifroot.camera.addCameraToConstructor_.call( this );
-
-	/*
-	game.tweens.create( $camera ).to(
-		{ $AXIS: $camera.$AXIS },
-		$DURATION * 1000,
-		Kiwi.Animations.Tweens.Easing.Exponential.Out,
-		true );
-	*/
 
 	// Create a tracker to control the amplitude.
 	code += "var " + trackerName + " = { k: " + amplitude + " };\n";
@@ -237,10 +225,8 @@ Blockly.Kiwifroot[ "kiwi_camera_shake_offset" ] = function( block ) {
 	code += tab + "function() {\n";
 	code += tab + tab + cam + "." + axis + " = " +
 		baseName + " + " + trackerName + ".k * " +
-		"Math.sin( this.game.idealFrame * " + frequency + ");\n";
+		"Math.sin( this.game.idealFrame );\n";
 	code += tab + "}, this );\n";
-
-	console.log( code );
 
 	return code;
 };

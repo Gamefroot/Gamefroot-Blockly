@@ -1758,13 +1758,11 @@ Blockly.Msg.KIWI_CAMERA_SHAKE_OFFSET_HELPURL = '';
 /// tooltip -
 Blockly.Msg.KIWI_CAMERA_SHAKE_OFFSET_TOOLTIP = 'Shake the camera by wobbling its offset values for a duration (in seconds). Who knows what might happen if you edit the offset during the shake?';
 /// message -
-Blockly.Msg.KIWI_CAMERA_SHAKE_OFFSET_MESSAGE1 = 'camera shake axis';
+Blockly.Msg.KIWI_CAMERA_SHAKE_OFFSET_MESSAGE1 = 'shake camera';
 /// message -
-Blockly.Msg.KIWI_CAMERA_SHAKE_OFFSET_MESSAGE_AMP = 'amplitude';
+Blockly.Msg.KIWI_CAMERA_SHAKE_OFFSET_MESSAGE_AMP = 'pixels over';
 /// message -
-Blockly.Msg.KIWI_CAMERA_SHAKE_OFFSET_MESSAGE_FREQ = 'frequency';
-/// message -
-Blockly.Msg.KIWI_CAMERA_SHAKE_OFFSET_MESSAGE_DUR = 'duration';
+Blockly.Msg.KIWI_CAMERA_SHAKE_OFFSET_MESSAGE_DUR = 'seconds';
 
 /// helpurl -
 Blockly.Msg.KF_MATH_LERP_HELPURL = '';
