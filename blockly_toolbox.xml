@@ -100,6 +100,91 @@
 
   </category>
 
+  <category name="New" colour="#ff0000">
+    <block type="kiwi_block_category" message="Check out recently added blocks!"></block>
+
+    <block type="kiwi_camera_shake_offset">
+      <value name="DURATION">
+        <shadow type="math_number">
+          <field name="NUM">1</field>
+        </shadow>
+      </value>
+      <value name="AMPLITUDE">
+        <shadow type="math_number">
+          <field name="NUM">5</field>
+        </shadow>
+      </value>
+    </block>
+
+    <block type="kiwi_mechanics_easing"></block>
+
+    <block type="kiwi_device_cocoon"></block>
+
+    <block type="kiwi_scratch_events_wait">
+      <value name="SECS">
+        <shadow type="math_number">
+          <field name="NUM">1</field>
+        </shadow>
+      </value>
+    </block>
+
+    <block type="kiwi_scratch_control_repeat_frames">
+      <value name="TIMES">
+        <shadow type="math_number">
+          <field name="NUM">10</field>
+        </shadow>
+      </value>
+    </block>
+
+    <block type="kiwi_scratch_control_forever_frames"></block>
+
+    <block type="kiwi_scratch_motion_move_steps">
+      <value name="STEPS">
+        <shadow type="math_number">
+          <field name="NUM">10</field>
+        </shadow>
+      </value>
+    </block>
+
+    <block type="kiwi_scratch_motion_turn_right_by_degree">
+      <value name="DEGREE">
+        <shadow type="math_number">
+          <field name="NUM">15</field>
+        </shadow>
+      </value>
+    </block>
+
+    <block type="kiwi_scratch_motion_turn_left_by_degree">
+      <value name="DEGREE">
+        <shadow type="math_number">
+          <field name="NUM">15</field>
+        </shadow>
+      </value>
+    </block>
+
+    <block type="kiwi_scratch_motion_point_direction">
+      <value name="DIRECTION">
+        <shadow type="math_number">
+          <field name="NUM">90</field>
+        </shadow>
+      </value>
+    </block>
+    
+    <block type="kiwi_scratch_motion_go_to_xy">
+      <value name="X">
+        <shadow type="math_number">
+          <field name="NUM">10</field>
+        </shadow>
+      </value>
+      <value name="Y">
+        <shadow type="math_number">
+          <field name="NUM">10</field>
+        </shadow>
+      </value>
+    </block>
+
+  </category>
+
   <category name="Events" colour="#edae00" >
 
     <block type="kiwi_block_category" message="Events"></block>
