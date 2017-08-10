@@ -321,3 +321,35 @@ Blockly.Blocks['kiwi_camera_get_max'] = {
     this.setTooltip( Blockly.Msg.KF_CAMERA_GET_TOOLTIP );
   }
 };
+
+// Shake the camera using offset values...
+Blockly.Blocks[ "kiwi_camera_shake_offset" ] = {
+    init: function() {
+        this.setHelpUrl( Blockly.Msg.KIWI_CAMERA_SHAKE_OFFSET_HELPURL );
+        this.setTooltip( Blockly.Msg.KIWI_CAMERA_SHAKE_OFFSET_TOOLTIP );
+        this.setColour( Blockly.Variables.COLOUR.LOOKS );
+        this.setInputsInline( true );
+        this.setPreviousStatement( true );
+        this.setNextStatement( true );
+
+        this.appendDummyInput()
+            .appendField( Blockly.Msg.KIWI_CAMERA_SHAKE_OFFSET_MESSAGE1 );
+        this.appendDummyInput()
+            .appendField( new Blockly.FieldDropdown( [
+                [ "y", "y" ],
+                [ "x", "x" ]
+            ] ), "AXIS" );
+        this.appendDummyInput()
+            .appendField( Blockly.Msg.KIWI_CAMERA_SHAKE_OFFSET_MESSAGE_DUR );
+        this.appendValueInput( "DURATION" )
+            .setCheck( "Number" );
+        this.appendDummyInput()
+            .appendField( Blockly.Msg.KIWI_CAMERA_SHAKE_OFFSET_MESSAGE_AMP );
+        this.appendValueInput( "AMPLITUDE" )
+            .setCheck( "Number" );
+        this.appendDummyInput()
+            .appendField( Blockly.Msg.KIWI_CAMERA_SHAKE_OFFSET_MESSAGE_FREQ );
+        this.appendValueInput( "FREQUENCY" )
+            .setCheck( "Number" );
+    }
+};

@@ -1753,6 +1753,19 @@ Blockly.Msg.KF_CAMERA_CENTER_ON_INSTANCE_MESSAGE = 'center camera on';
 /// tooltip -
 Blockly.Msg.KF_CAMERA_CENTER_ON_INSTANCE_TOOLTIP = 'Centers the cameras to the instances current position.';
 
+/// url -
+Blockly.Msg.KIWI_CAMERA_SHAKE_OFFSET_HELPURL = '';
+/// tooltip -
+Blockly.Msg.KIWI_CAMERA_SHAKE_OFFSET_TOOLTIP = 'Shake the camera by wobbling its offset values for a duration (in seconds). Who knows what might happen if you edit the offset during the shake?';
+/// message -
+Blockly.Msg.KIWI_CAMERA_SHAKE_OFFSET_MESSAGE1 = 'camera shake axis';
+/// message -
+Blockly.Msg.KIWI_CAMERA_SHAKE_OFFSET_MESSAGE_AMP = 'amplitude';
+/// message -
+Blockly.Msg.KIWI_CAMERA_SHAKE_OFFSET_MESSAGE_FREQ = 'frequency';
+/// message -
+Blockly.Msg.KIWI_CAMERA_SHAKE_OFFSET_MESSAGE_DUR = 'duration';
+
 /// helpurl -
 Blockly.Msg.KF_MATH_LERP_HELPURL = '';
 /// tooltip -

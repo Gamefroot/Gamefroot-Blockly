@@ -185,3 +185,62 @@ Blockly.Kiwifroot['kiwi_camera_get_max'] = function(block) {
 	
 	return [code, Blockly.Kiwifroot.ORDER_ATOMIC];
 };
+
+// Shake the camera using offset values...
+Blockly.Kiwifroot[ "kiwi_camera_shake_offset" ] = function( block ) {
+	var code = "",
+		cam = Blockly.Kiwifroot.camera.COMPONENT_PREFIX + ".offset",
+		tab = Blockly.Kiwifroot.INDENT,
+		baseName = Blockly.Kiwifroot.variableDB_.getDistinctName(
+			"base", Blockly.Variables.NAME_TYPE ),
+		trackerName = Blockly.Kiwifroot.variableDB_.getDistinctName(
+			"tracker", Blockly.Variables.NAME_TYPE ),
+		axis = block.getFieldValue( "AXIS" ),
+		duration = Blockly.Kiwifroot.valueToCode(
+			block,
+			"DURATION",
+			Blockly.Kiwifroot.ORDER_ATOMIC ) || 0,
+		amplitude = Blockly.Kiwifroot.valueToCode(
+			block,
+			"AMPLITUDE",
+			Blockly.Kiwifroot.ORDER_ATOMIC ) || 0,
+		frequency = Blockly.Kiwifroot.valueToCode(
+			block,
+			"FREQUENCY",
+			Blockly.Kiwifroot.ORDER_ATOMIC ) || 0;
+
+	Blockly.Kiwifroot.camera.addCameraToConstructor_.call( this );
+
+	/*
+	game.tweens.create( $camera ).to(
+		{ $AXIS: $camera.$AXIS },
+		$DURATION * 1000,
+		Kiwi.Animations.Tweens.Easing.Exponential.Out,
+		true );
+	*/
+
+	// Create a tracker to control the amplitude.
+	code += "var " + trackerName + " = { k: " + amplitude + " };\n";
+
+	// Track the base value around which shake oscillates.
+	code += "var " + baseName + " = " + cam + "." + axis + ";\n";
+
+	// Create tween.
+	code += "game.tweens.create( " + trackerName + " ).to(\n";
+	code += tab + "{ k: 0 },\n";
+	code += tab + duration + " * 1000,\n";
+	code += tab + "Kiwi.Animations.Tweens.Easing.Exponential.Out,\n";
+	code += tab + "true )\n";
+	code += ".onUpdate(\n";
+
+	// Update camera offsets with tween progress.
+	code += tab + "function() {\n";
+	code += tab + tab + cam + "." + axis + " = " +
+		baseName + " + " + trackerName + ".k * " +
+		"Math.sin( this.game.idealFrame * " + frequency + ");\n";
+	code += tab + "}, this );\n";
+
+	console.log( code );
+
+	return code;
+};
