@@ -1,7 +1,7 @@
 {
 	"@metadata": {
 		"author": "Ellen Spertus <ellen.spertus@gmail.com>",
-		"lastupdated": "2017-08-07 11:04:26.764962",
+		"lastupdated": "2017-08-11 10:31:23.353559",
 		"locale": "en",
 		"messagedocumentation" : "qqq"
 	},
@@ -649,6 +649,11 @@
 	"KF_CAMERA_CENTER_ON_INSTANCE_HELPURL": "",
 	"KF_CAMERA_CENTER_ON_INSTANCE_MESSAGE": "center camera on",
 	"KF_CAMERA_CENTER_ON_INSTANCE_TOOLTIP": "Centers the cameras to the instances current position.",
+	"KIWI_CAMERA_SHAKE_OFFSET_HELPURL": "",
+	"KIWI_CAMERA_SHAKE_OFFSET_TOOLTIP": "Shake the camera by wobbling its offset values for a duration (in seconds). Who knows what might happen if you edit the offset during the shake?",
+	"KIWI_CAMERA_SHAKE_OFFSET_MESSAGE1": "shake camera",
+	"KIWI_CAMERA_SHAKE_OFFSET_MESSAGE_AMP": "pixels over",
+	"KIWI_CAMERA_SHAKE_OFFSET_MESSAGE_DUR": "seconds",
 	"KF_MATH_LERP_HELPURL": "",
 	"KF_MATH_LERP_MESSAGE_TOOLTIP": "",
 	"KF_MATH_LERP_MESSAGE_ONE": "linear interpolation from",
