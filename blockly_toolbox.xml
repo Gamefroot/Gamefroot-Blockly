@@ -118,6 +118,12 @@
 
     <block type="kiwi_mechanics_easing"></block>
 
+    <block type="kiwi_input_key_down">
+      <value name="KEY">
+        <shadow type="kiwi_key_special"></shadow>
+      </value>
+    </block>
+
     <block type="kiwi_device_cocoon"></block>
 
     <block type="kiwi_scratch_events_wait">
