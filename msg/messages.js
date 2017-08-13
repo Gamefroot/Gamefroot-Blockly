@@ -1493,6 +1493,11 @@ Blockly.Msg.KF_INSTANCE_PROPERTIES_GET_MESSAGE_ONE = 'get key';
 /// message -
 Blockly.Msg.KF_INSTANCE_PROPERTIES_GET_MESSAGE_TWO = 'on';
 
+/// tooltip -
+Blockly.Msg.KIWI_INSTANCE_CENTER_ANCHOR_POINT_TOOLTIP = 'Set the anchor point/pivot of an instance to its center.';
+/// message -
+Blockly.Msg.KIWI_INSTANCE_CENTER_ANCHOR_POINT_MSG = 'center anchor point of';
+
 /// url -
 Blockly.Msg.KF_INTERSECTS_OVERLAPS_HELPURL = '';
 /// Label -

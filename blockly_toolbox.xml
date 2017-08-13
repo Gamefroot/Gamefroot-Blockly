@@ -103,6 +103,12 @@
   <category name="New" colour="#ff0000">
     <block type="kiwi_block_category" message="Check out recently added blocks!"></block>
 
+    <block type="kiwi_instance_center_anchor_point">
+      <value name="INST">
+        <shadow type="kiwi_instance_self"></shadow>
+      </value>
+    </block>
+
     <block type="kiwi_camera_shake_offset">
       <value name="DURATION">
         <shadow type="math_number">
@@ -585,6 +591,7 @@
           </block>
         </value>
       </block>
+
       <block type="kiwi_instance_get_position">
         <value name="INST">
           <block type="kiwi_instance_self"></block>
@@ -605,6 +612,13 @@
           <block type="kiwi_instance_self"></block>
         </value>
       </block>
+
+      <block type="kiwi_instance_center_anchor_point">
+        <value name="INST">
+          <shadow type="kiwi_instance_self"></shadow>
+        </value>
+      </block>
+
       <block type="kiwi_instance_get_dimensions">
         <value name="INST">
           <block type="kiwi_instance_self"></block>

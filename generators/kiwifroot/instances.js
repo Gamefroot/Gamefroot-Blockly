@@ -243,6 +243,22 @@ Blockly.Kiwifroot['kiwi_instance_set_anchor_point'] = function(block) {
   return code;
 };
 
+// Snap anchor point to instance centroid.
+Blockly.Kiwifroot[ "kiwi_instance_center_anchor_point" ] = function( block ) {
+  var code = "",
+    inst = Blockly.Kiwifroot.valueToCode(
+      block, "INST", Blockly.Kiwifroot.ORDER_ATOMIC );
+
+  code += errorCheck(
+    this.workspace,
+    ( "!" + inst ),
+    "`Center Anchor` block could not find an Instance." );
+  code += inst + ".anchorPointX = " + inst + ".width / 2;\n";
+  code += inst + ".anchorPointY = " + inst + ".height / 2;\n";
+
+  return code;
+};
+
 
 
 Blockly.Kiwifroot['kiwi_instance_get_position'] = function(block) {

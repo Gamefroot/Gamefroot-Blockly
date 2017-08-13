@@ -444,6 +444,24 @@ Blockly.Blocks['kiwi_instance_set_anchor_point'] = {
   }
 };
 
+// Snap anchor point to instance centroid.
+Blockly.Blocks[ "kiwi_instance_center_anchor_point" ] = {
+  init: function() {
+    this.setHelpUrl( Blockly.Msg.KF_INSTANCE_GET_HELPURL );
+    this.setTooltip( Blockly.Msg.KIWI_INSTANCE_CENTER_ANCHOR_POINT_TOOLTIP );
+    this.setColour( Blockly.Variables.COLOUR.MOTION );
+
+    this.setInputsInline( true );
+    this.setPreviousStatement( true );
+    this.setNextStatement( true );
+
+    this.appendDummyInput()
+        .appendField( Blockly.Msg.KIWI_INSTANCE_CENTER_ANCHOR_POINT_MSG );
+    this.appendValueInput( "INST" )
+        .setCheck( "Instance" );
+  }
+};
+
 
 Blockly.Blocks['kiwi_instance_get_position'] = {
   init: function() {
