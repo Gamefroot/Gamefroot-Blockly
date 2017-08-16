@@ -194,6 +194,10 @@ Blockly.Msg.CONTROLS_FOREACH_HELPURL = 'https://github.com/google/blockly/wiki/L
 Blockly.Msg.CONTROLS_FOREACH_TITLE = 'for each item %1 in list %2';
 /// input -
 Blockly.Msg.CONTROLS_FOREACH_INPUT_DO = Blockly.Msg.CONTROLS_REPEAT_INPUT_DO;
+/// message -
+Blockly.Msg.CONTROLS_FOREACH_INPUT_ITEM = 'for each item';
+/// message -
+Blockly.Msg.CONTROLS_FOREACH_INPUT_INLIST = 'in list';
 /// block text - Description of [https://github.com/google/blockly/wiki/Loops#for-each for each blocks].\n\nParameters:\n* %1 - the name of the loop variable.
 Blockly.Msg.CONTROLS_FOREACH_TOOLTIP = 'For each item in a list, set the variable "%1" to the item, and then do some statements.';
 

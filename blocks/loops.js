@@ -166,14 +166,14 @@ Blockly.Blocks['controls_flow_statements'] = {
   }
 };
 
-
-Blockly.Blocks['controls_for_local'] = {
+Blockly.Blocks['controls_for'] = {
   /**
    * Block for 'for' loop.
    * @this Blockly.Block
    */
   init: function() {
 
+    this.setWarningText(Blockly.Msg.KF_BLOCK_DEPRECATED);
     //Statement input
     this.jsonInit({
       "message0": Blockly.Msg.CONTROLS_FOR_TITLE,
@@ -181,8 +181,7 @@ Blockly.Blocks['controls_for_local'] = {
         {
           "type": "field_variable",
           "name": "VAR",
-          "variable": null,
-          "scope": Blockly.FieldVariable.SCOPE.LOCAL
+          "variable": null
         },
         {
           "type": "input_value",
@@ -217,7 +216,7 @@ Blockly.Blocks['controls_for_local'] = {
    * @return {!Array.<string>} List of variable names.
    * @this Blockly.Block
    */
-  localGetVars: function() {
+  getVars: function() {
     return [this.getFieldValue('VAR')];
   },
   /**
@@ -225,31 +224,24 @@ Blockly.Blocks['controls_for_local'] = {
    * @return {string}
    * @this Blockly.Block
    */
-  localTypeOf: function(name) {
+  typeOf: function(name) {
     if (Blockly.Names.equals(name, this.getFieldValue('VAR'))) {
       return Blockly.Variables.TYPE_NUMBER;
     }
     else return undefined;
   },
   /**
-   * Indicates whether the variable used is immutable or not. 
-   * @return {boolean}
-   */
-  localIsImmutable: function() {
-    return true;
-  },
-  /**
    * Notfication that the workspace wants to change this variables type.
    * We can not change type! This is immutable.
    * @this Blockly.Block
    */
-  localChangeType: function(name, type) {
+  changeType: function(name, type) {
     if (Blockly.Names.equals(name, this.getFieldValue('VAR'))) {
       //Is the type different?
-      if( type !== this.localTypeOf(name) ) {
+      if( type !== this.typeOf(name) ) {
         setTimeout(function(){
           // This type is immutable, change it back!
-          Blockly.Variables.Local.changeType(name, Blockly.Variables.TYPE_NUMBER, 
+          Blockly.Variables.changeType(name, Blockly.Variables.TYPE_NUMBER, 
             Blockly.mainWorkspace);
         },1);
       }
@@ -262,7 +254,7 @@ Blockly.Blocks['controls_for_local'] = {
    * @param {string} newName Renamed variable.
    * @this Blockly.Block
    */
-  localRenameVar: function(oldName, newName) {
+  renameVar: function(oldName, newName) {
     if (Blockly.Names.equals(oldName, this.getFieldValue('VAR'))) {
       this.setFieldValue(newName, 'VAR');
     }
@@ -280,13 +272,15 @@ Blockly.Blocks['controls_for_local'] = {
       var xmlField = goog.dom.createDom('field', null, name);
       xmlField.setAttribute('name', 'VAR');
       var xmlBlock = goog.dom.createDom('block', null, xmlField);
-      xmlBlock.setAttribute('type', 'variables_local_get');
+      xmlBlock.setAttribute('type', 'variables_get');
       option.callback = Blockly.ContextMenu.callbackFactory(this, xmlBlock);
       options.push(option);
     }
   }
 };
-Blockly.Blocks['controls_forEach_local'] = {
+
+
+Blockly.Blocks['controls_forEach'] = {
   /**
    * Block for 'for each' loop.
    * @this Blockly.Block
@@ -294,10 +288,13 @@ Blockly.Blocks['controls_forEach_local'] = {
   init: function() {
     this.setHelpUrl(Blockly.Msg.CONTROLS_FOREACH_HELPURL);
     this.setColour(Blockly.Variables.COLOUR.CONTROL);
+    this.setPreviousStatement(true);
+    this.setNextStatement(true);
+    
     this.appendValueInput('LIST')
         .setCheck('Array')
         .appendField(Blockly.Msg.CONTROLS_FOREACH_INPUT_ITEM)
-        .appendField(new Blockly.FieldVariable(null, null, Blockly.FieldVariable.SCOPE.LOCAL), 'VAR')
+        .appendField(new Blockly.FieldVariable(null), 'VAR')
         .appendField(Blockly.Msg.CONTROLS_FOREACH_INPUT_INLIST);
     if (Blockly.Msg.CONTROLS_FOREACH_INPUT_INLIST_TAIL) {
       this.appendDummyInput()
@@ -306,8 +303,7 @@ Blockly.Blocks['controls_forEach_local'] = {
     }
     this.appendStatementInput('DO')
         .appendField(Blockly.Msg.CONTROLS_FOREACH_INPUT_DO);
-    this.setPreviousStatement(true);
-    this.setNextStatement(true);
+
     // Assign 'this' to a variable for use in the tooltip closure below.
     var thisBlock = this;
     this.setTooltip(function() {
@@ -320,7 +316,7 @@ Blockly.Blocks['controls_forEach_local'] = {
    * @return {!Array.<string>} List of variable names.
    * @this Blockly.Block
    */
-  localGetVars: function() {
+  getVars: function() {
     return [this.getFieldValue('VAR')];
   },
   /**
@@ -330,10 +326,10 @@ Blockly.Blocks['controls_forEach_local'] = {
    * @param {string} newName Renamed variable.
    * @this Blockly.Block
    */
-  localRenameVar: function(oldName, newName) {
+  renameVar: function(oldName, newName) {
     if (Blockly.Names.equals(oldName, this.getFieldValue('VAR'))) {
       this.setFieldValue(newName, 'VAR');
     }
   },
-  customContextMenu: Blockly.Blocks['controls_for_local'].customContextMenu
+  customContextMenu: Blockly.Blocks['controls_for'].customContextMenu
 };
