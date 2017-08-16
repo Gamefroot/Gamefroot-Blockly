@@ -405,27 +405,32 @@ Blockly.Kiwifroot['kiwi_event_stage_touched'] = function(block) {
 };
 
 
-Blockly.Kiwifroot['kiwi_event_message_value'] = function(block) {
+Blockly.Kiwifroot['kiwi_event_message_value_local'] = function(block) {
 
   addMessageRecievedBlock();
 
-  var variable0 = Blockly.Kiwifroot.variableDB_.getName(
+  var variable0 = Blockly.Kiwifroot.localVariableDB_.getName(
     block.getFieldValue('VAR'), Blockly.Variables.NAME_TYPE);
   var message = Blockly.Kiwifroot.valueToCode(block, 'MESSAGE', Blockly.Kiwifroot.ORDER_ASSIGNMENT) || '""';
 
-  var funcName = defineFunctionFromBranch('executeMessage'+ message.slice(1, message.length - 1), block, "Executed when the " + message + " is received.");
+    var branch = Blockly.Kiwifroot.statementToCode(block, 'STACK');
+  var funcName = Blockly.Kiwifroot.variableDB_.getDistinctName('executeMessage'+ message.slice(1, message.length - 1), Blockly.Procedures.NAME_TYPE);
+
+  funcName = Blockly.Kiwifroot.provideFunction_(
+    funcName,
+    [ Blockly.Kiwifroot.FUNCTION_NAME_PLACEHOLDER_ + ' = function( ' + variable0 + ' ) {',
+        branch,
+        '};']);
 
   // Generate the code for the switch
   var code  = 'case ' + message + ':\n';
-    code += '\t\t\t' + 'this.' + variable0 + ' = this.owner.properties.get("_messaging-value_");\n';
-    code += '\t\t\t' + 'this.' + funcName + '();\n';
+    code += '\t\t\t' + 'this.' + funcName + '( this.owner.properties.get("_messaging-value_") );\n';
     code += '\t\t\tbreak;';
 
   Blockly.Kiwifroot.provideAddition('EVENT_MESSAGE_RELEASED', code);
 
   return null;
 };
-
 
 
 Blockly.Kiwifroot['kiwi_primitives_create_rectangle'] = function(block) {

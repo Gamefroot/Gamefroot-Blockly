@@ -621,9 +621,10 @@ Blockly.Blocks['kiwi_event_stage_touched'] = {
   }
 };
 
-Blockly.Blocks['kiwi_event_message_value'] = {
+
+Blockly.Blocks['kiwi_event_message_value_local'] = {
   init: function() {
-    this.setWarningText(Blockly.Msg.KF_BLOCK_DEPRECATED);
+    this.setWarningText( Blockly.Msg.KF_BLOCK_DEPRECATED );
     this.setHelpUrl( Blockly.Msg.KF_EVENT_MESSAGE_VALUE_HELPURL );
     this.setColour( Blockly.Variables.COLOUR.EVENT );
     this.appendValueInput("MESSAGE")
@@ -631,7 +632,7 @@ Blockly.Blocks['kiwi_event_message_value'] = {
         .appendField( Blockly.Msg.KF_EVENT_MESSAGE_VALUE_MESSAGE_ONE );
     this.appendDummyInput()
         .appendField( Blockly.Msg.KF_EVENT_MESSAGE_VALUE_MESSAGE_TWO )
-        .appendField(new Blockly.FieldVariable('value'), 'VAR');
+        .appendField(new Blockly.FieldVariable('value', null, Blockly.FieldVariable.SCOPE.LOCAL ), 'VAR');
     this.appendStatementInput("STACK");
     this.setInputsInline(true);
     this.setTooltip( Blockly.Msg.KF_EVENT_MESSAGE_VALUE_TOOLTIP );
@@ -641,7 +642,7 @@ Blockly.Blocks['kiwi_event_message_value'] = {
    * @return {!Array.<string>} List of variable names.
    * @this Blockly.Block
    */
-  getVars: function() {
+  localGetVars: function() {
     return [this.getFieldValue('VAR')];
   },
   /**
@@ -651,14 +652,30 @@ Blockly.Blocks['kiwi_event_message_value'] = {
    * @param {string} newName Renamed variable.
    * @this Blockly.Block
    */
-  renameVar: function(oldName, newName) {
+  localRenameVar: function(oldName, newName) {
     if (Blockly.Names.equals(oldName, this.getFieldValue('VAR'))) {
       this.setFieldValue(newName, 'VAR');
     }
+  },
+  /**
+   * Add menu option to create getter block for loop variable.
+   * @param {!Array} options List of menu options to add to.
+   * @this Blockly.Block
+   */
+  customContextMenu: function(options) {
+    if (!this.isCollapsed()) {
+      var option = {enabled: true};
+      var name = this.getFieldValue('VAR');
+      option.text = Blockly.Msg.VARIABLES_SET_CREATE_GET.replace('%1', name);
+      var xmlField = goog.dom.createDom('field', null, name);
+      xmlField.setAttribute('name', 'VAR');
+      var xmlBlock = goog.dom.createDom('block', null, xmlField);
+      xmlBlock.setAttribute('type', 'variables_local_get');
+      option.callback = Blockly.ContextMenu.callbackFactory(this, xmlBlock);
+      options.push(option);
+    }
   }
 };
-
-
 
 
 Blockly.Blocks['kiwi_primitives_create_rectangle'] = {

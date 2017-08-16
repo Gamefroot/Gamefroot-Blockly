@@ -274,7 +274,8 @@
           </shadow>
         </value>
       </block>
-      <block type="kiwi_event_message_value_local">
+
+      <block type="kiwi_event_message_value">
         <value name="MESSAGE">
           <shadow type="text">
             <field name="TEXT">message</field>
