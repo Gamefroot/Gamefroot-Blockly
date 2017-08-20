@@ -339,12 +339,11 @@ Blockly.Kiwifroot['kiwi_classes_create_instance_with_var'] = function(block) {
 };
 
 
-
-Blockly.Kiwifroot['kiwi_event_touch_return_instance'] = function(block) {
+Blockly.Kiwifroot['kiwi_event_touch_return_instance_local'] = function(block) {
 
   Blockly.Kiwifroot.arcadephysics.addArcadePhysicsToConstructor_.call( this );
 
-  var variable0 = Blockly.Kiwifroot.variableDB_.getName(
+  var variable0 = Blockly.Kiwifroot.localVariableDB_.getName(
     block.getFieldValue('VAR'), Blockly.Variables.NAME_TYPE);
 
     var branch = Blockly.Kiwifroot.statementToCode(block, 'STACK');
@@ -355,10 +354,10 @@ Blockly.Kiwifroot['kiwi_event_touch_return_instance'] = function(block) {
     [ Blockly.Kiwifroot.FUNCTION_NAME_PLACEHOLDER_ + ' = function( instanceA, instanceB ) {',
     Blockly.Kiwifroot.INDENT + 'var instanceSet = false;',
         Blockly.Kiwifroot.INDENT + 'if( instanceA === this.owner ) {',
-        Blockly.Kiwifroot.INDENT + Blockly.Kiwifroot.INDENT + 'this.' + variable0 + ' = instanceB;',
+        Blockly.Kiwifroot.INDENT + Blockly.Kiwifroot.INDENT + 'var ' + variable0 + ' = instanceB;',
         Blockly.Kiwifroot.INDENT + Blockly.Kiwifroot.INDENT + 'instanceSet = true;',
         Blockly.Kiwifroot.INDENT + '} else if( instanceB === this.owner) {',
-        Blockly.Kiwifroot.INDENT + Blockly.Kiwifroot.INDENT + 'this.' + variable0 + ' = instanceA;',
+        Blockly.Kiwifroot.INDENT + Blockly.Kiwifroot.INDENT + 'var ' + variable0 + ' = instanceA;',
         Blockly.Kiwifroot.INDENT + Blockly.Kiwifroot.INDENT + 'instanceSet = true;',
         Blockly.Kiwifroot.INDENT + '}',
         Blockly.Kiwifroot.INDENT + 'if( !instanceSet ) {',

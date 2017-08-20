@@ -282,15 +282,13 @@ Blockly.Blocks['kiwi_event_constantly_dropdown'] = {
 };
 
 
-
-
-Blockly.Blocks['kiwi_event_touch_return_instance_local'] = {
+Blockly.Blocks['kiwi_event_touch_return_instance'] = {
   init: function() {
     this.setHelpUrl( Blockly.Msg.KF_EVENT_TOUCH_RETURN_HELPURL );
     this.setColour( Blockly.Variables.COLOUR.PHYSICS );
     this.appendDummyInput()
         .appendField( Blockly.Msg.KF_EVENT_TOUCH_RETURN_MESSAGE )
-        .appendField(new Blockly.FieldVariable('toucher', null, Blockly.FieldVariable.SCOPE.LOCAL ), 'VAR');
+        .appendField(new Blockly.FieldVariable('toucher'), 'VAR');
     this.appendStatementInput("STACK");
     this.setTooltip( Blockly.Msg.KF_EVENT_TOUCH_RETURN_TOOLTIP );
   },
@@ -299,7 +297,7 @@ Blockly.Blocks['kiwi_event_touch_return_instance_local'] = {
    * @return {!Array.<string>} List of variable names.
    * @this Blockly.Block
    */
-  localGetVars: function() {
+  getVars: function() {
     return [this.getFieldValue('VAR')];
   },
   /**
@@ -307,31 +305,24 @@ Blockly.Blocks['kiwi_event_touch_return_instance_local'] = {
    * @return {string}
    * @this Blockly.Block
    */
-  localTypeOf: function(name) {
+  typeOf: function(name) {
     if (Blockly.Names.equals(name, this.getFieldValue('VAR'))) {
       return Blockly.Variables.TYPE_INSTANCE;
     }
     else return undefined;
   },
   /**
-   * Indicates whether the variable used is immutable or not. 
-   * @return {boolean}
-   */
-  localIsImmutable: function() {
-    return true;
-  },
-  /**
    * Notfication that the workspace wants to change this variables type.
    * We can not change type! This is immutable.
    * @this Blockly.Block
    */
-  localChangeType: function(name, type) {
+  changeType: function(name, type) {
     if (Blockly.Names.equals(name, this.getFieldValue('VAR'))) {
       //Is the type different?
-      if( type !== this.localTypeOf(name) ) {
+      if( type !== this.typeOf(name) ) {
         setTimeout(function(){
           // This type is immutable, change it back!
-          Blockly.Variables.Local.changeType(name, Blockly.Variables.TYPE_INSTANCE, 
+          Blockly.Variables.changeType(name, Blockly.Variables.TYPE_INSTANCE, 
             Blockly.mainWorkspace);
         },1);
       }
@@ -344,30 +335,31 @@ Blockly.Blocks['kiwi_event_touch_return_instance_local'] = {
    * @param {string} newName Renamed variable.
    * @this Blockly.Block
    */
-  localRenameVar: function(oldName, newName) {
+  renameVar: function(oldName, newName) {
     if (Blockly.Names.equals(oldName, this.getFieldValue('VAR'))) {
       this.setFieldValue(newName, 'VAR');
     }
   },
   /**
-   * Add menu option to create getter block for loop variable.
-   * @param {!Array} options List of menu options to add to.
+   * Add menu option to create getter block for variable.
+   * @param options {!Array} List of menu options to add to.
    * @this Blockly.Block
    */
-  customContextMenu: function(options) {
-    if (!this.isCollapsed()) {
-      var option = {enabled: true};
-      var name = this.getFieldValue('VAR');
-      option.text = Blockly.Msg.VARIABLES_SET_CREATE_GET.replace('%1', name);
-      var xmlField = goog.dom.createDom('field', null, name);
+  customContextMenu: function( options ) {
+    if ( !this.isCollapsed() ) {
+      var option = { enabled: true };
+      var name = this.getFieldValue( 'VAR' );
+      option.text = Blockly.Msg.VARIABLES_SET_CREATE_GET.replace( '%1', name );
+      var xmlField = goog.dom.createDom( 'field', null, name );
       xmlField.setAttribute('name', 'VAR');
-      var xmlBlock = goog.dom.createDom('block', null, xmlField);
-      xmlBlock.setAttribute('type', 'variables_local_get');
-      option.callback = Blockly.ContextMenu.callbackFactory(this, xmlBlock);
-      options.push(option);
+      var xmlBlock = goog.dom.createDom( 'block', null, xmlField );
+      xmlBlock.setAttribute( 'type', 'variables_get' );
+      option.callback = Blockly.ContextMenu.callbackFactory( this, xmlBlock );
+      options.push( option );
     }
   }
 };
+
 
 Blockly.Blocks['kiwi_event_stage_touched_local'] = {
   init: function() {
@@ -457,6 +449,7 @@ Blockly.Blocks['kiwi_event_stage_touched_local'] = {
     }
   }
 };
+
 
 Blockly.Blocks['kiwi_event_message_value'] = {
   init: function() {

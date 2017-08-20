@@ -405,27 +405,25 @@ function defineFunctionFromBranch(desiredName, block, codeComment){
 
 
 
+Blockly.Kiwifroot['kiwi_event_touch_return_instance'] = function(block) {
 
+  Blockly.Kiwifroot.arcadephysics.addArcadePhysicsToConstructor_.call( this );
 
-Blockly.Kiwifroot['kiwi_event_touch_return_instance_local'] = function(block) {
+  var variable0 = Blockly.Kiwifroot.variableDB_.getName(
+    block.getFieldValue('VAR'), Blockly.Variables.NAME_TYPE);
 
-	Blockly.Kiwifroot.arcadephysics.addArcadePhysicsToConstructor_.call( this );
+    var branch = Blockly.Kiwifroot.statementToCode(block, 'STACK');
+  var funcName = Blockly.Kiwifroot.variableDB_.getDistinctName('onTouchInstance', Blockly.Procedures.NAME_TYPE);
 
-	var variable0 = Blockly.Kiwifroot.localVariableDB_.getName(
-		block.getFieldValue('VAR'), Blockly.Variables.NAME_TYPE);
-
-  	var branch = Blockly.Kiwifroot.statementToCode(block, 'STACK');
-	var funcName = Blockly.Kiwifroot.variableDB_.getDistinctName('onTouchInstance', Blockly.Procedures.NAME_TYPE);
-
-	funcName = Blockly.Kiwifroot.provideFunction_(
-		funcName,
-		[ Blockly.Kiwifroot.FUNCTION_NAME_PLACEHOLDER_ + ' = function( instanceA, instanceB ) {',
-		Blockly.Kiwifroot.INDENT + 'var instanceSet = false;',
+  funcName = Blockly.Kiwifroot.provideFunction_(
+    funcName,
+    [ Blockly.Kiwifroot.FUNCTION_NAME_PLACEHOLDER_ + ' = function( instanceA, instanceB ) {',
+    Blockly.Kiwifroot.INDENT + 'var instanceSet = false;',
         Blockly.Kiwifroot.INDENT + 'if( instanceA === this.owner ) {',
-        Blockly.Kiwifroot.INDENT + Blockly.Kiwifroot.INDENT + 'var ' + variable0 + ' = instanceB;',
+        Blockly.Kiwifroot.INDENT + Blockly.Kiwifroot.INDENT + 'this.' + variable0 + ' = instanceB;',
         Blockly.Kiwifroot.INDENT + Blockly.Kiwifroot.INDENT + 'instanceSet = true;',
         Blockly.Kiwifroot.INDENT + '} else if( instanceB === this.owner) {',
-        Blockly.Kiwifroot.INDENT + Blockly.Kiwifroot.INDENT + 'var ' + variable0 + ' = instanceA;',
+        Blockly.Kiwifroot.INDENT + Blockly.Kiwifroot.INDENT + 'this.' + variable0 + ' = instanceA;',
         Blockly.Kiwifroot.INDENT + Blockly.Kiwifroot.INDENT + 'instanceSet = true;',
         Blockly.Kiwifroot.INDENT + '}',
         Blockly.Kiwifroot.INDENT + 'if( !instanceSet ) {',
@@ -435,38 +433,44 @@ Blockly.Kiwifroot['kiwi_event_touch_return_instance_local'] = function(block) {
         '};']);
 
 
-  	var code = Blockly.Kiwifroot.arcadephysics.SYSTEM_PREFIX + '.onCollision.add( this.' + funcName + ', this );';
-	Blockly.Kiwifroot.provideAddition( Blockly.Kiwifroot.BOOT, code );
+    var code = Blockly.Kiwifroot.arcadephysics.SYSTEM_PREFIX + '.onCollision.add( this.' + funcName + ', this );';
+  Blockly.Kiwifroot.provideAddition( Blockly.Kiwifroot.BOOT, code );
 
-	var code = Blockly.Kiwifroot.arcadephysics.SYSTEM_PREFIX +'.onCollision.remove( this.' + funcName + ', this );';
-	Blockly.Kiwifroot.provideAddition( Blockly.Kiwifroot.DESTRUCTOR, code );
+  var code = Blockly.Kiwifroot.arcadephysics.SYSTEM_PREFIX +'.onCollision.remove( this.' + funcName + ', this );';
+  Blockly.Kiwifroot.provideAddition( Blockly.Kiwifroot.DESTRUCTOR, code );
 
-	return null;
+  return null;
 };
 
 
-Blockly.Kiwifroot['kiwi_event_stage_touched_local'] = function(block) {
+Blockly.Kiwifroot[ 'kiwi_event_stage_touched_local' ] = function( block ) {
 
 	var variable0 = Blockly.Kiwifroot.localVariableDB_.getName(
-		block.getFieldValue('VAR'), Blockly.Variables.NAME_TYPE);
+		block.getFieldValue( 'VAR' ), Blockly.Variables.NAME_TYPE );
 
-  	var branch = Blockly.Kiwifroot.statementToCode(block, 'STACK');
-	var funcName = Blockly.Kiwifroot.variableDB_.getDistinctName('onStageTouch', Blockly.Procedures.NAME_TYPE);
+	var branch = Blockly.Kiwifroot.statementToCode( block, 'STACK' );
+	var funcName = Blockly.Kiwifroot.variableDB_.getDistinctName(
+		'onStageTouch', Blockly.Procedures.NAME_TYPE );
 
 	funcName = Blockly.Kiwifroot.provideFunction_(
 		funcName,
-		[ Blockly.Kiwifroot.FUNCTION_NAME_PLACEHOLDER_ + ' = function( x, y, td, tu, dur, pointer ) {',
+		[ Blockly.Kiwifroot.FUNCTION_NAME_PLACEHOLDER_ +
+			' = function( x, y, td, tu, dur, pointer ) {',
 		Blockly.Kiwifroot.INDENT + 'var ' + variable0 + ' = pointer;',
-        branch,
-        '};']);
+		branch,
+		'};']);
 
 
 	var dropdown_type = block.getFieldValue( 'TYPE' );
-  	var constructorCode = 'this.game.input.' + dropdown_type + '.add(this.' + funcName + ', this, 25);';
-  	var destructorCode = 'this.game.input.' + dropdown_type + '.remove(this.' + funcName + ', this);';
+	var constructorCode = 'this.game.input.' + dropdown_type +
+		'.add(this.' + funcName + ', this, 25);';
+	var destructorCode = 'this.game.input.' + dropdown_type +
+		'.remove(this.' + funcName + ', this);';
 
-  	Blockly.Kiwifroot.provideAddition(Blockly.Kiwifroot.CONSTRUCTOR, constructorCode);
-  	Blockly.Kiwifroot.provideAddition(Blockly.Kiwifroot.DESTRUCTOR, destructorCode);
+	Blockly.Kiwifroot.provideAddition(
+		Blockly.Kiwifroot.CONSTRUCTOR, constructorCode );
+	Blockly.Kiwifroot.provideAddition(
+		Blockly.Kiwifroot.DESTRUCTOR, destructorCode );
 
 	return null;
 };

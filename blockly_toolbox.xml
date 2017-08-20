@@ -441,7 +441,8 @@
             </block>
         </value>
       </block>
-      <block type="kiwi_event_touch_return_instance_local"></block>
+
+    <block type="kiwi_event_touch_return_instance"></block>
 
     <block type="kiwi_block_category" message="Gravity"></block>
       <block type="kiwi_arcadephysics_set_gravity">
