@@ -61,13 +61,13 @@ Blockly.Blocks['kiwi_primitives_get_colour'] = {
 
 
 
-Blockly.Blocks['kiwi_primitives_create_rectangle_local'] = {
+Blockly.Blocks['kiwi_primitives_create_rectangle'] = {
   init: function() {
     this.setHelpUrl( Blockly.Msg.KF_PRIMITIVES_CREATE_RECTANGLE_HELPURL );
     this.setColour( Blockly.Variables.COLOUR.DRAW );
     this.appendDummyInput()
         .appendField( Blockly.Msg.KF_PRIMITIVES_CREATE_RECTANGLE_MESSAGE_BEFORE )
-        .appendField(new Blockly.FieldVariable('rectangle', null, Blockly.FieldVariable.SCOPE.LOCAL), 'VAR');
+        .appendField(new Blockly.FieldVariable('rectangle'), 'VAR');
     this.appendValueInput("WIDTH")
         .setCheck("Number")
         .appendField( Blockly.Msg.KF_PRIMITIVES_CREATE_RECTANGLE_MESSAGE_AFTER );
@@ -83,7 +83,7 @@ Blockly.Blocks['kiwi_primitives_create_rectangle_local'] = {
    * @return {!Array.<string>} List of variable names.
    * @this Blockly.Block
    */
-  localGetVars: function() {
+  getVars: function() {
     return [this.getFieldValue('VAR')];
   },
   /**
@@ -91,31 +91,24 @@ Blockly.Blocks['kiwi_primitives_create_rectangle_local'] = {
    * @return {string}
    * @this Blockly.Block
    */
-  localTypeOf: function(name) {
+  typeOf: function(name) {
     if (Blockly.Names.equals(name, this.getFieldValue('VAR'))) {
       return Blockly.Variables.TYPE_INSTANCE;
     }
     else return undefined;
   },
   /**
-   * Indicates whether the variable used is immutable or not. 
-   * @return {boolean}
-   */
-  localIsImmutable: function() {
-    return true;
-  },
-  /**
    * Notfication that the workspace wants to change this variables type.
    * We can not change type! This is immutable.
    * @this Blockly.Block
    */
-  localChangeType: function(name, type) {
+  changeType: function(name, type) {
     if (Blockly.Names.equals(name, this.getFieldValue('VAR'))) {
       //Is the type different?
-      if( type !== this.localTypeOf(name) ) {
+      if( type !== this.typeOf(name) ) {
         setTimeout(function(){
           // This type is immutable, change it back!
-          Blockly.Variables.Local.changeType(name, Blockly.Variables.TYPE_INSTANCE, 
+          Blockly.Variables.changeType(name, Blockly.Variables.TYPE_INSTANCE, 
             Blockly.mainWorkspace);
         },1);
       }
@@ -128,38 +121,38 @@ Blockly.Blocks['kiwi_primitives_create_rectangle_local'] = {
    * @param {string} newName Renamed variable.
    * @this Blockly.Block
    */
-  localRenameVar: function(oldName, newName) {
+  renameVar: function(oldName, newName) {
     if (Blockly.Names.equals(oldName, this.getFieldValue('VAR'))) {
       this.setFieldValue(newName, 'VAR');
     }
   },
   /**
-   * Add menu option to create getter block for loop variable.
-   * @param {!Array} options List of menu options to add to.
+   * Add menu option to create getter block for variable.
+   * @param options {!Array} List of menu options to add to.
    * @this Blockly.Block
    */
-  customContextMenu: function(options) {
-    if (!this.isCollapsed()) {
-      var option = {enabled: true};
-      var name = this.getFieldValue('VAR');
-      option.text = Blockly.Msg.VARIABLES_SET_CREATE_GET.replace('%1', name);
-      var xmlField = goog.dom.createDom('field', null, name);
-      xmlField.setAttribute('name', 'VAR');
-      var xmlBlock = goog.dom.createDom('block', null, xmlField);
-      xmlBlock.setAttribute('type', 'variables_local_get');
-      option.callback = Blockly.ContextMenu.callbackFactory(this, xmlBlock);
-      options.push(option);
+  customContextMenu: function( options ) {
+    if ( !this.isCollapsed() ) {
+      var option = { enabled: true };
+      var name = this.getFieldValue( 'VAR' );
+      option.text = Blockly.Msg.VARIABLES_SET_CREATE_GET.replace( '%1', name );
+      var xmlField = goog.dom.createDom( 'field', null, name );
+      xmlField.setAttribute( 'name', 'VAR' );
+      var xmlBlock = goog.dom.createDom( 'block', null, xmlField );
+      xmlBlock.setAttribute( 'type', 'variables_get' );
+      option.callback = Blockly.ContextMenu.callbackFactory( this, xmlBlock );
+      options.push( option );
     }
   }
 };
 
-Blockly.Blocks['kiwi_primitives_create_circle_local'] = {
+Blockly.Blocks['kiwi_primitives_create_circle'] = {
   init: function() {
     this.setHelpUrl( Blockly.Msg.KF_PRIMITIVES_CREATE_CIRCLE_HELPURL );
     this.setColour( Blockly.Variables.COLOUR.DRAW );
     this.appendDummyInput()
         .appendField( Blockly.Msg.KF_PRIMITIVES_CREATE_CIRCLE_MESSAGE_BEFORE )
-        .appendField(new Blockly.FieldVariable('circle',null, Blockly.FieldVariable.SCOPE.LOCAL), 'VAR');
+        .appendField(new Blockly.FieldVariable('circle'), 'VAR');
     this.appendValueInput("RADIUS")
         .setCheck("Number")
         .appendField( Blockly.Msg.KF_PRIMITIVES_CREATE_CIRCLE_MESSAGE_AFTER );
@@ -173,7 +166,7 @@ Blockly.Blocks['kiwi_primitives_create_circle_local'] = {
    * @return {!Array.<string>} List of variable names.
    * @this Blockly.Block
    */
-  localGetVars: function() {
+  getVars: function() {
     return [this.getFieldValue('VAR')];
   },
   /**
@@ -181,31 +174,24 @@ Blockly.Blocks['kiwi_primitives_create_circle_local'] = {
    * @return {string}
    * @this Blockly.Block
    */
-  localTypeOf: function(name) {
+  typeOf: function(name) {
     if (Blockly.Names.equals(name, this.getFieldValue('VAR'))) {
       return Blockly.Variables.TYPE_INSTANCE;
     }
     else return undefined;
   },
   /**
-   * Indicates whether the variable used is immutable or not. 
-   * @return {boolean}
-   */
-  localIsImmutable: function() {
-    return true;
-  },
-  /**
    * Notfication that the workspace wants to change this variables type.
    * We can not change type! This is immutable.
    * @this Blockly.Block
    */
-  localChangeType: function(name, type) {
+  changeType: function(name, type) {
     if (Blockly.Names.equals(name, this.getFieldValue('VAR'))) {
       //Is the type different?
-      if( type !== this.localTypeOf(name) ) {
+      if( type !== this.typeOf(name) ) {
         setTimeout(function(){
           // This type is immutable, change it back!
-          Blockly.Variables.Local.changeType(name, Blockly.Variables.TYPE_INSTANCE, 
+          Blockly.Variables.changeType(name, Blockly.Variables.TYPE_INSTANCE, 
             Blockly.mainWorkspace);
         },1);
       }
@@ -218,14 +204,14 @@ Blockly.Blocks['kiwi_primitives_create_circle_local'] = {
    * @param {string} newName Renamed variable.
    * @this Blockly.Block
    */
-  localRenameVar: function(oldName, newName) {
+  renameVar: function(oldName, newName) {
     if (Blockly.Names.equals(oldName, this.getFieldValue('VAR'))) {
       this.setFieldValue(newName, 'VAR');
     }
   },
   /**
    * Add menu option to create getter block for loop variable.
-   * @param {!Array} options List of menu options to add to.
+   * @paramoptions  {!Array} List of menu options to add to.
    * @this Blockly.Block
    */
   customContextMenu: function(options) {
@@ -236,20 +222,20 @@ Blockly.Blocks['kiwi_primitives_create_circle_local'] = {
       var xmlField = goog.dom.createDom('field', null, name);
       xmlField.setAttribute('name', 'VAR');
       var xmlBlock = goog.dom.createDom('block', null, xmlField);
-      xmlBlock.setAttribute('type', 'variables_local_get');
+      xmlBlock.setAttribute('type', 'variables_get');
       option.callback = Blockly.ContextMenu.callbackFactory(this, xmlBlock);
       options.push(option);
     }
   }
 };
 
-Blockly.Blocks['kiwi_primitives_create_line_local'] = {
+Blockly.Blocks['kiwi_primitives_create_line'] = {
   init: function() {
     this.setHelpUrl( Blockly.Msg.KF_PRIMITIVES_CREATE_LINE_HELPURL );
     this.setColour( Blockly.Variables.COLOUR.DRAW );
     this.appendDummyInput()
         .appendField( Blockly.Msg.KF_PRIMITIVES_CREATE_LINE_MESSAGE_ONE)
-        .appendField(new Blockly.FieldVariable('line',null, Blockly.FieldVariable.SCOPE.LOCAL), 'VAR');
+        .appendField(new Blockly.FieldVariable('line'), 'VAR');
     this.appendValueInput("X")
         .setCheck("Number")
         .appendField( Blockly.Msg.KF_PRIMITIVES_CREATE_LINE_MESSAGE_TWO );
@@ -268,7 +254,7 @@ Blockly.Blocks['kiwi_primitives_create_line_local'] = {
    * @return {!Array.<string>} List of variable names.
    * @this Blockly.Block
    */
-  localGetVars: function() {
+  getVars: function() {
     return [this.getFieldValue('VAR')];
   },
   /**
@@ -276,31 +262,24 @@ Blockly.Blocks['kiwi_primitives_create_line_local'] = {
    * @return {string}
    * @this Blockly.Block
    */
-  localTypeOf: function(name) {
+  typeOf: function(name) {
     if (Blockly.Names.equals(name, this.getFieldValue('VAR'))) {
       return Blockly.Variables.TYPE_INSTANCE;
     }
     else return undefined;
   },
   /**
-   * Indicates whether the variable used is immutable or not. 
-   * @return {boolean}
-   */
-  localIsImmutable: function() {
-    return true;
-  },
-  /**
    * Notfication that the workspace wants to change this variables type.
    * We can not change type! This is immutable.
    * @this Blockly.Block
    */
-  localChangeType: function(name, type) {
+  changeType: function(name, type) {
     if (Blockly.Names.equals(name, this.getFieldValue('VAR'))) {
       //Is the type different?
-      if( type !== this.localTypeOf(name) ) {
+      if( type !== this.typeOf(name) ) {
         setTimeout(function(){
           // This type is immutable, change it back!
-          Blockly.Variables.Local.changeType(name, Blockly.Variables.TYPE_INSTANCE, 
+          Blockly.Variables.changeType(name, Blockly.Variables.TYPE_INSTANCE, 
             Blockly.mainWorkspace);
         },1);
       }
@@ -313,7 +292,7 @@ Blockly.Blocks['kiwi_primitives_create_line_local'] = {
    * @param {string} newName Renamed variable.
    * @this Blockly.Block
    */
-  localRenameVar: function(oldName, newName) {
+  renameVar: function(oldName, newName) {
     if (Blockly.Names.equals(oldName, this.getFieldValue('VAR'))) {
       this.setFieldValue(newName, 'VAR');
     }
@@ -331,20 +310,20 @@ Blockly.Blocks['kiwi_primitives_create_line_local'] = {
       var xmlField = goog.dom.createDom('field', null, name);
       xmlField.setAttribute('name', 'VAR');
       var xmlBlock = goog.dom.createDom('block', null, xmlField);
-      xmlBlock.setAttribute('type', 'variables_local_get');
+      xmlBlock.setAttribute('type', 'variables_get');
       option.callback = Blockly.ContextMenu.callbackFactory(this, xmlBlock);
       options.push(option);
     }
   }
 };
 
-Blockly.Blocks['kiwi_primitives_create_star_local'] = {
+Blockly.Blocks['kiwi_primitives_create_star'] = {
   init: function() {
     this.setHelpUrl( Blockly.Msg.KF_PRIMITIVES_CREATE_STAR_HELPURL );
     this.setColour( Blockly.Variables.COLOUR.DRAW );
     this.appendDummyInput()
         .appendField( Blockly.Msg.KF_PRIMITIVES_CREATE_STAR_MESSAGE_ONE)
-        .appendField(new Blockly.FieldVariable('star', null, Blockly.FieldVariable.SCOPE.LOCAL), 'VAR');
+        .appendField(new Blockly.FieldVariable('star'), 'VAR');
     this.appendValueInput("RADIUS")
         .setCheck("Number")
         .appendField( Blockly.Msg.KF_PRIMITIVES_CREATE_STAR_MESSAGE_TWO );
@@ -363,7 +342,7 @@ Blockly.Blocks['kiwi_primitives_create_star_local'] = {
    * @return {!Array.<string>} List of variable names.
    * @this Blockly.Block
    */
-  localGetVars: function() {
+  getVars: function() {
     return [this.getFieldValue('VAR')];
   },
   /**
@@ -371,31 +350,24 @@ Blockly.Blocks['kiwi_primitives_create_star_local'] = {
    * @return {string}
    * @this Blockly.Block
    */
-  localTypeOf: function(name) {
+  typeOf: function(name) {
     if (Blockly.Names.equals(name, this.getFieldValue('VAR'))) {
       return Blockly.Variables.TYPE_INSTANCE;
     }
     else return undefined;
   },
   /**
-   * Indicates whether the variable used is immutable or not. 
-   * @return {boolean}
-   */
-  localIsImmutable: function() {
-    return true;
-  },
-  /**
    * Notfication that the workspace wants to change this variables type.
    * We can not change type! This is immutable.
    * @this Blockly.Block
    */
-  localChangeType: function(name, type) {
+  changeType: function(name, type) {
     if (Blockly.Names.equals(name, this.getFieldValue('VAR'))) {
       //Is the type different?
-      if( type !== this.localTypeOf(name) ) {
+      if( type !== this.typeOf(name) ) {
         setTimeout(function(){
           // This type is immutable, change it back!
-          Blockly.Variables.Local.changeType(name, Blockly.Variables.TYPE_INSTANCE, 
+          Blockly.Variables.changeType(name, Blockly.Variables.TYPE_INSTANCE, 
             Blockly.mainWorkspace);
         },1);
       }
@@ -408,7 +380,7 @@ Blockly.Blocks['kiwi_primitives_create_star_local'] = {
    * @param {string} newName Renamed variable.
    * @this Blockly.Block
    */
-  localRenameVar: function(oldName, newName) {
+  renameVar: function(oldName, newName) {
     if (Blockly.Names.equals(oldName, this.getFieldValue('VAR'))) {
       this.setFieldValue(newName, 'VAR');
     }
@@ -426,20 +398,20 @@ Blockly.Blocks['kiwi_primitives_create_star_local'] = {
       var xmlField = goog.dom.createDom('field', null, name);
       xmlField.setAttribute('name', 'VAR');
       var xmlBlock = goog.dom.createDom('block', null, xmlField);
-      xmlBlock.setAttribute('type', 'variables_local_get');
+      xmlBlock.setAttribute('type', 'variables_get');
       option.callback = Blockly.ContextMenu.callbackFactory(this, xmlBlock);
       options.push(option);
     }
   }
 };
 
-Blockly.Blocks['kiwi_primitives_create_polygon_local'] = {
+Blockly.Blocks['kiwi_primitives_create_polygon'] = {
   init: function() {
     this.setHelpUrl( Blockly.Msg.KF_PRIMITIVES_CREATE_POLYGON_HELPURL );
     this.setColour( Blockly.Variables.COLOUR.DRAW );
     this.appendDummyInput()
         .appendField( Blockly.Msg.KF_PRIMITIVES_CREATE_POLYGON_MESSAGE_ONE )
-        .appendField(new Blockly.FieldVariable('polygon', null, Blockly.FieldVariable.SCOPE.LOCAL), 'VAR');
+        .appendField(new Blockly.FieldVariable('polygon'), 'VAR');
     this.appendValueInput("RADIUS")
         .setCheck("Number")
         .appendField( Blockly.Msg.KF_PRIMITIVES_CREATE_POLYGON_MESSAGE_TWO );
@@ -458,7 +430,7 @@ Blockly.Blocks['kiwi_primitives_create_polygon_local'] = {
    * @return {!Array.<string>} List of variable names.
    * @this Blockly.Block
    */
-  localGetVars: function() {
+  getVars: function() {
     return [this.getFieldValue('VAR')];
   },
   /**
@@ -466,32 +438,24 @@ Blockly.Blocks['kiwi_primitives_create_polygon_local'] = {
    * @return {string}
    * @this Blockly.Block
    */
-  localTypeOf: function(name) {
+  typeOf: function(name) {
     if (Blockly.Names.equals(name, this.getFieldValue('VAR'))) {
       return Blockly.Variables.TYPE_INSTANCE;
     }
     else return undefined;
   },
   /**
-   * Indicates whether the variable used is immutable or not. 
-   * @return {boolean}
-   */
-  localIsImmutable: function() {
-    return true;
-  },
-  /**
    * Notfication that the workspace wants to change this variables type.
    * We can not change type! This is immutable.
    * @this Blockly.Block
    */
-  localChangeType: function(name, type) {
-    //If the name matches
+  changeType: function(name, type) {
     if (Blockly.Names.equals(name, this.getFieldValue('VAR'))) {
       //Is the type different?
-      if( type !== this.localTypeOf(name) ) {
+      if( type !== this.typeOf(name) ) {
         setTimeout(function(){
           // This type is immutable, change it back!
-          Blockly.Variables.Local.changeType(name, Blockly.Variables.TYPE_INSTANCE, 
+          Blockly.Variables.changeType(name, Blockly.Variables.TYPE_INSTANCE, 
             Blockly.mainWorkspace);
         },1);
       }
@@ -504,7 +468,7 @@ Blockly.Blocks['kiwi_primitives_create_polygon_local'] = {
    * @param {string} newName Renamed variable.
    * @this Blockly.Block
    */
-  localRenameVar: function(oldName, newName) {
+  renameVar: function(oldName, newName) {
     if (Blockly.Names.equals(oldName, this.getFieldValue('VAR'))) {
       this.setFieldValue(newName, 'VAR');
     }
@@ -522,7 +486,7 @@ Blockly.Blocks['kiwi_primitives_create_polygon_local'] = {
       var xmlField = goog.dom.createDom('field', null, name);
       xmlField.setAttribute('name', 'VAR');
       var xmlBlock = goog.dom.createDom('block', null, xmlField);
-      xmlBlock.setAttribute('type', 'variables_local_get');
+      xmlBlock.setAttribute('type', 'variables_get');
       option.callback = Blockly.ContextMenu.callbackFactory(this, xmlBlock);
       options.push(option);
     }
