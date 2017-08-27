@@ -320,16 +320,15 @@ Blockly.Variables.flyoutCategory = function(blocks, gaps, margin, workspace) {
     'getVars'
      );
 
-  generateCategory( 'Local' );
-
-  //Generate Local Variables 
-  generateBlocks( 
-    Blockly.Variables.Local.allVariables(workspace.targetWorkspace),
-    'variables_local_get',
-    'variables_local_set',
-    'localGetVars'
-     );
-
+  // Redirect user to the new home of local variables
+  var messageBlock = document.createElement( "block" );
+  messageBlock.setAttribute( "type", "kiwi_block_category" );
+  messageBlock.setAttribute(
+    "message", "Local variables are now listed under Functions" );
+  messageBlock = Blockly.Block.obtain(
+    workspace, "kiwi_block_category", messageBlock );
+  blocks.push( messageBlock );
+  messageBlock.initSvg();
 };
 
 /**
