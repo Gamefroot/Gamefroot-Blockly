@@ -519,24 +519,24 @@ Blockly.Kiwifroot['kiwi_primitives_create_polygon_local'] = function(block) {
     code += '\t"segments": ' + value_edges + ',\n';
     code += '\t"radius": ' + value_radius + '\n';
     code += '}, this.owner.parent, true);\n';
-  
+
   return code;
 };
 
 
-Blockly.Kiwifroot['kiwi_text_create'] = function(block) {
+Blockly.Kiwifroot['kiwi_text_create_local'] = function(block) {
 
   var value_text = Blockly.Kiwifroot.valueToCode( block, 'TEXT', Blockly.Kiwifroot.ORDER_ATOMIC ) || "''";
-  var variable0 = Blockly.Kiwifroot.variableDB_.getName( block.getFieldValue('VAR'), Blockly.Variables.NAME_TYPE );
+  var variable0 = Blockly.Kiwifroot.localVariableDB_.getName( block.getFieldValue('VAR'), Blockly.Variables.NAME_TYPE );
 
-  var code  = 'this.' + variable0 + ' = this.state.objects.create( {\n';
+  var code  = 'var ' + variable0 + ' = this.state.objects.create( {\n';
     code += '\t"type": "multiline-text",\n';
     code += '\t"x": 0,\n';
     code += '\t"y": 0,\n';
     code += '\t"maxWidth": Infinity,\n';
     code += '\t"text": ' + value_text.replace(/\\\\n/g, "\\n") + '\n';
     code += '}, this.owner.parent, true);\n';
-    
+
     return code;
 };
 

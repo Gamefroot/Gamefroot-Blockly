@@ -1350,7 +1350,7 @@
 
     <block type="kiwi_block_category" message="Text"></block>
 
-    <block type="kiwi_text_create_local">
+    <block type="kiwi_text_create">
       <value name="TEXT">
         <shadow type="text"></shadow>
       </value>
