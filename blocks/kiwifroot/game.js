@@ -139,3 +139,18 @@ Blockly.Blocks['kiwi_game_time_method'] = {
     this.setTooltip( Blockly.Msg.KF_GAME_TIME_METHOD_TOOLTIP );
   }
 };
+
+Blockly.Blocks['kiwi_game_goto_url'] = {
+    init:function(){
+        this.setHelpUrl(Blockly.Msg.KF_GAME_GOTO_URL_HELPURL);
+        this.setColour( Blockly.Variables.COLOUR.CONTROL );
+        this.appendDummyInput()
+            .appendField(Blockly.Msg.KF_GAME_GOTO_URL_MESSAGE);
+        this.appendValueInput("URL")
+            .setCheck("String");
+        this.setInputsInline(true);
+        this.setPreviousStatement(true);
+        this.setNextStatement(true);
+        this.setTooltip(Blockly.Msg.KF_GAME_GOTO_URL_TOOLTIP);
+    }
+};

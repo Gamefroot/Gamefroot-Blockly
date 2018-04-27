@@ -1391,6 +1391,12 @@ Blockly.Msg.KF_GAME_TIME_METHOD_HELPURL = '';
 Blockly.Msg.KF_GAME_TIME_METHOD_MESSAGE = 'time';
 /// tooltip -
 Blockly.Msg.KF_GAME_TIME_METHOD_TOOLTIP = 'Pauses or resumes the clock, thus pausing/resume gameplay.';
+/// url -
+Blockly.Msg.KF_GAME_GOTO_URL_HELPURL = '';
+/// Label -
+Blockly.Msg.KF_GAME_GOTO_URL_MESSAGE = 'go to URL';
+/// tooltip -
+Blockly.Msg.KF_GAME_GOTO_URL_TOOLTIP = 'Prompt the user to navigate to the specified URL.';
 
 /// Label for the kiwifroot self block
 Blockly.Msg.KF_INSTANCE_SELF_MESSAGE = 'myself';

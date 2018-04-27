@@ -100,8 +100,16 @@
 
   </category>
 
-  <category name="New" colour="#ff0000">
+  <category name="Featured" colour="#ff0000">
     <block type="kiwi_block_category" message="Check out recently added blocks!"></block>
+
+    <block type="kiwi_game_goto_url">
+      <value name="URL">
+        <shadow type="text">
+          <field name="TEXT">http://make.gamefroot.com/</field>
+        </shadow>
+      </value>
+    </block>
 
     <block type="kiwi_instance_center_anchor_point">
       <value name="INST">
@@ -121,34 +129,6 @@
         </shadow>
       </value>
     </block>
-
-    <block type="kiwi_mechanics_easing"></block>
-
-    <block type="kiwi_input_key_down">
-      <value name="KEY">
-        <shadow type="kiwi_key_special"></shadow>
-      </value>
-    </block>
-
-    <block type="kiwi_device_cocoon"></block>
-
-    <block type="kiwi_scratch_events_wait">
-      <value name="SECS">
-        <shadow type="math_number">
-          <field name="NUM">1</field>
-        </shadow>
-      </value>
-    </block>
-
-    <block type="kiwi_scratch_control_repeat_frames">
-      <value name="TIMES">
-        <shadow type="math_number">
-          <field name="NUM">10</field>
-        </shadow>
-      </value>
-    </block>
-
-    <block type="kiwi_scratch_control_forever_frames"></block>
 
     <block type="kiwi_scratch_motion_move_steps">
       <value name="STEPS">
@@ -194,6 +174,16 @@
         </shadow>
       </value>
     </block>
+
+    <block type="kiwi_mechanics_easing"></block>
+
+    <block type="kiwi_input_key_down">
+      <value name="KEY">
+        <shadow type="kiwi_key_special"></shadow>
+      </value>
+    </block>
+
+    <block type="kiwi_device_cocoon"></block>
 
   </category>
 
@@ -408,6 +398,15 @@
         </value>
       </block>
       <block type="kiwi_game_time_method"></block>
+
+    <block type="kiwi_block_category" message="Web Navigation"></block>
+    <block type="kiwi_game_goto_url">
+      <value name="URL">
+        <shadow type="text">
+          <field name="TEXT">http://make.gamefroot.com/</field>
+        </shadow>
+      </value>
+    </block>
 
     <block type="kiwi_block_category" message="Device"></block>
       <block type="kiwi_device_cocoon"></block>
