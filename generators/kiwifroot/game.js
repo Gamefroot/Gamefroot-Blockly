@@ -93,25 +93,3 @@ Blockly.Kiwifroot['kiwi_game_time_method'] = function(block) {
   var code = 'this.game.time.' + dropdown_method + '();\n';
   return code;
 };
-
-Blockly.Kiwifroot['kiwi_game_goto_url'] = function ( block ) {
-  var url = Blockly.Kiwifroot.valueToCode(
-      block,
-      'URL',
-      Blockly.Kiwifroot.ORDER_ATOMIC ) || '(null)';
-  var code = '';
-
-  code += '// Confirm that user wants to leave the site.\n';
-  code += 'if (\n';
-  code += '  ' + url + '.match( /^make\\.gamefroot\\.com\\//gi ) ||\n';
-  code += '  ' + url + '.match( /^http[s]?:\\/\\/make\\.gamefroot\\.com\\//gi ) ) {\n';
-  code += '  // Site is on Gamefroot, and we regard it as safe.\n';
-  code += '  window.location.assign( ' + url + ' );\n';
-  code += '} else if ( window.confirm(\n';
-  code += '  "You are about to leave Gamefroot and go to " + ' + url + ' ) ) {\n';
-  code += '  // Site is not on Gamefroot. We should confirm user intent.\n';
-  code += '  window.location.assign( ' + url + ' );\n';
-  code += '}\n';
-
-  return code;
-};
