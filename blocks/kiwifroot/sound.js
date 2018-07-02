@@ -136,27 +136,6 @@ Blockly.Blocks['kiwi_sound_get_mute'] = {
     }
 };
 
-
-Blockly.Blocks['kiwi_get_editor_sounds'] = {
-    init: function() {
-        this.setHelpUrl( Blockly.Msg.KF_SOUND_GET_EDITOR_HELPURL );
-        this.setColour( Blockly.Variables.COLOUR.SOUND );
-        this.appendDummyInput()
-            .appendField( Blockly.Msg.KF_SOUND_GET_EDITOR_MESSAGE )
-            .appendField(new Blockly.FieldDropdown(function(){
-                if ( typeof LevelEditor != "undefined" ){
-                    return LevelEditor.getGameSounds();
-                } else {
-                    return [
-                        ["Select", "none"]
-                    ]
-                }
-            }), "PROP");
-        this.setOutput(true, "Sound");
-        this.setTooltip( Blockly.Msg.KF_SOUND_GET_EDITOR_TOOLTIP  );
-    }
-};
-
 Blockly.Blocks['kiwi_sound_get_volume'] = {
     init: function() {
         this.setHelpUrl( Blockly.Msg.KF_SOUND_GET_VOLUME_HELPURL );

@@ -699,3 +699,22 @@ Blockly.Kiwifroot['procedures_callnoreturn'] = function(block) {
   var code = 'this.' + funcName + '(' + args.join(', ') + ');\n';
   return code;
 };
+
+
+// Deprecated because the block can mess up remixes.
+Blockly.Kiwifroot['kiwi_get_editor_sounds'] = function( block ){
+        var dropdownProp = block.getFieldValue("PROP");
+        console.log( dropdownProp );
+        var code = '{ id: 1, type: "sound", url: "http://google.com" }';
+        if ( typeof LevelEditor != "undefined" && dropdownProp != "none" ){
+            var script = LevelEditor.getGameSoundByID( dropdownProp );
+            code =  script.id;
+        }
+
+        if ( dropdownProp == "none" ){
+            code = null;
+        }
+
+        return [code, Blockly.Kiwifroot.ORDER_ATOMIC];
+
+};

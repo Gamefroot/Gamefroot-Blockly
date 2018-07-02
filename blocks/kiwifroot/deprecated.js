@@ -2122,3 +2122,27 @@ Blockly.Blocks['procedures_callreturn'] = {
   renameVar: Blockly.Blocks['procedures_callnoreturn'].renameVar,
   customContextMenu: Blockly.Blocks['procedures_callnoreturn'].customContextMenu
 };
+
+
+// Deprecated because the dropdown sets itself by value;
+// however, if you remix the game, the value changes,
+// and the whole script becomes uneditable.
+Blockly.Blocks['kiwi_get_editor_sounds'] = {
+    init: function() {
+        this.setHelpUrl( Blockly.Msg.KF_SOUND_GET_EDITOR_HELPURL );
+        this.setColour( Blockly.Variables.COLOUR.SOUND );
+        this.appendDummyInput()
+            .appendField( Blockly.Msg.KF_SOUND_GET_EDITOR_MESSAGE )
+            .appendField(new Blockly.FieldDropdown(function(){
+                if ( typeof LevelEditor != "undefined" ){
+                    return LevelEditor.getGameSounds();
+                } else {
+                    return [
+                        ["Select", "none"]
+                    ]
+                }
+            }), "PROP");
+        this.setOutput(true, "Sound");
+        this.setTooltip( Blockly.Msg.KF_SOUND_GET_EDITOR_TOOLTIP  );
+    }
+};

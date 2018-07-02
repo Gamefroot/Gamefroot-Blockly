@@ -73,23 +73,6 @@ Blockly.Kiwifroot['kiwi_sound_get_mute'] = function(block) {
 		return [code, Blockly.Kiwifroot.ORDER_ATOMIC];
 };
 
-Blockly.Kiwifroot['kiwi_get_editor_sounds'] = function( block ){
-        var dropdownProp = block.getFieldValue("PROP");
-        console.log( dropdownProp );
-        var code = '{ id: 1, type: "sound", url: "http://google.com" }';
-        if ( typeof LevelEditor != "undefined" && dropdownProp != "none" ){
-            var script = LevelEditor.getGameSoundByID( dropdownProp );
-            code =  script.id;
-        }
-
-        if ( dropdownProp == "none" ){
-            code = null;
-        }
-
-        return [code, Blockly.Kiwifroot.ORDER_ATOMIC];
-
-};
-
 Blockly.Kiwifroot['kiwi_sound_get_volume'] = function(block) {
   	// TODO: Assemble JavaScript into code variable.
   	var code = '(this.game.audio.volume * 100)';

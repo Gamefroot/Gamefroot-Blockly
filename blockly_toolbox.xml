@@ -1035,7 +1035,6 @@
     </block>
     <block type="kiwi_sound_get_volume"></block>
     <block type="kiwi_sound_get_mute"></block>
-    <block type="kiwi_get_editor_sounds"></block>
 
   </category>
 

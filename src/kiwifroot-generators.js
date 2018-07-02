@@ -22,3 +22,22 @@ Blockly.JavaScript[ 'kiwi_game_open_url' ] = function( block ) {
 
   return code;
 };
+
+
+// Override buggy definition.
+// The original version didn't check whether the `getGameSoundByID` call
+// returned structured data, and could crash the whole game on compile
+// if it was pointing at the wrong data - e.g. in a remix situation.
+Blockly.Kiwifroot[ "kiwi_get_editor_sounds" ] = function ( block ) {
+  var script;
+  var code = null;
+  var dropdownProp = block.getFieldValue( "PROP" );
+  if ( typeof LevelEditor !== "undefined" && dropdownProp !== "none" ) {
+    script = LevelEditor.getGameSoundByID( dropdownProp );
+    if ( script ) {
+      code =  script.id;
+    }
+  }
+
+  return [ code, Blockly.Kiwifroot.ORDER_ATOMIC ];
+};
