@@ -103,7 +103,7 @@
   <category name="Featured" colour="#ff0000">
     <block type="kiwi_block_category" message="Check out recently added blocks!"></block>
 
-    <block type="kiwi_game_goto_url">
+    <block type="kiwi_game_open_url">
       <value name="URL">
         <shadow type="text">
           <field name="TEXT">http://make.gamefroot.com/</field>
@@ -402,8 +402,8 @@
     <block type="kiwi_game_time_method"></block>
 
     <block type="kiwi_block_category" message="Web Navigation"></block>
-    
-    <block type="kiwi_game_goto_url">
+
+    <block type="kiwi_game_open_url">
       <value name="URL">
         <shadow type="text">
           <field name="TEXT">http://make.gamefroot.com/</field>

@@ -3,10 +3,10 @@ Blockly blocks for Gamefroot
 */
 
 
-Blockly.Blocks[ "kiwi_game_goto_url" ] = {
+Blockly.Blocks[ "kiwi_game_open_url" ] = {
   init: function() {
     this.jsonInit( {
-      "type": "kiwi_game_goto_url",
+      "type": "kiwi_game_open_url",
       "message0": "go to URL %1",
       "args0": [
         {
@@ -18,7 +18,7 @@ Blockly.Blocks[ "kiwi_game_goto_url" ] = {
       "previousStatement": null,
       "nextStatement": null,
       "colour": Blockly.Variables.COLOUR.CONTROL,
-      "tooltip": "Prompt the user to navigate to the specified URL. Be sure to specify a protocol, e.g. https://example.com.",
+      "tooltip": "Open the specified URL. If it is not a Gamefroot location, prompt the user to continue. Be sure to specify a protocol, e.g. https://example.com.",
       "helpUrl": ""
     } );
   }
