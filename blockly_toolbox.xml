@@ -103,6 +103,12 @@
   <category name="Featured" colour="#ff0000">
     <block type="kiwi_block_category" message="Check out recently added blocks!"></block>
 
+    <block type="kiwi_instance_exists">
+      <value name="INST">
+        <shadow type="kiwi_instance_self"></shadow>
+      </value>
+    </block>
+
     <block type="kiwi_game_open_url">
       <value name="URL">
         <shadow type="text">
@@ -827,6 +833,12 @@
   <category name="Sensing" colour="#8121e7">
 
     <block type="kiwi_instance_self"></block>
+
+    <block type="kiwi_instance_exists">
+      <value name="INST">
+        <shadow type="kiwi_instance_self"></shadow>
+      </value>
+    </block>
 
     <block type="kiwi_block_category" message="Mouse"></block>
       <block type="kiwi_input_mouse"></block>

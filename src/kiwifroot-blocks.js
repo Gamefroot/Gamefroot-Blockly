@@ -23,3 +23,23 @@ Blockly.Blocks[ "kiwi_game_open_url" ] = {
     } );
   }
 };
+
+// Does the instance exist?
+Blockly.Blocks[ "kiwi_instance_exists" ] = {
+  init: function() {
+    this.jsonInit({
+        "message0": "%1 exists",
+        "args0": [
+          {
+            "type": "input_value",
+            "name": "INST",
+            "check": [ "Instance" ],
+          }
+        ],
+        "output": "Boolean",
+        "colour": Blockly.Variables.COLOUR_BOOLEAN,
+        "tooltip": "Check if an instance has been destroyed. You may experience unusual results or errors if you try to operate on a destroyed instance.",
+        "helpUrl": "",
+    } );
+  }
+};

@@ -23,6 +23,14 @@ Blockly.JavaScript[ 'kiwi_game_open_url' ] = function( block ) {
   return code;
 };
 
+// Does the instance exist?
+Blockly.JavaScript[ "kiwi_instance_exists" ] = function( block ) {
+  var value_inst = Blockly.Kiwifroot.valueToCode(
+    block, 'INST', Blockly.Kiwifroot.ORDER_ATOMIC) || "(null)";
+  var code = "( " + value_inst + " && " + value_inst + ".exists )";
+  return [ code, Blockly.Kiwifroot.ORDER_ATOMIC ];
+};
+
 
 // Override buggy definition.
 // The original version didn't check whether the `getGameSoundByID` call
