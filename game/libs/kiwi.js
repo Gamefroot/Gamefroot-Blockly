@@ -1,251 +1,289 @@
 /**
-*
-* @module Kiwi
-*
-*/
+@module Kiwi
+**/
 var Kiwi;
 (function (Kiwi) {
     /**
-    * The base class that is used when you create a new Game. Handles the initialisation of all of the various individual game managers and holds the RAF (RequestAnimationFrame object) which is used for the game loop.
-    *
-    * @class Game
-    * @namespace Kiwi
-    * @constructor
-    * @param [domParent=''] {String} The ID of a DOM element that the game should use as its 'container'. If you are targeting Cocoon then you don't need to worry about this and can leave it blank.
-    * @param [name='KiwiGame'] {String} The name of the game that is being created.
-    * @param [state=null] {Any} The state to load initially. This can either be the name of a state, but preferably this would be the state object itself.
-    * @param [options] {Object} Any special options for the game. E.g. Is DEBUG_ON or DEBUG_OFF, RENDERER_CANVAS or RENDERER_WEBGL, TARGET_BROWSER or TARGET_COCOON
-    *   @param [options.debug=Kiwi.DEBUG_ON] {Number} If debugging is enabled or not.
-    *   @param [options.bootCallback=null] {Function} A callback to be executed when the game reaches the boot stage.
-    *   @param [options.deviceTarget=Kiwi.TARGET_BROWSER] {Number} The type of device Kiwi is being used on.
-    *   @param [options.renderer=Kiwi.RENDERER_AUTO] {Number} The renderer Kiwi should use.
-    *   @param [options.width=Kiwi.Stage.DEFAULT_WIDTH] {Number} The width of this instance of Kiwi.
-    *   @param [options.height=Kiwi.Stage.DEFAULT_HEIGHT] {Number} The height of this instance of Kiwi.
-    *   @param [options.scaleType=Kiwi.Stage.SCALE_NONE] {Number} The type of scaling that should be applied to Kiwi.
-    *   @param [options.plugins=[]] {Array} A list of the names of plugins that are to be used with this game.
-    *   @param [options.log] {Object} Default state of the Log properties
-    *       @param [options.log.recording=true] {Boolean} If the logs should be recorded.
-    *       @param [options.log.display=true] {Boolean} If the logs should be displayed or not.
-    *       @param [options.log.enabled=true] {Boolean} If the Logger is enabled at all.
-    *       @param [options.log.maxRecordings=Infinity] {Number} The maximum number of recordings to have at a single time.
-    * @return {Kiwi.Game}
-    *
-    */
+    The base class that is used when you create a new Game.
+    Handles the initialisation of all of the various individual game managers
+    and holds the RAF (RequestAnimationFrame object) used for the game loop.
+
+    @class Game
+    @namespace Kiwi
+    @constructor
+    @param [domParent=""] {string} ID of a DOM element that the game
+        should use as its `container`. If you are targeting Cocoon
+        then you don't need to worry about this and can leave it blank.
+    @param [name="KiwiGame"] {string} Name of the game that is being created
+    @param [state=null] {Any} State to load initially.
+        This is preferably the state object, but can be its string name.
+    @param [options] {object} Any special options for the game
+        @param [options.debug=Kiwi.DEBUG_ON] {number} Whether debugging
+            is enabled
+        @param [options.bootCallback=null] {function} Callback to be executed
+            when the game reaches the boot stage
+        @param [options.deviceTarget=Kiwi.TARGET_BROWSER] {number} Type of
+            device Kiwi is being used on. Values include `Kiwi.TARGET_BROWSER`
+            and `Kiwi.TARGET_COCOON`.
+        @param [options.renderer=Kiwi.RENDERER_AUTO] {number} Renderer Kiwi
+            should use. Values include `Kiwi.RENDERER_AUTO`, `Kiwi.RENDERER_CANVAS`, and `Kiwi.RENDERER_WEBGL`.
+        @param [options.width=Kiwi.Stage.DEFAULT_WIDTH] {number} Width of
+            this instance of Kiwi
+        @param [options.height=Kiwi.Stage.DEFAULT_HEIGHT] {number} Height of
+            this instance of Kiwi
+        @param [options.scaleType=Kiwi.Stage.SCALE_NONE] {number} Type of
+            scaling that should be applied to the game. See `Kiwi.Stage`.
+        @param [options.plugins=[]] {array} List of the names of plugins
+            that are to be used with this game
+        @param [options.log] {object} Default state of the Log properties
+            @param [options.log.recording=true] {boolean} Whether logs
+                should be recorded
+            @param [options.log.display=true] {boolean} Whether logs
+                should be displayed
+            @param [options.log.enabled=true] {boolean} Whether logger
+                is enabled at all
+            @param [options.log.maxRecordings=Infinity] {number} Maximum
+                number of recordings to have at a single time
+    **/
     var Game = (function () {
         function Game(domParent, name, state, options) {
             var _this = this;
-            if (domParent === void 0) { domParent = ''; }
-            if (name === void 0) { name = 'KiwiGame'; }
+            if (domParent === void 0) { domParent = ""; }
+            if (name === void 0) { name = "KiwiGame"; }
             if (state === void 0) { state = null; }
             if (options === void 0) { options = {}; }
             /**
-            * The object that peforms DOM and device startup operations for browsers (ie not cocoon)
-            * @property _startup
-            * @type Kiwi.System.Bootstrap
-            * @private
-            */
+            Performs DOM and device startup operations for browsers (not Cocoon)
+    
+            @property _startup
+            @type Kiwi.System.Bootstrap
+            @private
+            **/
             this._startup = null;
             /**
-            * The audio manager that handles all of the audio in game. Inside you can globally mute the audio, create new sounds, e.t.c.
-            * @property audio
-            * @type Kiwi.Sound.AudioManager
-            * @public
-            */
+            Audio manager that handles all of the audio in game.
+            Inside you can globally mute the audio, create new sounds, etc.
+    
+            @property audio
+            @type Kiwi.Sound.AudioManager
+            @public
+            **/
             this.audio = null;
             /**
-            * The global file store for this game. This handles the storage and access of information loaded, as well as tags that maybe set for them individual files.
-            * @property fileStore
-            * @type Kiwi.Files.FileStore
-            * @public
-            */
+            Global file store for this game. This handles the storage
+            and access of information loaded,
+            as well as tags that maybe set for them individual files.
+    
+            @property fileStore
+            @type Kiwi.Files.FileStore
+            @public
+            **/
             this.fileStore = null;
             /**
-            * Handles any user input with the game. These could via the users keyboard, mouse or touch events.
-            * @property input
-            * @type Kiwi.Input.InputManager
-            * @public
-            */
+            Handles user input with the game, e.g. keyboard, mouse or touch events
+    
+            @property input
+            @type Kiwi.Input.InputManager
+            @public
+            **/
             this.input = null;
             /**
-            * Manages the cameras the are on the stage. Single default Camera only in this version.
-            * @property cameras
-            * @type Kiwi.CameraManager
-            * @public
-            */
+            Manages the cameras the are on the stage
+    
+            @property cameras
+            @type Kiwi.CameraManager
+            @public
+            **/
             this.cameras = null;
             /**
-            * Manages plugins registration and initialisation for the game instance.
-            * @property pluginManager
-            * @type Kiwi.PluginManager
-            * @public
-            */
+            Manages plugins registration and initialisation for the game instance
+    
+            @property pluginManager
+            @type Kiwi.PluginManager
+            @public
+            **/
             this.pluginManager = null;
             /**
-            * Loads files from outside sources and checks to see that they have loaded correctly or not.
-            * @property loader
-            * @type Kiwi.Files.Loader
-            * @public
-            */
+            Loads files from outside sources
+            and checks to see that they have loaded correctly or not.
+    
+            @property loader
+            @type Kiwi.Files.Loader
+            @public
+            **/
             this.loader = null;
             /**
-            * The Request Animation Frame that is being used for the update and render loops.
-            * @property raf
-            * @type Kiwi.Utils.RequestAnimationFrame
-            * @public
-            */
+            `RequestAnimationFrame` used for the update and render loops
+    
+            @property raf
+            @type Kiwi.Utils.RequestAnimationFrame
+            @public
+            **/
             this.raf = null;
             /**
-            * The ONLY stage that is being used for this game.
-            * @property stage
-            * @type Stage
-            * @public
-            */
+            The ONLY stage that is being used for this game.
+    
+            @property stage
+            @type Stage
+            @public
+            **/
             this.stage = null;
             /**
-            * Manages all of the states that exist for this game. Via the manager you can create new states, switch states and do various other tasks.
-            * @property states
-            * @type Kiwi.StateManager
-            * @public
-            */
+            Manages all of the states that exist for this game.
+            Via the manager you can create new states,
+            switch states and do various other tasks.
+    
+            @property states
+            @type Kiwi.StateManager
+            @public
+            **/
             this.states = null;
             /**
-            * Holds a reference to the clocks that are being used and has a MASTER clock that is being used for the game.
-            * @property time
-            * @type Kiwi.Time.ClockManager
-            * @public
-            */
+            Holds a reference to the clocks that are being used
+            and has a `master` clock that is being used for the game.
+    
+            @property time
+            @type Kiwi.Time.ClockManager
+            @public
+            **/
             this.time = null;
             /**
-            * The tween manager holds a reference to all of the tweens that are created and currently being used.
-            * @property tweens
-            * @type Kiwi.Animations.Tweens.TweenManager
-            * @public
-            */
+            Tween manager used to create and run all global tweens
+    
+            @property tweens
+            @type Kiwi.Animations.Tweens.TweenManager
+            @public
+            **/
             this.tweens = null;
             /**
-            * A Random Data Generator. This is useful for create unique ids and random information.
-            * @property rnd
-            * @type Kiwi.Utils.RandomDataGenerato
-            * @public
-            */
+            Random Data Generator used to create unique ids and random information
+    
+            @property rnd
+            @type Kiwi.Utils.RandomDataGenerator
+            @public
+            **/
             this.rnd = null;
             /**
-            * The framerate at which the game will update at.
-            * @property _framerate
-            * @type Number
-            * @default 60
-            * @private
-            */
+            Framerate at which the game will update
+    
+            @property _framerate
+            @type number
+            @default 60
+            @private
+            **/
             this._frameRate = 60;
             /**
-            * The interval between frames.
-            * @property _interval
-            * @type Number
-            * @default 1000/60
-            * @private
-            */
+            Interval between frames in milliseconds
+    
+            @property _interval
+            @type number
+            @default 1000/60
+            @private
+            **/
             this._interval = 1000 / 60;
             /**
-            * The current interval between frames.
-            * @property _delta
-            * @type number
-            * @private
-            */
+            Current interval between frames
+    
+            @property _delta
+            @type number
+            @private
+            **/
             this._delta = 0;
             /**
-            * The number of frames since the game was launched.
-            * @property _frame
-            * @type number
-            * @private
-            * @since 1.1.0
-            */
+            Number of frames since the game was launched
+    
+            @property _frame
+            @type number
+            @private
+            @since 1.1.0
+            **/
             this._frame = 0;
             Kiwi.Log.setDefaultsFromParams(options.log);
-            Kiwi.Log.log('Kiwi.Game: ' + name + ' is booting using Kiwi.js ' + Kiwi.VERSION, '#version');
+            Kiwi.Log.log("Kiwi.Game: " + name + " is booting using Kiwi.js " + Kiwi.VERSION, "#version");
             if (Kiwi.DEVICE === null) {
                 Kiwi.DEVICE = new Kiwi.System.Device();
             }
-            if (options.debug !== 'undefined' && typeof options.debug === 'number') {
+            if (options.debug !== "undefined" && typeof options.debug === "number") {
                 switch (options.debug) {
                     case Kiwi.DEBUG_ON:
                         this._debugOption = options.debug;
-                        Kiwi.Log.log('  Kiwi.Game: Debugging turned ON.', '#debugging');
+                        Kiwi.Log.log("  Kiwi.Game: Debugging turned ON.", "#debugging");
                         break;
                     case Kiwi.DEBUG_OFF:
                         this._debugOption = options.debug;
-                        Kiwi.Log.log('  Kiwi.Game: Debugging turned OFF.', '#debugging');
+                        Kiwi.Log.log("  Kiwi.Game: Debugging turned OFF.", "#debugging");
                         break;
                     default:
                         this._debugOption = Kiwi.DEBUG_ON;
-                        Kiwi.Log.error('  Kiwi.Game: Debug option passed, but is not a valid option. Turned ON by default.', '#debugging');
+                        Kiwi.Log.error("  Kiwi.Game: Debug option passed, " + "but is not a valid option. " + "Turned ON by default.", "#debugging");
                         break;
                 }
             }
             else {
                 this._debugOption = Kiwi.DEBUG_ON;
-                Kiwi.Log.log('  Kiwi.Game: Debug option not specified. Turned ON by default.', '#debugging');
+                Kiwi.Log.log("  Kiwi.Game: Debug option not specified. " + "Turned ON by default.", "#debugging");
             }
-            if (options.bootCallback !== 'undefined') {
+            if (options.bootCallback !== "undefined") {
                 this.bootCallbackOption = options.bootCallback;
             }
-            //Which device are they targetting
-            if (options.deviceTarget !== 'undefined' && typeof options.deviceTarget === 'number') {
+            // Which device are they targetting
+            if (options.deviceTarget !== "undefined" && typeof options.deviceTarget === "number") {
                 switch (options.deviceTarget) {
                     case Kiwi.TARGET_BROWSER:
                         this._deviceTargetOption = options.deviceTarget;
-                        Kiwi.Log.log('  Kiwi.Game: Targeting BROWSERS.', '#target');
+                        Kiwi.Log.log("  Kiwi.Game: Targeting BROWSERS.", "#target");
                         break;
                     case Kiwi.TARGET_COCOON:
                         this._deviceTargetOption = options.deviceTarget;
-                        Kiwi.Log.log('  Kiwi.Game: Targeting COCOONJS.', '#target');
+                        Kiwi.Log.log("  Kiwi.Game: Targeting COCOONJS.", "#target");
                         break;
                     default:
                         this._deviceTargetOption = Kiwi.TARGET_BROWSER;
-                        Kiwi.Log.error('  Kiwi.Game: Target device specified, but is not a valid option. Defaulting to BROWSER.', '#target');
+                        Kiwi.Log.error("  Kiwi.Game: Target device specified, " + "but is not a valid option. " + "Defaulting to BROWSER.", "#target");
                         break;
                 }
             }
             else {
                 this._deviceTargetOption = Kiwi.TARGET_BROWSER;
-                Kiwi.Log.log('  Kiwi.Game: Targeted device not specified. Defaulting to BROWSER.', '#target');
+                Kiwi.Log.log("  Kiwi.Game: Targeted device not specified. " + "Defaulting to BROWSER.", "#target");
             }
             var renderDefault = Kiwi.RENDERER_WEBGL;
             var renderFallback = Kiwi.RENDERER_CANVAS;
             // Optimise renderer request
-            if (options.renderer !== 'undefined' && typeof options.renderer === 'number') {
+            if (options.renderer !== "undefined" && typeof options.renderer === "number") {
                 switch (options.renderer) {
                     case Kiwi.RENDERER_CANVAS:
                         this._renderOption = options.renderer;
-                        Kiwi.Log.log('  Kiwi.Game: Rendering using CANVAS.', '#renderer', '#canvas');
+                        Kiwi.Log.log("  Kiwi.Game: Rendering using CANVAS.", "#renderer", "#canvas");
                         break;
                     case Kiwi.RENDERER_WEBGL:
                         if (Kiwi.DEVICE.webGL) {
                             this._renderOption = options.renderer;
-                            Kiwi.Log.log('  Kiwi.Game: Rendering using WEBGL.', '#renderer', '#webgl');
+                            Kiwi.Log.log("  Kiwi.Game: Rendering using WEBGL.", "#renderer", "#webgl");
                         }
                         else {
                             this._renderOption = renderFallback;
-                            Kiwi.Log.log('  Kiwi.Game: WEBGL renderer requested but device does not support WEBGL. Rendering using CANVAS.', '#renderer', '#canvas');
+                            Kiwi.Log.log("  Kiwi.Game: WEBGL renderer requested " + "but device does not support WEBGL. " + "Rendering using CANVAS.", "#renderer", "#canvas");
                         }
                         break;
                     case Kiwi.RENDERER_AUTO:
                         if (Kiwi.DEVICE.webGL) {
                             this._renderOption = renderDefault;
-                            Kiwi.Log.log('  Kiwi.Game: Renderer auto-detected WEBGL.', '#renderer', '#webgl');
+                            Kiwi.Log.log("  Kiwi.Game: Renderer auto-detected WEBGL.", "#renderer", "#webgl");
                         }
                         else {
                             this._renderOption = renderFallback;
-                            Kiwi.Log.log('  Kiwi.Game: Renderer auto-detected CANVAS.', '#renderer', '#canvas');
+                            Kiwi.Log.log("  Kiwi.Game: Renderer auto-detected CANVAS.", "#renderer", "#canvas");
                         }
                         break;
                     default:
                         if (Kiwi.DEVICE.webGL) {
                             this._renderOption = renderDefault;
-                            Kiwi.Log.log('  Kiwi.Game: Renderer specified, but is not a valid option. Defaulting to WEBGL.', '#renderer', '#webgl');
+                            Kiwi.Log.log("  Kiwi.Game: Renderer specified, " + "but is not a valid option. " + "Defaulting to WEBGL.", "#renderer", "#webgl");
                         }
                         else {
                             this._renderOption = renderFallback;
-                            Kiwi.Log.log('  Kiwi.Game: Renderer specified, but is not a valid option. WEBGL renderer sought by default but device does not support WEBGL. Defaulting to CANVAS.', '#renderer', '#canvas');
+                            Kiwi.Log.log("  Kiwi.Game: Renderer specified, " + "but is not a valid option. " + "WEBGL renderer sought by default " + "but device does not support WEBGL. " + "Defaulting to CANVAS.", "#renderer", "#canvas");
                         }
                         break;
                 }
@@ -253,11 +291,11 @@ var Kiwi;
             else {
                 if (Kiwi.DEVICE.webGL) {
                     this._renderOption = renderDefault;
-                    Kiwi.Log.log('  Kiwi.Game: Renderer not specified. Defaulting to WEBGL.', '#renderer', '#webgl');
+                    Kiwi.Log.log("  Kiwi.Game: Renderer not specified. " + "Defaulting to WEBGL.", "#renderer", "#webgl");
                 }
                 else {
                     this._renderOption = renderFallback;
-                    Kiwi.Log.log('  Kiwi.Game: Renderer not specified. WEBGL renderer sought by default but device does not support WEBGL. Defaulting to CANVAS.', '#renderer', '#canvas');
+                    Kiwi.Log.log("  Kiwi.Game: Renderer not specified. " + "WEBGL renderer sought by default " + "but device does not support WEBGL. " + "Defaulting to CANVAS.", "#renderer", "#canvas");
                 }
             }
             this.id = Kiwi.GameManager.register(this);
@@ -268,69 +306,78 @@ var Kiwi;
             // Width / Height
             var width = Kiwi.Stage.DEFAULT_WIDTH;
             var height = Kiwi.Stage.DEFAULT_HEIGHT;
-            if (options.width !== 'undefined' && typeof options.width === 'number') {
+            if (options.width !== "undefined" && typeof options.width === "number") {
                 width = options.width;
             }
-            if (options.height !== 'undefined' && typeof options.height === 'number') {
+            if (options.height !== "undefined" && typeof options.height === "number") {
                 height = options.height;
             }
-            Kiwi.Log.log('  Kiwi.Game: Stage Dimensions: ' + width + 'x' + height, '#dimensions');
+            Kiwi.Log.log("  Kiwi.Game: Stage Dimensions: " + width + "x" + height, "#dimensions");
             if (!Kiwi.Utils.Common.isUndefined(options.scaleType)) {
                 switch (options.scaleType) {
                     case Kiwi.Stage.SCALE_FIT:
-                        Kiwi.Log.log('  Kiwi.Game: Stage scaling set to FIT.', '#scaling');
+                        Kiwi.Log.log("  Kiwi.Game: Stage scaling set to FIT.", "#scaling");
+                        break;
+                    case Kiwi.Stage.SCALE_FIT_INSIDE:
+                        Kiwi.Log.log("  Kiwi.Game: Stage scaling set to FIT_INSIDE.", "#scaling");
                         break;
                     case Kiwi.Stage.SCALE_STRETCH:
-                        Kiwi.Log.log('  Kiwi.Game: Stage scaling set to STRETCH.', '#scaling');
+                        Kiwi.Log.log("  Kiwi.Game: Stage scaling set to STRETCH.", "#scaling");
                         break;
                     case Kiwi.Stage.SCALE_NONE:
-                        Kiwi.Log.log('  Kiwi.Game: Stage scaling set to NONE.', '#scaling');
+                        Kiwi.Log.log("  Kiwi.Game: Stage scaling set to NONE.", "#scaling");
                         break;
                     default:
-                        Kiwi.Log.log('  Kiwi.Game: Stage specified, but is not a valid option. Set to NONE.', '#scaling');
+                        Kiwi.Log.log("  Kiwi.Game: Stage specified, " + "but is not a valid option. Set to NONE.", "#scaling");
                         options.scaleType = 0;
                         break;
                 }
             }
             else {
-                Kiwi.Log.log('  Kiwi.Game: Stage scaling not specified, defaulting to NONE.', '#scaling');
+                Kiwi.Log.log("  Kiwi.Game: Stage scaling not specified, " + "defaulting to NONE.", "#scaling");
                 options.scaleType = 0;
+            }
+            if (this._deviceTargetOption === Kiwi.TARGET_COCOON && options.scaleType === Kiwi.Stage.SCALE_FIT_INSIDE) {
+                // FIT_INSIDE is identical to FIT, so fall back to that.
+                options.scaleType = Kiwi.Stage.SCALE_FIT;
             }
             this.stage = new Kiwi.Stage(this, name, width, height, options.scaleType);
             this.renderer = null;
             this.cameras = new Kiwi.CameraManager(this);
-            if (this._deviceTargetOption !== Kiwi.TARGET_COCOON)
+            if (this._deviceTargetOption !== Kiwi.TARGET_COCOON) {
                 this.huds = new Kiwi.HUD.HUDManager(this);
+            }
             this.loader = new Kiwi.Files.Loader(this);
             this.states = new Kiwi.StateManager(this);
-            this.rnd = new Kiwi.Utils.RandomDataGenerator([Date.now.toString()]);
+            this.rnd = new Kiwi.Utils.RandomDataGenerator([Date.now().toString()]);
             this.time = new Kiwi.Time.ClockManager(this);
             this.tweens = new Kiwi.Animations.Tweens.TweenManager(this);
-            //  If we have a state then pass it to the StateManager
+            // If we have a state then pass it to the StateManager
             if (state !== null) {
                 this.states.addState(state, true);
             }
             else {
-                Kiwi.Log.log('  Kiwi.Game: Default State not passed.', '#state');
+                Kiwi.Log.log("  Kiwi.Game: Default State not passed.", "#state");
             }
             this.pluginManager = new Kiwi.PluginManager(this, options.plugins);
             if (this.deviceTargetOption === Kiwi.TARGET_BROWSER) {
                 this._startup.boot(domParent, function () { return _this._start(); });
             }
             else {
-                if (domParent !== '') {
-                    Kiwi.Log.log('  Kiwi.Game: Not Targetting a BROWSER. DOM Parent parameter ignored.', '#dom');
+                if (domParent !== "") {
+                    Kiwi.Log.log("  Kiwi.Game: Not Targetting a BROWSER. " + "DOM Parent parameter ignored.", "#dom");
                 }
                 this._start();
             }
         }
         Object.defineProperty(Game.prototype, "renderOption", {
             /**
-            * Returns the render mode of the game. This is READ ONLY and is decided once the game gets initialised.
-            * @property renderOption
-            * @type number
-            * @public
-            */
+            Render mode of the game, decided once the game initialises. READ ONLY.
+    
+            @property renderOption
+            @type number
+            @public
+            **/
             get: function () {
                 return this._renderOption;
             },
@@ -339,11 +386,13 @@ var Kiwi;
         });
         Object.defineProperty(Game.prototype, "deviceTargetOption", {
             /**
-            * Returns the device target option for the game. This is READ ONLY and is decided once the game gets initialised.
-            * @property deviceTargetOption
-            * @type number
-            * @public
-            */
+            Returns the device target option for the game.
+            This is READ ONLY and is decided once the game gets initialised.
+    
+            @property deviceTargetOption
+            @type number
+            @public
+            **/
             get: function () {
                 return this._deviceTargetOption;
             },
@@ -352,11 +401,12 @@ var Kiwi;
         });
         Object.defineProperty(Game.prototype, "debugOption", {
             /**
-            * Returns the debug option. This is READ ONLY and is decided once the game gets initialised.
-            * @property debugOption
-            * @type number
-            * @public
-            */
+            Debug option, decided once the game gets initialised. READ ONLY.
+    
+            @property debugOption
+            @type number
+            @public
+            **/
             get: function () {
                 return this._debugOption;
             },
@@ -365,38 +415,47 @@ var Kiwi;
         });
         Object.defineProperty(Game.prototype, "debug", {
             /**
-            * Returns true if debug option is set to Kiwi.DEBUG_ON
-            * @property debug
-            * @type boolean
-            * @public
-            */
+            Whether debug option is set to `Kiwi.DEBUG_ON`
+    
+            @property debug
+            @type boolean
+            @public
+            **/
             get: function () {
                 return this._debugOption === Kiwi.DEBUG_ON;
             },
             enumerable: true,
             configurable: true
         });
-        /**
-        * The type of object that the game is.
-        * @method objType
-        * @return {String} "Game"
-        * @public
-        */
         Game.prototype.objType = function () {
+            /**
+            Return the type of object that the game is.
+
+            @method objType
+            @return {string} "Game"
+            @public
+            **/
             return "Game";
         };
         Object.defineProperty(Game.prototype, "frame", {
             /**
-            * The number of frames since the game was launched.
-            *
-            * Use this to drive cyclic animations. You may manually reset it in a Kiwi.State.create() function to restart the count from 0.
-            *
-            * The largest exact integer value of a JavaScript number is 2^53, or 9007199254740992. At 60 frames per second, this will take 4,760,273 years to become inaccurate.
-            * @property frame
-            * @type number
-            * @public
-            * @since 1.1.0
-            */
+            Number of frames since the game was launched.
+    
+            Use this to drive cyclic animations.
+            However, `idealFrame` is a smoother alternative.
+    
+            You may manually reset it in a `Kiwi.State.create()` function
+            to restart the count from 0.
+    
+            The largest exact integer value of a JavaScript number is 2^53,
+            or 9007199254740992. At 60 frames per second,
+            this will take 4,760,273 years to become inaccurate.
+    
+            @property frame
+            @type number
+            @public
+            @since 1.1.0
+            **/
             get: function () {
                 return (this._frame);
             },
@@ -408,14 +467,17 @@ var Kiwi;
         });
         Object.defineProperty(Game.prototype, "idealFrame", {
             /**
-            * The number of ideal frames since the game was launched.
-            *
-            * Use this to drive cyclic animations. This will be smoother than using the frame parameter. It is derived from the total time elapsed since the game launched.
-            * @property idealFrame
-            * @type number
-            * @public
-            * @since 1.1.0
-            */
+            Number of ideal frames since the game was launched.
+    
+            Use this to drive cyclic animations.
+            This will be smoother than using the frame parameter.
+            It is derived from the total time elapsed since the game launched.
+    
+            @property idealFrame
+            @type number
+            @public
+            @since 1.1.0
+            **/
             get: function () {
                 return (this.time.elapsed() / (1000 / this._frameRate));
             },
@@ -424,11 +486,13 @@ var Kiwi;
         });
         Object.defineProperty(Game.prototype, "frameRate", {
             /**
-            * The current frameRate that the update/render loops are running at. Note that this may not be an  accurate representation.
-            * @property frameRate
-            * @return string
-            * @public
-            */
+            The current frameRate that the update/render loops are running at.
+            Note that this may not be an  accurate representation.
+    
+            @property frameRate
+            @return string
+            @public
+            **/
             get: function () {
                 return this._frameRate;
             },
@@ -442,24 +506,29 @@ var Kiwi;
             enumerable: true,
             configurable: true
         });
-        /**
-        * The start method gets executed when the game is ready to be booted, and handles the start-up of the managers.
-        * Once the managers have started up the start loop will then begin to create the game loop.
-        * @method start
-        * @private
-        */
         Game.prototype._start = function () {
+            /**
+            Handle start-up of the managers when the game is ready to boot.
+            Once the managers have started up, create the game loop.
+
+            @method _start
+            @private
+            **/
             var _this = this;
             this.stage.boot(this._startup);
-            if (!this.stage.renderer)
-                Kiwi.Log.error("  Kiwi.Game: Could not create rendering context", '#renderer');
-            if (this._renderOption === Kiwi.RENDERER_WEBGL && this.stage.ctx)
-                this._renderOption = Kiwi.RENDERER_CANVAS; // Adapt to fallback if WebGL failed
+            if (!this.stage.renderer) {
+                Kiwi.Log.error("  Kiwi.Game: Could not create rendering context", "#renderer");
+            }
+            if (this._renderOption === Kiwi.RENDERER_WEBGL && this.stage.ctx) {
+                // Adapt to fallback if WebGL failed
+                this._renderOption = Kiwi.RENDERER_CANVAS;
+            }
             this.renderer = this.stage.renderer;
             this.renderer.boot();
             this.cameras.boot();
-            if (this._deviceTargetOption !== Kiwi.TARGET_COCOON)
+            if (this._deviceTargetOption !== Kiwi.TARGET_COCOON) {
                 this.huds.boot();
+            }
             this.time.boot();
             this.input.boot();
             this.audio.boot();
@@ -471,16 +540,17 @@ var Kiwi;
             this.raf = new Kiwi.Utils.RequestAnimationFrame(function () { return _this._loop(); });
             this.raf.start();
             if (this.bootCallbackOption) {
-                Kiwi.Log.log("  Kiwi.Game: invoked boot callback", '#boot');
+                Kiwi.Log.log("  Kiwi.Game: invoked boot callback", "#boot");
                 this.bootCallbackOption(this);
             }
         };
-        /**
-        * The game loop.
-        * @method _loop
-        * @private
-        */
         Game.prototype._loop = function () {
+            /**
+            Execute the game loop.
+
+            @method _loop
+            @private
+            **/
             // Only update non-graphical game systems if a full frame
             // has passed
             this._delta = this.raf.currentTime - this._lastTime;
@@ -506,67 +576,81 @@ var Kiwi;
                 this.states.postRender();
             }
         };
+        Game.prototype.restart = function () {
+            /**
+            Restart the game. Useful if the renderer has crashed.
+
+            @method restart
+            @public
+            @since 1.5.0
+            **/
+            this.stage.flushElements();
+            this._start();
+        };
         return Game;
     })();
     Kiwi.Game = Game;
 })(Kiwi || (Kiwi = {}));
 /**
-*
-* @module Kiwi
-*
-*/
+
+@module Kiwi
+
+**/
 var Kiwi;
 (function (Kiwi) {
-    /**
-    * Each game contains a single Stage which controls the creation and
-    * management of main domElements required for a Kiwi game to work.
-    * This includes the Canvas and the rendering contexts,
-    * as well as the width/height of the game and the position it should be
-    * on the screen.
-    *
-    * @class Stage
-    * @namespace Kiwi
-    * @constructor
-    * @param game {Kiwi.Game} The game that this Stage belongs to.
-    * @param name {String} The name of the kiwi game.
-    * @param width {Number} The initial width of the game.
-    * @param height {Number} The initial heihgt of the game.
-    * @param scaleType {Number} The scale method that should be used for the game.
-    * @return {Kiwi.Stage}
-    *
-    */
     var Stage = (function () {
+        /**
+        Each game contains a single Stage which controls the creation and
+        management of main domElements required for a Kiwi game to work.
+        This includes the Canvas and the rendering contexts,
+        as well as the width/height of the game and the position it should be
+        on the screen.
+
+        @class Stage
+        @namespace Kiwi
+        @constructor
+        @param game {Kiwi.Game} Game that this Stage belongs to
+        @param name {string} Name of the kiwi game
+        @param width {number} Initial width of the game
+        @param height {number} Initial height of the game
+        @param scaleType {number} Scale method to use. May be
+            `Kiwi.Stage.SCALE_NONE`, `Kiwi.Stage.SCALE_STRETCH`,
+            `Kiwi.Stage.SCALE_FIT`, or `Kiwi.Stage.SCALE_FIT_INSIDE`.
+        @return {Kiwi.Stage}
+        **/
         function Stage(game, name, width, height, scaleType) {
             /**
-            * Private property that holds the scaling method that should be
-            * applied to the container element.
-            * @property _scaleType
-            * @type number
-            * @default Kiwi.Stage.SCALE_NONE
-            * @private
-            */
+            Scaling method that should be applied to the container element
+    
+            @property _scaleType
+            @type number
+            @default Kiwi.Stage.SCALE_NONE
+            @private
+            **/
             this._scaleType = Kiwi.Stage.SCALE_NONE;
             /**
-            * A point which determines the offset of this Stage
-            * @property offset
-            * @type Kiwi.Geom.Point
-            * @public
-            */
+            Geometric `Point` which determines the offset of this `Stage`
+    
+            @property offset
+            @type Kiwi.Geom.Point
+            @public
+            **/
             this.offset = new Kiwi.Geom.Point();
             /**
-            * The background color of the stage.
-            *
-            * @property _color
-            * @type Kiwi.Utils.Color
-            * @public
-            */
+            Background color of the stage
+    
+            @property _color
+            @type Kiwi.Utils.Color
+            @public
+            **/
             this._color = new Kiwi.Utils.Color();
             /**
-            * The parent div in which the layers and input live
-            * @property container
-            * @type HTMLDivElement
-            * @public
-            */
+            Parent div in which the layers and input live
+    
+            @property container
+            @type HTMLDivElement
+            @public
+            **/
             this.container = null;
             this._game = game;
             this.name = name;
@@ -589,15 +673,18 @@ var Kiwi;
             this.onFocus = new Kiwi.Signal();
             this.onBlur = new Kiwi.Signal();
             this.onVisibilityChange = new Kiwi.Signal();
+            this.onRendererCrash = new Kiwi.Signal();
+            this._onFlushElements = new Kiwi.Signal();
             this._renderer = null;
         }
-        /**
-        * Returns the type of this object.
-        * @method objType
-        * @return {string} "Stage"
-        * @public
-        */
         Stage.prototype.objType = function () {
+            /**
+            Return the type of this object.
+
+            @method objType
+            @return {string} "Stage"
+            @public
+            **/
             return "Stage";
         };
         Object.defineProperty(Stage.prototype, "scaleType", {
@@ -605,12 +692,13 @@ var Kiwi;
                 return this._scaleType;
             },
             /**
-            * Holds type of scaling that should be applied the container element.
-            * @property scaleType
-            * @type number
-            * @default Kiwi.Stage.SCALE_NONE
-            * @public
-            */
+            Type of scaling that should be applied the container element.
+    
+            @property scaleType
+            @type number
+            @default Kiwi.Stage.SCALE_NONE
+            @public
+            **/
             set: function (val) {
                 this._scaleType = val;
                 this._scaleContainer();
@@ -620,16 +708,16 @@ var Kiwi;
         });
         Object.defineProperty(Stage.prototype, "alpha", {
             /**
-            * Sets the alpha of the container element.
-            * 0 = invisible, 1 = fully visible.
-            * Note: Because the alpha value is applied to the container,
-            * it will not work in CocoonJS.
-            *
-            * @property alpha
-            * @type number
-            * @default 1
-            * @public
-            */
+            Alpha of the container element.
+            0 = invisible, 1 = fully visible.
+            Note: Because the alpha value is applied to the container,
+            it will not work in CocoonJS.
+    
+            @property alpha
+            @type number
+            @default 1
+            @public
+            **/
             get: function () {
                 return this._alpha;
             },
@@ -645,12 +733,13 @@ var Kiwi;
         });
         Object.defineProperty(Stage.prototype, "x", {
             /**
-            * The X coordinate of the stage. This number should be the same
-            * as the stage's `left` property.
-            * @property x
-            * @type number
-            * @public
-            */
+            Horizontal coordinate of the stage. This number should be the same
+            as the stage's `left` property.
+    
+            @property x
+            @type number
+            @public
+            **/
             get: function () {
                 return this._x;
             },
@@ -668,12 +757,13 @@ var Kiwi;
         });
         Object.defineProperty(Stage.prototype, "y", {
             /**
-            * Get the Y coordinate of the stage. This number should be the same
-            * as the stage's `top` property.
-            * @property y
-            * @type number
-            * @public
-            */
+            Vertical coordinate of the stage. This number should be the same
+            as the stage's `top` property.
+    
+            @property y
+            @type number
+            @public
+            **/
             get: function () {
                 return this._y;
             },
@@ -691,13 +781,14 @@ var Kiwi;
         });
         Object.defineProperty(Stage.prototype, "width", {
             /**
-            * The width of the stage. This is READ ONLY.
-            * See the "resize" method if you need to modify this value.
-            * @property width
-            * @type number
-            * @public
-            * @readonly
-            */
+            Width of the stage. This is READ ONLY.
+            See the "resize" method if you need to modify this value.
+    
+            @property width
+            @type number
+            @public
+            @readonly
+            **/
             get: function () {
                 return this._width;
             },
@@ -706,13 +797,14 @@ var Kiwi;
         });
         Object.defineProperty(Stage.prototype, "height", {
             /**
-            * The height of the stage. This is READ ONLY.
-            * See the `resize` method if you need to modify this value.
-            * @property height
-            * @type number
-            * @public
-            * @readonly
-            */
+            Height of the stage. This is READ ONLY.
+            See the `resize` method if you need to modify this value.
+    
+            @property height
+            @type number
+            @public
+            @readonly
+            **/
             get: function () {
                 return this._height;
             },
@@ -720,6 +812,18 @@ var Kiwi;
             configurable: true
         });
         Object.defineProperty(Stage.prototype, "scale", {
+            /**
+            Amount that the container has been scaled by.
+            Mainly used for re-calculating input coordinates.
+    
+            Note: For COCOONJS this returns 1 since COCOONJS translates the
+            scale itself. This property is READ ONLY.
+    
+            @property scale
+            @type Kiwi.Geom.Point
+            @default 1
+            @public
+            **/
             get: function () {
                 return this._scale;
             },
@@ -728,13 +832,13 @@ var Kiwi;
         });
         Object.defineProperty(Stage.prototype, "scaleX", {
             /**
-            * Calculates and returns the amount that the container has been scaled
-            * by on the X axis.
-            * @property scaleX
-            * @type Number
-            * @default 1
-            * @public
-            */
+            Amount that the container has been scaled by on the X axis
+    
+            @property scaleX
+            @type Number
+            @default 1
+            @public
+            **/
             get: function () {
                 return this._scale.x;
             },
@@ -743,13 +847,13 @@ var Kiwi;
         });
         Object.defineProperty(Stage.prototype, "scaleY", {
             /**
-            * Calculates and returns the amount that the container has been scaled
-            * by on the Y axis.
-            * @property scaleY
-            * @type Number
-            * @default 1
-            * @public
-            */
+            Amount that the container has been scaled by on the Y axis
+    
+            @property scaleY
+            @type Number
+            @default 1
+            @public
+            **/
             get: function () {
                 return this._scale.y;
             },
@@ -758,24 +862,24 @@ var Kiwi;
         });
         Object.defineProperty(Stage.prototype, "color", {
             /**
-            * Sets the background color of the stage.
-            *
-            * This can be any valid parameter for Kiwi.Utils.Color.
-            * If passing multiple parameters, do so in a single array.
-            *
-            * The default value is "ffffff" or pure white.
-            *
-            * Note for users of CocoonJS: When using the WebGL renderer,
-            * the stage color will fill all parts of the screen outside the canvas.
-            * Kiwi.js will automatically set the color to "000000" or pure black
-            * when using CocoonJS. If you change it, and your game does not fill
-            * the entire screen, the empty portions of the screen will also change
-            * color.
-            *
-            * @property color
-            * @type string
-            * @public
-            */
+            Background color of the stage.
+    
+            This can be any valid parameter for Kiwi.Utils.Color.
+            If passing multiple parameters, do so in a single array.
+    
+            The default value is "ffffff" or pure white.
+    
+            Note for users of CocoonJS: When using the WebGL renderer,
+            the stage color will fill all parts of the screen outside the canvas.
+            Kiwi.js will automatically set the color to "000000" or pure black
+            when using CocoonJS. If you change it, and your game does not fill
+            the entire screen, the empty portions of the screen will also change
+            color.
+    
+            @property color
+            @type string
+            @public
+            **/
             get: function () {
                 return this._color.getHex();
             },
@@ -790,18 +894,23 @@ var Kiwi;
         });
         Object.defineProperty(Stage.prototype, "rgbColor", {
             /**
-            * Allows the setting of the background color of the stage through
-            * component RGB colour values.
-            *
-            * This property is an Object Literal with "r", "g", "b" colour streams
-            * of values between 0 and 255.
-            *
-            * @property rgbColor
-            * @type Object
-            * @public
-            */
+            Allows the setting of the background color of the stage through
+            component RGB colour values.
+    
+            This property returns an Object literal
+            with "r", "g", "b" colour streams of values between 0 and 255.
+            You must assign it to this object for it to take effect.
+    
+            @property rgbColor
+            @type Object
+            @public
+            **/
             get: function () {
-                return { r: this._color.r * 255, g: this._color.g * 255, b: this._color.b * 255 };
+                return {
+                    r: this._color.r * 255,
+                    g: this._color.g * 255,
+                    b: this._color.b * 255
+                };
             },
             set: function (val) {
                 this._color.r255 = val.r;
@@ -813,22 +922,28 @@ var Kiwi;
         });
         Object.defineProperty(Stage.prototype, "rgbaColor", {
             /**
-            * Allows the setting of the background color of the stage through
-            * component RGBA colour values.
-            *
-            * This property is an Object Literal with "r", "g", "b", "a" colour
-            * streams of values between 0 and 255.
-            *
-            * Note that the alpha value is from 0-255, not 0-1. This is to
-            * preserve compatibility with hex-style color values, e.g. "ff0000ff".
-            *
-            * @property rgbaColor
-            * @type Object
-            * @public
-            * @since 1.1.0
-            */
+            Allows the setting of the background color of the stage through
+            component RGBA colour values.
+    
+            This property returns an Object literal
+            with "r", "g", "b" colour streams of values between 0 and 255.
+            You must assign it to this object for it to take effect.
+    
+            Note that the alpha value is from 0-255, not 0-1. This is to
+            preserve compatibility with hex-style color values, e.g. "ff0000ff".
+    
+            @property rgbaColor
+            @type Object
+            @public
+            @since 1.1.0
+            **/
             get: function () {
-                return { r: this._color.r * 255, g: this._color.g * 255, b: this._color.b * 255, a: this._color.a * 255 };
+                return {
+                    r: this._color.r * 255,
+                    g: this._color.g * 255,
+                    b: this._color.b * 255,
+                    a: this._color.a * 255
+                };
             },
             set: function (val) {
                 this._color.r255 = val.r;
@@ -841,13 +956,14 @@ var Kiwi;
         });
         Object.defineProperty(Stage.prototype, "normalizedColor", {
             /**
-            * Get the normalized background color of the stage.
-            * Returns an object with rgba values, each being between 0 and 1.
-            * This is READ ONLY.
-            * @property normalizedColor
-            * @type string
-            * @public
-            */
+            Get the normalized background color of the stage.
+            Returns an object with rgba values, each being between 0 and 1.
+            This is READ ONLY.
+    
+            @property normalizedColor
+            @type string
+            @public
+            **/
             get: function () {
                 return {
                     r: this._color.r,
@@ -861,30 +977,33 @@ var Kiwi;
         });
         Object.defineProperty(Stage.prototype, "renderer", {
             /**
-            * Get the renderer associated with the canvas context.
-            * This is either a GLRenderManager or a CanvasRenderer.
-            * If the Kiwi.RENDERER_WEBGL renderer was requested
-            * but could not be created, it will fall back to CanvasRenderer.
-            * This is READ ONLY.
-            * @property renderer
-            * @type number
-            * @public
-            * @since 1.1.0
-            */
+            Renderer associated with the canvas context.
+            This is either a `GLRenderManager` or a `CanvasRenderer`.
+            If the Kiwi.RENDERER_WEBGL renderer was requested
+            but could not be created, it will fall back to CanvasRenderer.
+            This is READ ONLY.
+    
+            @property renderer
+            @type number
+            @public
+            @since 1.1.0
+            **/
             get: function () {
                 return this._renderer;
             },
             enumerable: true,
             configurable: true
         });
-        /**
-        * Is executed when the DOM has loaded and the game is just starting.
-        * This is a internal method used by the core of Kiwi itself.
-        * @method boot
-        * @param dom {HTMLElement} The
-        * @public
-        */
         Stage.prototype.boot = function (dom) {
+            /**
+            Execute when the DOM has loaded and the game is just starting.
+            This is an internal method used by the core of Kiwi itself.
+
+            @method boot
+            @param dom {Kiwi.System.Bootstrap} Booted `Bootstrap` containing
+                DOM information
+            @public
+            **/
             var _this = this;
             var self = this;
             this.domReady = true;
@@ -893,32 +1012,37 @@ var Kiwi;
                 this.offset = this.getOffsetPoint(this.container);
                 this._x = this.offset.x;
                 this._y = this.offset.y;
-                window.addEventListener("resize", function (event) { return _this._windowResized(event); }, true);
+                var onWindowResized = function (event) { return _this._windowResized(event); };
+                window.addEventListener("resize", onWindowResized, true);
+                this._onFlushElements.addOnce(function () { return window.removeEventListener("resize", onWindowResized, true); });
                 this._createFocusEvents();
             }
             this._createCompositeCanvas();
             if (this._game.deviceTargetOption === Kiwi.TARGET_COCOON) {
                 this._scaleContainer();
+                var onOrientationChange = function (event) { return _this._orientationChanged(event); };
                 // Detect reorientation/resize
-                window.addEventListener("orientationchange", function (event) {
-                    return self._orientationChanged(event);
-                }, true);
+                window.addEventListener("orientationchange", onOrientationChange, true);
+                this._onFlushElements.addOnce(function () { return window.removeEventListener("orientationchange", onOrientationChange, true); });
             }
             else {
                 this._calculateContainerScale();
             }
         };
-        /**
-        * Gets the x/y coordinate offset of any given valid DOM Element
-        * from the top/left position of the browser
-        * Based on jQuery offset https://github.com/jquery/jquery/blob/master/src/offset.js
-        * @method getOffsetPoint
-        * @param {Any} element
-        * @param {Kiwi.Geom.Point} output
-        * @return {Kiwi.Geom.Point}
-        * @public
-        */
         Stage.prototype.getOffsetPoint = function (element, output) {
+            /**
+            Get the x/y coordinate offset of any given valid DOM Element
+            from the top/left position of the browser.
+
+            Based on jQuery offset
+            https://github.com/jquery/jquery/blob/master/src/offset.js
+
+            @method getOffsetPoint
+            @param element {Any} DOM element to assess
+            @param [output] {Kiwi.Geom.Point} Point to store output
+            @return {Kiwi.Geom.Point} Point containing output x/y coordinates
+            @public
+            **/
             if (output === void 0) { output = new Kiwi.Geom.Point; }
             var box = element.getBoundingClientRect();
             var clientTop = element.clientTop || document.body.clientTop || 0;
@@ -927,33 +1051,36 @@ var Kiwi;
             var scrollLeft = window.pageXOffset || element.scrollLeft || document.body.scrollLeft;
             return output.setTo(box.left + scrollLeft - clientLeft, box.top + scrollTop - clientTop);
         };
-        /**
-        * Method that is fired when the window is resized.
-        * @method _windowResized
-        * @param event {UIEvent}
-        * @private
-        */
         Stage.prototype._windowResized = function (event) {
+            /**
+            Fire when the window is resized.
+
+            @method _windowResized
+            @param event {UIEvent}
+            @private
+            **/
             this._calculateContainerScale();
             // Dispatch window resize event
             this.onWindowResize.dispatch();
         };
-        /**
-        * Method that is fired when the device is reoriented.
-        * @method _orientationChanged
-        * @param event {UIEvent}
-        * @private
-        * @since 1.1.1
-        */
         Stage.prototype._orientationChanged = function (event) {
+            /**
+            Fire when the device is reoriented.
+
+            @method _orientationChanged
+            @param event {UIEvent}
+            @private
+            @since 1.1.1
+            **/
             this.onResize.dispatch(window.innerWidth, window.innerHeight);
         };
-        /**
-        * Used to calculate new offset and scale for the stage.
-        * @method _calculateContainerScale
-        * @private
-        */
         Stage.prototype._calculateContainerScale = function () {
+            /**
+            Calculate new offset and scale for the stage.
+
+            @method _calculateContainerScale
+            @private
+            **/
             // Calculate the scale twice
             // This will give the correct scale upon completion the second run
             // Temporary fix until the Scale Manager is implemented
@@ -963,20 +1090,21 @@ var Kiwi;
             this._scale.x = this._width / this.container.clientWidth;
             this._scale.y = this._height / this.container.clientHeight;
         };
-        /**
-        * Handles the creation of the canvas that the game will use and
-        * retrieves the context for the renderer.
-        *
-        * @method _createCompositeCanvas
-        * @private
-        */
         Stage.prototype._createCompositeCanvas = function () {
-            // If we are using cocoon then create a accelerated screen canvas
+            /**
+            Handle creation of the canvas that the game will use,
+            and retrieve the context for the renderer.
+
+            @method _createCompositeCanvas
+            @private
+            **/
+            // Create canvas
+            this.canvas = document.createElement("canvas");
+            // If we are using CocoonJS, create an accelerated screen canvas
             if (this._game.deviceTargetOption == Kiwi.TARGET_COCOON) {
-                this.canvas = document.createElement(navigator["isCocoonJS"] ? "screencanvas" : "canvas");
+                this.canvas.screencanvas = true;
             }
             else {
-                this.canvas = document.createElement("canvas");
                 this.canvas.style.width = "100%";
                 this.canvas.style.height = "100%";
             }
@@ -992,18 +1120,19 @@ var Kiwi;
                 this.gl = null;
             }
             else if (this._game.renderOption === Kiwi.RENDERER_WEBGL) {
-                this.gl = this.canvas.getContext("webgl");
+                this.gl = this.canvas.getContext("webgl2");
                 if (!this.gl) {
-                    this.gl = this.canvas.getContext("experimental-webgl");
+                    Kiwi.Log.warn("Kiwi.Stage: `webgl2` context not available. " + "Using `webgl`. #renderer");
+                    this.gl = this.canvas.getContext("webgl");
                     if (!this.gl) {
-                        Kiwi.Log.warn("Kiwi.Stage: WebGL rendering is not available despite the device apparently supporting it. Reverting to CANVAS.", "#renderer");
-                        // Reset to canvas mode
-                        this.ctx = this.canvas.getContext("2d");
-                        this.ctx.fillStyle = "#fff";
-                        this.gl = null;
-                    }
-                    else {
-                        Kiwi.Log.warn("Kiwi.Stage: 'webgl' context is not available. Using 'experimental-webgl'", "#renderer");
+                        Kiwi.Log.warn("Kiwi.Stage: `webgl` context is not available. " + "Using `experimental-webgl`. #renderer");
+                        this.gl = this.canvas.getContext("experimental-webgl");
+                        if (!this.gl) {
+                            Kiwi.Log.warn("Kiwi.Stage: WebGL rendering is not available " + "despite the device apparently supporting it. " + "Reverting to CANVAS. #renderer");
+                            this.ctx = this.canvas.getContext("2d");
+                            this.ctx.fillStyle = "#fff";
+                            this.gl = null;
+                        }
                     }
                 }
                 if (this.gl) {
@@ -1011,9 +1140,11 @@ var Kiwi;
                     this.gl.clearColor(1, 1, 1, 1);
                     this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
                     this.ctx = null;
+                    // Listen for loss of rendering context.
+                    this.canvas.addEventListener("webglcontextlost", this.handleGlCrash.bind(this));
                 }
             }
-            // Create render manager
+            // Create render manager.
             // This is reported back to the Kiwi.Game that created the Stage.
             if (this.ctx) {
                 this._renderer = new Kiwi.Renderers.CanvasRenderer(this._game);
@@ -1028,16 +1159,73 @@ var Kiwi;
                 document.body.appendChild(this.canvas);
             }
         };
-        /**
-        * Set the stage width and height for rendering purposes.
-        * This will not effect that "scaleType" that it has been set to.
-        *
-        * @method resize
-        * @param width {number} The new Stage width.
-        * @param height {number} The new Stage height.
-        * @public
-        */
+        Stage.prototype.flushElements = function () {
+            /**
+            Eliminate DOM elements created as part of the stage.
+            This is usually invoked to tidy the game state
+            in preparation for a game restart.
+
+            @method flushElements
+            @public
+            @since 1.5.0
+            **/
+            // Remove event listeners.
+            this._onFlushElements.dispatch();
+            var child = this.container.firstChild;
+            while (child) {
+                this.container.removeChild(child);
+                child = this.container.firstChild;
+            }
+        };
+        Stage.prototype.handleGlCrash = function (event) {
+            /**
+            Handle a WebGL crash.
+
+            This is a disruptive event that may be caused by the user's system.
+            Data in the WebGL system will be lost, including buffers.
+
+            When it detects a WebGL crash, Kiwi automatically restarts
+            in an attempt to regain control. It clears all global files.
+            The renderer will remain broken until you transition
+            to another `State`. This transition rebuilds texture libraries
+            and other necessary WebGL data. It also permits states
+            to perform preload processes to reload discarded files.
+
+            Attach listeners to the `onRendererCrash` signal to perform logic
+            in the event of a crash.
+
+            The recommended crash procedure is to transition to
+            a recovery State. This will prevent console errors and prompt
+            for preload processes. You may then perform logic to return
+            control to the user. The process may not be seamless;
+            this depends on your game structure.
+
+            @method handleGlCrash
+            @param event {WebGLContextEvent} Event from the crash.
+            @public
+            @since 1.5.0
+            **/
+            Kiwi.Log.error("WebGL context lost!", "#renderer", event);
+            // All textures are now invalid.
+            this._game.fileStore.removeGlobalFiles();
+            this._game.states.states.forEach(function (state) {
+                if (state.textureLibrary) {
+                    state.textureLibrary.clear();
+                }
+            });
+            this._game.restart();
+            this.onRendererCrash.dispatch(event);
+        };
         Stage.prototype.resize = function (width, height) {
+            /**
+            Set the stage width and height for rendering purposes.
+            This will not effect that "scaleType" that it has been set to.
+
+            @method resize
+            @param width {number} New Stage width
+            @param height {number} New Stage height
+            @public
+            **/
             this.canvas.height = height;
             this.canvas.width = width;
             this._height = height;
@@ -1047,41 +1235,42 @@ var Kiwi;
             }
             this.onResize.dispatch(this._width, this._height);
         };
-        /**
-        * Sets the background color of the stage through component
-        * RGB colour values. Each parameter is a number between 0 and 255.
-        * This method also returns an Object Literal with "r", "g", "b"
-        * properties.
-        *
-        * @method setRGBColor
-        * @param r {Number} The red component. A value between 0 and 255.
-        * @param g {Number} The green component. A value between 0 and 255.
-        * @param b {Number} The blue component. A value between 0 and 255.
-        * @return {Object} A Object literal containing the r,g,b properties.
-        * @public
-        */
         Stage.prototype.setRGBColor = function (r, g, b) {
+            /**
+            Set background color of the stage through component
+            RGB colour values. Each parameter is a number between 0 and 255.
+            This method also returns an Object literal with "r", "g", "b"
+            properties.
+
+            @method setRGBColor
+            @param r {number} Red component. A value between 0 and 255
+            @param g {number} Green component. A value between 0 and 255
+            @param b {number} Blue component. A value between 0 and 255
+            @return {object} Object literal containing the `r,g,b` properties
+            @public
+            **/
             this.rgbColor = { r: r, g: g, b: b };
             return this.rgbColor;
         };
-        /**
-        * Creates a debug canvas and adds it above the regular game canvas.
-        * The debug canvas is not created by default (even with debugging on)
-        * and rendering/clearing of the canvas is upto the developer.
-        * The context for rendering can be access via the "dctx" property and
-        * you can use the "clearDebugCanvas" method to clear the canvas.
-        *
-        * @method createDebugCanvas
-        * @public
-        */
         Stage.prototype.createDebugCanvas = function () {
-            if (Kiwi.Utils.Common.isUndefined(this.debugCanvas) == false)
+            /**
+            Create a debug canvas and add it above the regular game canvas.
+            The debug canvas is not created by default (even with debugging on)
+            and rendering/clearing of the canvas is up to the developer.
+            The context for rendering can be accessed via the `dctx` property.
+            You can use the `clearDebugCanvas` method to clear the canvas.
+
+            @method createDebugCanvas
+            @public
+            **/
+            if (Kiwi.Utils.Common.isUndefined(this.debugCanvas) == false) {
                 return;
+            }
             if (this._game.deviceTargetOption === Kiwi.TARGET_COCOON) {
                 // Not supported in CocoonJS only because we cannot add it to
-                // the container (as a container does not exist) and position
+                // the container (as a container does not exist ) and position
                 // will be hard.
-                Kiwi.Log.log("Debug canvas not supported in cocoon, creating canvas and context anyway", "#debug-canvas");
+                Kiwi.Log.log("Debug canvas not supported in cocoon, " + "creating canvas and context anyway", "#debug-canvas");
             }
             this.debugCanvas = document.createElement("canvas");
             this.debugCanvas.id = this._game.id + "debugCanvas";
@@ -1096,33 +1285,36 @@ var Kiwi;
                 this.container.appendChild(this.debugCanvas);
             }
         };
-        /**
-        * Clears the debug canvas and fills with either the color passed.
-        * If not colour is passed then Red at 20% opacity is used.
-        *
-        * @method clearDebugCanvas
-        * @param [color="rgba(255,0,0,0.2)"] {string} The debug color to rendering on the debug canvas.
-        * @public
-        */
         Stage.prototype.clearDebugCanvas = function (color) {
-            this.dctx.fillStyle = color || "rgba(255,0,0,.2)";
+            /**
+            Clear the debug canvas and fill with the color passed.
+            If no color is passed, then red at 20% opacity is used.
+
+            @method clearDebugCanvas
+            @param [color="rgba( 255, 0, 0, 0.2 )"] {string} Debug color
+                to tint the debug canvas.
+            @public
+            **/
+            this.dctx.fillStyle = color || "rgba( 255, 0, 0, 0.2 )";
             this.dctx.clearRect(0, 0, this.width, this.height);
             this.dctx.fillRect(0, 0, this.width, this.height);
         };
-        /**
-        * Toggles the visibility of the debug canvas.
-        * @method toggleDebugCanvas
-        * @public
-        */
         Stage.prototype.toggleDebugCanvas = function () {
+            /**
+            Toggle the visibility of the debug canvas.
+
+            @method toggleDebugCanvas
+            @public
+            **/
             this.debugCanvas.style.display = (this.debugCanvas.style.display === "none") ? "block" : "none";
         };
-        /**
-        * Handles the scaling/sizing based upon the scaleType property.
-        * @method _scaleContainer
-        * @private
-        */
         Stage.prototype._scaleContainer = function () {
+            /**
+            Handle the scaling/sizing based upon the `scaleType` property.
+
+            @method _scaleContainer
+            @private
+            **/
             if (this._game.deviceTargetOption == Kiwi.TARGET_BROWSER) {
                 var clientWidth = this.container.clientWidth;
                 this.container.style.width = String(this._width + "px");
@@ -1131,7 +1323,19 @@ var Kiwi;
                     this.container.style.maxWidth = "";
                     this.container.style.minWidth = "";
                 }
-                // To Fit or STRETCH 
+                if (this._scaleType == Kiwi.Stage.SCALE_FIT_INSIDE) {
+                    var containerAr = this.container.parentElement ? this.container.parentElement.clientWidth / this.container.parentElement.clientHeight : 1;
+                    var canvasAr = this._width / this._height;
+                    if (containerAr > canvasAr) {
+                        this.container.style.height = "100%";
+                        this.container.style.width = canvasAr * 100 + "vh";
+                    }
+                    else {
+                        this.container.style.width = "100%";
+                        this.container.style.height = 100 / canvasAr + "vw";
+                    }
+                }
+                // To Fit or STRETCH
                 if (this._scaleType == Kiwi.Stage.SCALE_STRETCH || this._scaleType == Kiwi.Stage.SCALE_FIT) {
                     this.container.style.minWidth = "100%";
                     this.container.style.maxWidth = "100%";
@@ -1168,18 +1372,17 @@ var Kiwi;
         };
         Object.defineProperty(Stage.prototype, "visibility", {
             /**
-            * A flag indicating if the page is currently visible
-            * (using the Visiblity API).
-            * If the Visiblity API is unsupported this will remain set to true
-            * regardless of focus / blur events.
-            *
-            * @property visibility
-            * @type boolean
-            * @default true
-            * @readOnly
-            * @since 1.3.0
-            * @public
-            */
+            Whether the page is currently visible (via the Visiblity API).
+            If the Visiblity API is unsupported this will remain set to true
+            regardless of focus/blur events.
+    
+            @property visibility
+            @type boolean
+            @default true
+            @readOnly
+            @since 1.3.0
+            @public
+            **/
             get: function () {
                 if (this._visibility) {
                     return !document[this._visibility];
@@ -1189,16 +1392,16 @@ var Kiwi;
             enumerable: true,
             configurable: true
         });
-        /**
-        * Fired when the page visibility changes, or the page focus/blur
-        * events fire. In charge of firing the appropriate signals.
-        *
-        * @method _checkVisibility
-        * @param event {Any}
-        * @since 1.3.0
-        * @private
-        */
         Stage.prototype._checkVisibility = function (event) {
+            /**
+            Fire when the page visibility changes, or the page focus/blur
+            events fire. In charge of firing the appropriate signals.
+
+            @method _checkVisibility
+            @param event {Any}
+            @since 1.3.0
+            @private
+            **/
             if (event.type === "focus" || event.type === "pageshow") {
                 this.onFocus.dispatch(event);
                 return;
@@ -1212,14 +1415,15 @@ var Kiwi;
                 return;
             }
         };
-        /**
-        * Adds the focus, blur, and visibility events to the document.
-        *
-        * @method _createFocusEvents
-        * @since 1.3.0
-        * @private
-        */
         Stage.prototype._createFocusEvents = function () {
+            /**
+            Add the focus, blur, and visibility events to the document.
+
+            @method _createFocusEvents
+            @since 1.3.0
+            @private
+            **/
+            var _this = this;
             this._visibility = "hidden";
             this._visibilityChange = this._checkVisibility.bind(this);
             if ("hidden" in document) {
@@ -1235,67 +1439,99 @@ var Kiwi;
                 document.addEventListener("msvisibilitychange", this._visibilityChange);
             }
             else {
-                // Not supported. 
+                // Not supported.
                 this._visibility = null;
             }
-            window.addEventListener('pageshow', this._visibilityChange);
-            window.addEventListener('pagehide', this._visibilityChange);
-            window.addEventListener('focus', this._visibilityChange);
-            window.addEventListener('blur', this._visibilityChange);
+            window.addEventListener("pageshow", this._visibilityChange);
+            window.addEventListener("pagehide", this._visibilityChange);
+            window.addEventListener("focus", this._visibilityChange);
+            window.addEventListener("blur", this._visibilityChange);
+            // Prepare for cleanup.
+            this._onFlushElements.addOnce(function () {
+                window.removeEventListener("visibilitychange", _this._visibilityChange);
+                window.removeEventListener("mozvisibilitychange", _this._visibilityChange);
+                window.removeEventListener("webkitvisibilitychange", _this._visibilityChange);
+                window.removeEventListener("msvisibilitychange", _this._visibilityChange);
+                window.removeEventListener("pageshow", _this._visibilityChange);
+                window.removeEventListener("pagehide", _this._visibilityChange);
+                window.removeEventListener("focus", _this._visibilityChange);
+                window.removeEventListener("blur", _this._visibilityChange);
+            });
         };
         /**
-        * The default width of the stage.
-        * @property DEFAULT_WIDTH
-        * @type number
-        * @default 800
-        * @public
-        * @static
-        */
+        Default width of the stage
+
+        @property DEFAULT_WIDTH
+        @type number
+        @default 800
+        @public
+        @static
+        **/
         Stage.DEFAULT_WIDTH = 800;
         /**
-        * The default height of the stage.
-        * @property DEFAULT_HEIGHT
-        * @type number
-        * @default 600
-        * @public
-        * @static
-        */
+        Default height of the stage
+
+        @property DEFAULT_HEIGHT
+        @type number
+        @default 600
+        @public
+        @static
+        **/
         Stage.DEFAULT_HEIGHT = 600;
         /**
-        * The default scaling method used on Kiwi Games.
-        * This scaling method will set the container's width/height
-        * to static values.
-        *
-        * @property SCALE_NONE
-        * @type number
-        * @default 0
-        * @public
-        * @static
-        */
+        Default scaling method used on Kiwi games.
+        This scaling method will set the container's width/height
+        to static values.
+
+        @property SCALE_NONE
+        @type number
+        @default 0
+        @public
+        @static
+        **/
         Stage.SCALE_NONE = 0;
         /**
-        * Scale Fit will scale the stage's width to fit its parents width.
-        * The height is then calculated to maintain the aspect ratio of the
-        * width/height of the Stage.
-        * @property SCALE_FIT
-        * @type number
-        * @default 1
-        * @public
-        * @static
-        */
+        SCALE_FIT will scale the stage's width to fit its parent's width.
+        The height is then calculated to maintain the aspect ratio of the
+        width/height of the Stage.
+
+        In CocoonJS, it still maintains aspect ratio, but keeps the
+        entire game stage on the screen.
+
+        @property SCALE_FIT
+        @type number
+        @default 1
+        @public
+        @static
+        **/
         Stage.SCALE_FIT = 1;
         /**
-        * Stretch will make the stage scale to fit its parents width/height
-        * (by using max/min height of 100%).
-        * If the parent doesn't have a height set then the height will be
-        * the height of the stage.
-        * @property SCALE_STRETCH
-        * @type number
-        * @default 2
-        * @public
-        * @static
-        */
+        Stretch will make the stage scale to fit its parent's width/height
+        (by using max/min height of 100%).
+        If the parent doesn't have a height set then the height will be
+        the height of the stage.
+
+        @property SCALE_STRETCH
+        @type number
+        @default 2
+        @public
+        @static
+        **/
         Stage.SCALE_STRETCH = 2;
+        /**
+        SCALE_FIT_INSIDE will scale the stage to fit its parent.
+        The stage will maintain aspect ratio and touch either the top/bottom
+        or the sides of the container (or both), without going outside.
+        This is exactly like the CocoonJS implementation of SCALE_FIT.
+
+        @property SCALE_FIT_INSIDE
+        @type number
+        @default 3
+        @public
+        @static
+        @since 1.5.0
+        **/
+        Stage.SCALE_FIT_INSIDE = 3;
         return Stage;
     })();
     Kiwi.Stage = Stage;
@@ -1533,30 +1769,44 @@ var Kiwi;
     Kiwi.ComponentManager = ComponentManager;
 })(Kiwi || (Kiwi = {}));
 /**
-*
-* @module Kiwi
-*
-*/
+@module Kiwi
+**/
 var Kiwi;
 (function (Kiwi) {
-    /**
-    * The plugin manager registers plugins, checks plugin dependencies, and calls designated functions on each registered plugin at boot time, and during the update loop if required.
-    * Plugins are registered on the global Kiwi instance. Once a plugin in registered it is allocated a place on the Kiwi.Plugins name space.
-    * Eg. FooPlugin will be accessible at Kiwi.Plugins.FooPlugin.
-    * When a game instance is created, it can contain a list of required plugins in the configuration object. At this point the plugin manager will validate that the plugins
-    * exist, and that dependencies are met (both Kiwi version and versions of other required plugins).
-    * If the plugin has a "create" function, the plugin manager instance will call that function as part of the boot process. The create function may do anything, but usually it would create
-    * an instance of an object.
-    * The plugin manager update function is called every update loop. If an object was created by the "create" function and it has an "update" function, that function will be called in turn.
-    * @class PluginManager
-    * @namespace Kiwi
-    * @constructor
-    * @param game {Kiwi.Game} The state that this entity belongs to. Used to generate the Unique ID and for garbage collection.
-    * @param plugins {string[]} The entities position on the x axis.
-    * @return {Kiwi.PluginManager} This PluginManager.
-    *
-    */
     var PluginManager = (function () {
+        /**
+        The plugin manager registers plugins, checks plugin dependencies,
+        and calls designated functions on each registered plugin at boot time,
+        and during the update loop if required.
+
+        Plugins are registered on the global Kiwi instance.
+        This will apply to any game created on the webpage.
+        Once a plugin in registered it is allocated a place on the
+        `Kiwi.Plugins` name space, e.g. `FooPlugin` will be accessible at
+        `Kiwi.Plugins.FooPlugin`.
+
+        When a game instance is created, it can contain a list of
+        required plugins in the configuration object.
+        At this point the plugin manager will validate that the plugins exist,
+        and that dependencies are met
+        (both Kiwi version and versions of other required plugins).
+        If the plugin has a `create` function, the plugin manager instance will
+        call that function as part of the boot process.
+        The `create` function may do anything, but usually it would create an
+        instance of an object.
+
+        The plugin manager `update` function is called
+        every update loop. If an object was created by the `create` function
+        and it has an `update` function, that function will be called in turn.
+
+        @class PluginManager
+        @namespace Kiwi
+        @constructor
+        @param game {Kiwi.Game} State that this entity belongs to.
+            Used to generate the Unique ID and for garbage collection.
+        @param plugins {string[]} List of plugins to validate and load
+        @return {Kiwi.PluginManager}
+        **/
         function PluginManager(game, plugins) {
             this._game = game;
             this._plugins = plugins || new Array();
@@ -1566,12 +1816,14 @@ var Kiwi;
         }
         Object.defineProperty(PluginManager, "availablePlugins", {
             /**
-            * An array of objects represetning all available plugins, each containing the name and version number of an available plugin
-            * @property getAvailablePlugins
-            * @type Array
-            * @static
-            * @private
-            */
+            Array of objects representing all available plugins,
+            each containing the name and version number of an available plugin
+    
+            @property getAvailablePlugins
+            @type array
+            @static
+            @public
+            **/
             get: function () {
                 var plugins = [];
                 for (var i = 0; i < PluginManager._availablePlugins.length; i++) {
@@ -1585,19 +1837,24 @@ var Kiwi;
             enumerable: true,
             configurable: true
         });
-        /**
-        * Registers a plugin object as available. Any game instance can choose to use the plugin.
-        * Plugins need only be registered once per webpage. If registered a second time it will be ignored.
-        * Two plugins with the same names cannot be reigstered simultaneously, even if different versions.
-        * @method register
-        * @param {object} plugin
-        * @public
-        * @static
-        */
         PluginManager.register = function (plugin) {
-            Kiwi.Log.log("Kiwi.PluginManager: Attempting to register plugin : " + plugin.name, '#plugin');
+            /**
+            Register a plugin object as available.
+
+            Any game instance can choose to use the plugin.
+            Plugins need only be registered once per webpage.
+            If registered a second time it will be ignored.
+            Two plugins with the same names cannot be reigstered simultaneously,
+            even if different versions.
+
+            @method register
+            @param {object} plugin
+            @public
+            @static
+            **/
+            Kiwi.Log.log("Kiwi.PluginManager: Attempting to register plugin : " + plugin.name, "#plugin");
             if (this._availablePlugins.indexOf(plugin) == -1) {
-                //check if plugin with same name is registered
+                // check if plugin with same name is registered
                 var uniqueName = true;
                 for (var i = 0; i < this._availablePlugins.length; i++) {
                     if (plugin.name === this._availablePlugins[i].name) {
@@ -1606,109 +1863,116 @@ var Kiwi;
                 }
                 if (uniqueName) {
                     this._availablePlugins.push(plugin);
-                    Kiwi.Log.log("  Kiwi.PluginManager: Registered plugin " + plugin.name + ": version " + plugin.version, '#plugin');
+                    Kiwi.Log.log("  Kiwi.PluginManager: Registered plugin " + plugin.name + ": version " + plugin.version, "#plugin");
                 }
                 else {
-                    Kiwi.Log.warn("  Kiwi.PluginManager: A plugin with the same name has already been registered. Ignoring this plugin.", '#plugin');
+                    Kiwi.Log.warn("  Kiwi.PluginManager: A plugin with the same name " + "has already been registered. Ignoring this plugin.", "#plugin");
                 }
             }
             else {
-                Kiwi.Log.warn("  Kiwi.PluginManager: This plugin has already been registered. Ignoring second registration.", '#plugin');
+                Kiwi.Log.warn("  Kiwi.PluginManager: This plugin has already been " + "registered. Ignoring second registration.", "#plugin");
             }
         };
         Object.defineProperty(PluginManager.prototype, "objType", {
             /**
-            * Identifies the object as a PluginManager.
-            * @property objType
-            * @type {string} "PluginManager"
-            * @public
-            */
+            Identifies the object as a PluginManager.
+    
+            @property objType
+            @type string
+            @default "PluginManager"
+            @public
+            **/
             get: function () {
                 return "PluginManager";
             },
             enumerable: true,
             configurable: true
         });
-        /**
-        * Builds a list of valid plugins used by the game instance. Each plugin name that is supplied in the Kiwi.Game constructor configuration object
-        * is checked against the Kiwi.Plugins namespace to ensure that a property of the same name exists.
-        * This will ignore plugin that are registered but not used by the game instance.
-        * @method validatePlugins
-        * @public
-        */
         PluginManager.prototype.validatePlugins = function () {
+            /**
+            Build a list of valid plugins used by the game instance.
+            Each plugin name that is supplied in the `Kiwi.Game` constructor
+            configuration object is checked against the `Kiwi.Plugins`
+            namespace to ensure that a property of the same name exists.
+            This will ignore plugins that are registered but not used
+            by the game instance.
+
+            @method validatePlugins
+            @public
+            **/
             var validPlugins = new Array();
-            Kiwi.Log.log("Kiwi.PluginManager: Validating Plugins", '#plugins');
+            Kiwi.Log.log("Kiwi.PluginManager: Validating Plugins", "#plugins");
             for (var i = 0; i < this._plugins.length; i++) {
                 var plugin = this._plugins[i];
-                if (typeof plugin == 'string' || plugin instanceof String) {
+                if (typeof plugin == "string" || plugin instanceof String) {
                     if (Kiwi.Plugins.hasOwnProperty(plugin) && this.pluginIsRegistered(plugin)) {
                         validPlugins.push(plugin);
-                        Kiwi.Log.log("  Kiwi.PluginManager: Plugin '" + plugin + "' appears to be valid.", '#plugin');
-                        Kiwi.Log.log("  Kiwi.PluginManager: Name:" + Kiwi.Plugins[plugin].name, '#plugin');
-                        Kiwi.Log.log("  Kiwi.PluginManager: Version:" + Kiwi.Plugins[plugin].version, '#plugin');
-                        //test for kiwi version compatiblity
+                        Kiwi.Log.log("  Kiwi.PluginManager: Plugin \"" + plugin + "\" appears to be valid.", "#plugin");
+                        Kiwi.Log.log("  Kiwi.PluginManager: Name:" + Kiwi.Plugins[plugin].name, "#plugin");
+                        Kiwi.Log.log("  Kiwi.PluginManager: Version:" + Kiwi.Plugins[plugin].version, "#plugin");
+                        // test for kiwi version compatiblity
                         if (typeof Kiwi.Plugins[plugin].minimumKiwiVersion !== "undefined") {
-                            Kiwi.Log.log("  Kiwi.PluginManager: " + plugin + " requires minimum Kiwi version " + Kiwi.Plugins[plugin].minimumKiwiVersion, '#plugin');
+                            Kiwi.Log.log("  Kiwi.PluginManager: \"" + plugin + "\" requires minimum Kiwi version " + Kiwi.Plugins[plugin].minimumKiwiVersion, "#plugin");
                             var parsedKiwiVersion = Kiwi.Utils.Version.parseVersion(Kiwi.VERSION);
                             var parsedPluginMinVersion = Kiwi.Utils.Version.parseVersion(Kiwi.Plugins[plugin].minimumKiwiVersion);
                             if (parsedKiwiVersion.majorVersion > parsedPluginMinVersion.majorVersion) {
-                                Kiwi.Log.warn("  Kiwi.PluginManager: This major version of Kiwi is greater than that required by '" + plugin + "'. It is unknown whether this plugin will work with this version of Kiwi", '#plugin');
+                                Kiwi.Log.warn("  Kiwi.PluginManager: " + "This major version of Kiwi is greater " + "than that required by \"" + plugin + "\". It is unknown whether this plugin " + "will work with this version of Kiwi", "#plugin");
                             }
                             else {
                                 if (Kiwi.Utils.Version.greaterOrEqual(Kiwi.VERSION, Kiwi.Plugins[plugin].minimumKiwiVersion)) {
-                                    Kiwi.Log.log("  Kiwi.PluginManager: Kiwi version meets minimum version requirements for '" + plugin + "'.", '#plugin');
+                                    Kiwi.Log.log("  Kiwi.PluginManager: " + "Kiwi version meets minimum version " + "requirements for \"" + plugin + "\".", "#plugin");
                                 }
                                 else {
-                                    Kiwi.Log.warn("  Kiwi.PluginManager: Kiwi version (" + Kiwi.VERSION + ") does not meet minimum version requirements for the plugin (" + Kiwi.Plugins[plugin].minimumKiwiVersion + ").", '#plugin');
+                                    Kiwi.Log.warn("  Kiwi.PluginManager: " + "Kiwi version " + Kiwi.VERSION + " does not meet minimum version " + "requirements for the plugin ( " + Kiwi.Plugins[plugin].minimumKiwiVersion + " ).", "#plugin");
                                 }
                             }
                         }
                         else {
-                            Kiwi.Log.warn("  Kiwi.PluginManager: '" + plugin + "' is missing the minimumKiwiVersion property. It is unknown whether '" + plugin + "' will work with this version of Kiwi", '#plugin');
+                            Kiwi.Log.warn("  Kiwi.PluginManager: \"" + plugin + "\" is missing the minimumKiwiVersion " + "property. It is unknown whether \"" + plugin + "\" will work with this version of Kiwi", "#plugin");
                         }
                     }
                     else {
-                        Kiwi.Log.log("  Kiwi.PluginManager: Plugin '" + plugin + "' appears to be invalid. No property with that name exists on the Kiwi.Plugins object or the Plugin is not registered. Check that the js file containing the plugin has been included. This plugin will be ignored", '#plugin');
+                        Kiwi.Log.log("  Kiwi.PluginManager: Plugin \"" + plugin + "\" appears to be invalid. " + "No property with that name exists on the " + "Kiwi.Plugins object or the Plugin is not " + "registered. Check that the js file containing " + "the plugin has been included. " + "This plugin will be ignored", "#plugin");
                     }
                 }
                 else {
-                    Kiwi.Log.log("  Kiwi.PluginManager: The supplied plugin name at index " + i + "is not a string and will be ignored", '#plugin');
+                    Kiwi.Log.log("  Kiwi.PluginManager: " + "The supplied plugin name at index " + i + "is not a string and will be ignored", "#plugin");
                 }
             }
             this._plugins = validPlugins;
             for (var i = 0; i < this._plugins.length; i++) {
-                //test for plugin dependencies on other plugins
+                // test for plugin dependencies on other plugins
                 var pluginName = this._plugins[i];
                 var plugin = Kiwi.Plugins[pluginName];
                 if (typeof plugin.pluginDependencies !== "undefined") {
                     if (plugin.pluginDependencies.length === 0) {
-                        Kiwi.Log.log("  Kiwi.PluginManager: '" + pluginName + "' does not depend on any other plugins.", '#plugin');
+                        Kiwi.Log.log("  Kiwi.PluginManager: \"" + pluginName + "\" does not depend on any other plugins.", "#plugin");
                     }
                     else {
-                        Kiwi.Log.log("  Kiwi.PluginManager: '" + pluginName + "' depends on the following plugins:", '#plugin', '#dependencies');
+                        Kiwi.Log.log("  Kiwi.PluginManager: \"" + pluginName + "\" depends on the following plugins:", "#plugin", "#dependencies");
                         for (var j = 0; j < plugin.pluginDependencies.length; j++) {
-                            Kiwi.Log.log(plugin.pluginDependencies[j].name, plugin.pluginDependencies[j].minimumVersion, '#plugin', '#dependencies');
+                            Kiwi.Log.log(plugin.pluginDependencies[j].name, plugin.pluginDependencies[j].minimumVersion, "#plugin", "#dependencies");
                             if (!this.validMinimumPluginVersionExists(plugin.pluginDependencies[j].name, plugin.pluginDependencies[j].minimumVersion)) {
-                                Kiwi.Log.warn("  Kiwi.PluginManager: '" + plugin.pluginDependencies[j].name + " hasn't been added to this game via the config, doesn't exist, or does not meet minimum version requirement ( " + plugin.pluginDependencies[j].minimumVersion + ").", '#plugin', '#dependencies');
+                                Kiwi.Log.warn("  Kiwi.PluginManager: \"" + plugin.pluginDependencies[j].name + "\" hasn't been added to this game via " + "the config, doesn't exist, or does not " + "meet minimum version requirement (" + plugin.pluginDependencies[j].minimumVersion + " ).", "#plugin", "#dependencies");
                             }
                         }
                     }
                 }
                 else {
-                    Kiwi.Log.log("  Kiwi.PluginManager: '" + pluginName + "' does not depend on any other plugins.", '#plugin', '#dependencies');
+                    Kiwi.Log.log("  Kiwi.PluginManager: \"" + pluginName + "\" does not depend on any other plugins.", "#plugin", "#dependencies");
                 }
             }
         };
-        /**
-        * Returns whether a valid minimum version of a plugin exists.
-        * @method validMinimumPluginVersionExists
-        * @param name {string} Name of plugin
-        * @param version {string} Minimum version
-        * @return boolean
-        * @public
-        */
         PluginManager.prototype.validMinimumPluginVersionExists = function (name, version) {
+            /**
+            Return whether a valid minimum version of a plugin exists.
+
+            @method validMinimumPluginVersionExists
+            @param name {string} Name of plugin
+            @param version {string} Minimum version
+            @return boolean
+            @public
+            **/
             if (this._plugins.indexOf(name) !== -1) {
                 if (Kiwi.Utils.Version.greaterOrEqual(Kiwi.Plugins[name].version, version)) {
                     return true;
@@ -1716,59 +1980,70 @@ var Kiwi;
             }
             return false;
         };
-        /**
-        * Returns true if a plugin identified by the supplied pluginName is registered.
-        * @method pluginIsRegistered
-        * @param {string} pluginName
-        * @public
-        */
         PluginManager.prototype.pluginIsRegistered = function (pluginName) {
-            var isRegistered = false;
+            /**
+            Return `true` if a plugin identified by the supplied `pluginName`
+            is registered.
+
+            @method pluginIsRegistered
+            @param {string} pluginName
+            @return boolean
+            @public
+            **/
             for (var i = 0; i < Kiwi.PluginManager._availablePlugins.length; i++) {
                 if (Kiwi.PluginManager._availablePlugins[i].name === pluginName) {
-                    isRegistered = true;
+                    return true;
                 }
             }
-            return isRegistered;
+            return false;
         };
-        /**
-        * Called after all other core objects and services created by the Kiwi.Game constructor are created.
-        * Attempts to find a "create" function on each plugin and calls it if it exists.
-        * The create function may return an object on which a boot function exists - to be called during boot process.
-        * @method _createPlugins
-        * @private
-        */
         PluginManager.prototype._createPlugins = function () {
+            /**
+            Attempt to find a `create` function on each plugin, and call it
+            if it exists. Called after all other core objects and services
+            created by the `Kiwi.Game` constructor are created.
+
+            The `create` function may return an object on which a
+            `boot` function exists - to be called during boot process.
+
+            @method _createPlugins
+            @private
+            **/
             for (var i = 0; i < this._plugins.length; i++) {
                 var plugin = this._plugins[i];
                 if (Kiwi.Plugins[plugin].hasOwnProperty("create")) {
                     var bootObject = Kiwi.Plugins[plugin].create(this._game);
-                    if (bootObject)
+                    if (bootObject) {
                         this._bootObjects.push(bootObject);
+                    }
                 }
             }
         };
-        /**
-        * Calls the boot functions on any objects that plugins used by the game instance have designated during creation.
-        * @method boot
-        * @public
-        */
         PluginManager.prototype.boot = function () {
+            /**
+            Call the `boot` functions on any objects that plugins
+            used by the game instance have designated during creation.
+
+            @method boot
+            @public
+            **/
             for (var i = 0; i < this._bootObjects.length; i++) {
                 if ("boot" in this._bootObjects[i]) {
                     this._bootObjects[i].boot.call(this._bootObjects[i]);
                 }
                 else {
-                    Kiwi.Log.warn("Kiwi.PluginManager: Warning! No boot function found on boot object.", '#plugin');
+                    Kiwi.Log.warn("Kiwi.PluginManager: Warning! No boot function " + "found on boot object.", "#plugin");
                 }
             }
         };
-        /**
-        * Calls the update functions on any objects that plugins used by the game instance have designated during creation.
-        * @method update
-        * @public
-        */
         PluginManager.prototype.update = function () {
+            /**
+            Call the `update` functions on any objects that plugins
+            used by the game instance have designated during creation.
+
+            @method update
+            @public
+            **/
             for (var i = 0; i < this._bootObjects.length; i++) {
                 if ("update" in this._bootObjects[i]) {
                     this._bootObjects[i].update.call(this._bootObjects[i]);
@@ -1776,12 +2051,14 @@ var Kiwi;
             }
         };
         /**
-        * An array of plugins which have been included in the webpage and registered successfully.
-        * @property _availablePlugins
-        * @type Array
-        * @static
-        * @private
-        */
+        Array of plugins which have been included in the webpage
+        and registered successfully.
+
+        @property _availablePlugins
+        @type array
+        @static
+        @private
+        **/
         PluginManager._availablePlugins = new Array();
         return PluginManager;
     })();
@@ -1795,13 +2072,17 @@ var Kiwi;
 var Kiwi;
 (function (Kiwi) {
     /**
-    * Used to handle the creation and management of Cameras on a Game. Each Game will always have created for it a CameraManager and a default Camera on the manager.
-    * Games currently only usupport the use of a single camera, the default camera. Much of this class has been written with future multiple camera support in mind.
+    * Used to handle the creation and management of Cameras on a `Game`.
+    * Each `Game` will create a `CameraManager` and a default `Camera`.
+    * Games currently only support the use of a single camera,
+    * the default camera `defaultCamera`.
+    * Much of this class has been written with future
+    * multiple camera support in mind.
     *
     * @class CameraManager
     * @namespace Kiwi
     * @constructor
-    * @param {Kiwi.Game} game
+    * @param game {Kiwi.Game} Current game
     * @return {Kiwi.CameraManager}
     */
     var CameraManager = (function () {
@@ -1811,16 +2092,19 @@ var Kiwi;
             this._nextCameraID = 0;
         }
         /**
-        * Returns the type of this object
+        * Return the type of this object.
+        *
         * @method objType
-        * @return {String} "CameraManager"
+        * @return {string} "CameraManager"
         * @public
         */
         CameraManager.prototype.objType = function () {
             return "CameraManager";
         };
         /**
-        * Initializes the CameraManager, creates a new camera and assigns it to the defaultCamera
+        * Initialize the `CameraManager`, creates a new `Camera`,
+        * and assigns it to `defaultCamera`.
+        *
         * @method boot
         * @public
         */
@@ -1829,26 +2113,28 @@ var Kiwi;
             this.defaultCamera = this._cameras[0];
         };
         /**
-        * Creates a new Camera and adds it to the collection of cameras.
-        * @param {String} name. The name of the new camera.
-        * @param {Number} x. The x position of the new camera.
-        * @param {Number} y. The y position of the new camera.
-        * @param {Number} width. The width of the new camera.
-        * @param {Number} height. The height of the new camera.
-        * @return {Kiwi.Camera} The new camera object.
+        * Create a new Camera and add it to the collection of cameras.
+        *
+        * @method create
+        * @param name {string} Name of the new camera
+        * @param x {number} Horizontal position of the new camera
+        * @param y {number} Vertical position of the new camera
+        * @param width {number} Width of the new camera
+        * @param height {number} Height of the new camera
+        * @return {Kiwi.Camera} The new camera object
         * @public
         */
         CameraManager.prototype.create = function (name, x, y, width, height) {
             var newCamera = new Kiwi.Camera(this._game, this._nextCameraID++, name, x, y, width, height);
-            //newCamera.parent = state;
             this._cameras.push(newCamera);
             return newCamera;
         };
         /**
-        * Removes the given camera, if it is present in the camera managers camera collection.
+        * Remove the given camera, if it is present in the camera collection.
+        *
         * @method remove
         * @param camera {Kiwi.Camera}
-        * @return {boolean} True if the camera was removed, false otherwise.
+        * @return {boolean} True if the camera was removed, false otherwise
         * @public
         */
         CameraManager.prototype.remove = function (camera) {
@@ -1861,7 +2147,8 @@ var Kiwi;
             return false;
         };
         /**
-        * Calls update on all the cameras.
+        * Call update on all the cameras.
+        *
         * @method update
         * @public
         */
@@ -1874,7 +2161,8 @@ var Kiwi;
             }
         };
         /**
-        * Calls the render method on all the cameras
+        * Call the render method on all the cameras.
+        *
         * @method render
         * @public
         */
@@ -1887,7 +2175,8 @@ var Kiwi;
             }
         };
         /**
-        * Removes all cameras in the camera Manager except the default camera. Does nothing if in multi camera mode.
+        * Remove all cameras in the camera Manager except the default camera.
+        *
         * @method removeAll
         * @public
         */
@@ -1895,7 +2184,8 @@ var Kiwi;
             this._cameras = [];
         };
         /**
-        * Returns all cameras to origin. Called when starting a new state.
+        * Return all cameras to origin. Called when starting a new state.
+        *
         * @method zeroAllCameras
         * @public
         * @since 1.1.0
@@ -1907,7 +2197,8 @@ var Kiwi;
             this.zeroCamera(this.defaultCamera);
         };
         /**
-        * Returns camera to origin.
+        * Return camera to origin.
+        *
         * @method zeroCamera
         * @param camera {Kiwi.Camera}
         * @public
@@ -2106,6 +2397,25 @@ var Kiwi;
         StateManager.prototype.objType = function () {
             return "StateManager";
         };
+        Object.defineProperty(StateManager.prototype, "states", {
+            /**
+            An array of all of the states that are contained within this manager.
+            This list order is read-only.
+            @property states
+            @type Array
+            @public
+            @since 1.5.0
+            **/
+            get: function () {
+                var i, stateLength = this._states.length, states = [];
+                for (i = 0; i < stateLength; i++) {
+                    states.push(this._states[i]);
+                }
+                return states;
+            },
+            enumerable: true,
+            configurable: true
+        });
         /**
         * Checks to see if a key exists. Internal use only.
         * @method checkKeyExists
@@ -2434,7 +2744,6 @@ var Kiwi;
     * @param x {Number} The entities position on the x axis.
     * @param y {Number} The entities position on the y axis.
     * @return {Kiwi.Entity} This entity.
-    *
     */
     var Entity = (function () {
         function Entity(state, x, y) {
@@ -2517,6 +2826,7 @@ var Kiwi;
             this.id = this.game.rnd.uuid();
             this.state.addToTrackingList(this);
             this._clock = this.game.time.clock;
+            this.renderTasks = {};
             this._exists = true;
             this._active = true;
             this._visible = true;
@@ -2539,6 +2849,27 @@ var Kiwi;
             set: function (val) {
                 this.transform.parent = (val !== null) ? val.transform : null;
                 this._parent = val;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Entity.prototype, "onState", {
+            /**
+            * Indicates whether or not this entity is attached to the state.
+            * @property onState
+            * @public
+            * @since 1.4.1
+            */
+            get: function () {
+                if (this.parent) {
+                    if (this.parent.objType() === "State") {
+                        return true;
+                    }
+                    else {
+                        return this.parent.onState;
+                    }
+                }
+                return false;
             },
             enumerable: true,
             configurable: true
@@ -3048,6 +3379,8 @@ var Kiwi;
         */
         Entity.prototype.destroy = function (immediate) {
             if (immediate === void 0) { immediate = false; }
+            if (!this.onState)
+                immediate = true;
             this._exists = false;
             this._active = false;
             this._visible = false;
@@ -3062,6 +3395,7 @@ var Kiwi;
                 delete this.state;
                 delete this.game;
                 delete this.atlas;
+                delete this.glRenderer;
                 if (this.components)
                     this.components.removeAll(true);
                 delete this.components;
@@ -3165,92 +3499,110 @@ var Kiwi;
     Kiwi.Component = Component;
 })(Kiwi || (Kiwi = {}));
 /**
-*
-* @module Kiwi
-*
-*/
+
+@module Kiwi
+
+**/
 var Kiwi;
 (function (Kiwi) {
-    /**
-    * The group class is central to creating the scene graph that contains all objects in a state. A group can contain entities or other groups, thereby enabling a nested tree scene graph.
-    * The members of the Group's coordinates are also in relation to the Group that they were added to. So if you moved an entire Group, each member of that Group would also 'move'.
-    *
-    * @class Group
-    * @namespace Kiwi
-    * @constructor
-    * @param state {Kiwi.State} The State that this Group is a part of.
-    * @param [name=''] {String} The name of this group.
-    * @return {Kiwi.Group}
-    *
-    */
     var Group = (function () {
+        /**
+        The group class is central to creating the scene graph
+        that contains all objects in a state.
+        A group can contain entities or other groups,
+        thereby enabling a nested tree scene graph.
+        The members of the Group's coordinates are also in relation to
+        the Group that they were added to.
+        So if you moved an entire Group,
+        each member of that Group would also "move".
+
+        @class Group
+        @namespace Kiwi
+        @constructor
+        @param state {Kiwi.State} State that this Group is a part of
+        @param [name=""] {string} Name of this group
+        **/
         function Group(state, name) {
-            if (name === void 0) { name = ''; }
+            if (name === void 0) { name = ""; }
             /**
-            * A name for this Group. This is not checked for uniqueness within the Game, but is very useful for debugging.
-            * @property name
-            * @type string
-            * @default ''
-            * @public
-            */
-            this.name = '';
+            Name for this Group. This is not checked for uniqueness
+            within the game, but is very useful for debugging.
+    
+            @property name
+            @type string
+            @default ""
+            @public
+            **/
+            this.name = "";
             /**
-            * The parent group of this group.
-            * @property _parent
-            * @type Kiwi.Group
-            * @private
-            */
+            Parent group of this group.
+    
+            @property _parent
+            @type Kiwi.Group
+            @private
+            **/
             this._parent = null;
             /**
-            * The game this Group belongs to
-            * @property game
-            * @type Kiwi.Game
-            * @public
-            */
+            Game to which this Group belongs
+    
+            @property game
+            @type Kiwi.Game
+            @public
+            **/
             this.game = null;
             /**
-            * The State that this Group belongs to
-            * @property state
-            * @type Kiwi.State
-            * @public
+            State to which this Group belongs
+    
+            @property state
+            @type Kiwi.State
+            @public
             **/
             this.state = null;
             /**
-            * An indication of whether or not this group is 'dirty' and thus needs to be re-rendered or not.
-            * @property _dirty
-            * @type boolean
-            * @private
-            */
-            this._dirty = true;
-            /**
-            * ---------------
-            * Tagging System
-            * ---------------
+            Whether this group is "dirty" and thus needs to be re-rendered
+            in some way.
+    
+            @property _dirty
+            @type boolean
+            @private
             **/
-            /**
-            * Any tags that are on this Entity. This can be used to grab GameObjects or Groups on the whole game which have these particular tags.
-            * By default Entitys contain no tags.
-            * @property _tags
-            * @type Array
-            * @since 1.1.0
-            * @private
+            this._dirty = true;
+            /*
+            ---------------
+            Tagging System
+            ---------------
             */
+            /**
+            Tags that are on this Entity.
+            This can be used to grab GameObjects or Groups on the whole game
+            which have these particular tags.
+    
+            By default there are no tags.
+    
+            @property _tags
+            @type array
+            @default []
+            @since 1.1.0
+            @private
+            **/
             this._tags = [];
             /**
-            * A temporary property that holds a boolean indicating whether or not the group's children should be destroyed or not.
-            * @property _destroyRemoveChildren
-            * @type boolean
-            * @private
-            */
+            Whether the group's children should be destroyed
+    
+            @property _tempRemoveChildren
+            @type boolean
+            @default null
+            @private
+            **/
             this._tempRemoveChildren = null;
-            //prevents the state going AHHH...since the state extends group.
+            // Prevents the state going AHHH... since the state extends group
             if (state !== null) {
                 this.state = state;
                 this.game = this.state.game;
                 this.id = this.game.rnd.uuid();
                 this.state.addToTrackingList(this);
             }
-            //  Properties
+            // Properties
             this.name = name;
             this.components = new Kiwi.ComponentManager(Kiwi.GROUP, this);
             this._exists = true;
@@ -3259,22 +3611,24 @@ var Kiwi;
             this.transform = new Kiwi.Geom.Transform();
             this.members = [];
         }
-        /**
-        * Returns the type of this object
-        * @method objType
-        * @return {String} "Group"
-        * @public
-        */
         Group.prototype.objType = function () {
+            /**
+            Return the type of this object.
+
+            @method objType
+            @return {string} "Group"
+            @public
+            **/
             return "Group";
         };
-        /*
-        * Represents the type of child that this is.
-        * @method childType
-        * @return number
-        * @public
-        */
         Group.prototype.childType = function () {
+            /**
+            Return the type of child that this is (`Kiwi.GROUP`).
+
+            @method childType
+            @return {number} Kiwi.GROUP
+            @public
+            **/
             return Kiwi.GROUP;
         };
         Object.defineProperty(Group.prototype, "parent", {
@@ -3282,28 +3636,61 @@ var Kiwi;
                 return this._parent;
             },
             /**
-            * Set's the parent of this entity. Note that this also sets the transforms parent of this entity to be the passed groups transform.
-            * @property parent
-            * @type Kiwi.Group
-            * @public
-            */
+            Parent of this group.
+    
+            Do not alter this property directly.
+            If you want to change this group's position in the scene hierarchy,
+            use `addChild` and related methods.
+            If you do set `parent`, it may result in unexpected behavior.
+    
+            Note that this also sets `transform.parent` of this entity
+            to be the passed group's transform.
+    
+            @property parent
+            @type Kiwi.Group
+            @public
+            **/
             set: function (val) {
-                //check to see if the parent is not an descendor
-                //if (this.containsDescendant(val) === false) {
                 this.transform.parent = (val !== null) ? val.transform : null;
                 this._parent = val;
-                //}
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Group.prototype, "onState", {
+            /**
+            Indicates whether or not this entity is attached to the state.
+    
+            NOTE: This was implemented in 1.4.1
+            but is not officially supported until 1.5.0.
+    
+            @property onState
+            @public
+            @since 1.4.1
+            **/
+            get: function () {
+                if (this.parent) {
+                    if (this.parent.objType() === "State") {
+                        return true;
+                    }
+                    else {
+                        return this.parent.onState;
+                    }
+                }
+                return false;
             },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(Group.prototype, "x", {
             /**
-            * The X coordinate of this group. This is just aliased to the transform property.
-            * @property x
-            * @type Number
-            * @public
-            */
+            Horizontal coordinate of this group.
+            This is just aliased to the `transform` property.
+    
+            @property x
+            @type number
+            @public
+            **/
             get: function () {
                 return this.transform.x;
             },
@@ -3315,11 +3702,13 @@ var Kiwi;
         });
         Object.defineProperty(Group.prototype, "y", {
             /**
-            * The Y coordinate of this group. This is just aliased to the transform property.
-            * @property y
-            * @type Number
-            * @public
-            */
+            Vertical coordinate of this group.
+            This is just aliased to the `transform` property.
+    
+            @property y
+            @type number
+            @public
+            **/
             get: function () {
                 return this.transform.y;
             },
@@ -3331,12 +3720,16 @@ var Kiwi;
         });
         Object.defineProperty(Group.prototype, "worldX", {
             /**
-            * The X coordinate of this group in world space; that is, after parent transforms. This is just aliased to the transform property. This is READ-ONLY.
-            * @property worldX
-            * @type number
-            * @public
-            * @since 1.1.0
-            */
+            Horizontal coordinate of this group in world space;
+            that is, after parent transforms.
+            This is just aliased to the `transform` property.
+            This is READ-ONLY.
+    
+            @property worldX
+            @type number
+            @public
+            @since 1.1.0
+            **/
             get: function () {
                 return this.transform.worldX;
             },
@@ -3345,12 +3738,16 @@ var Kiwi;
         });
         Object.defineProperty(Group.prototype, "worldY", {
             /**
-            * The Y coordinate of this group in world space; that is, after parent transforms. This is just aliased to the transform property. This is READ-ONLY.
-            * @property worldY
-            * @type number
-            * @public
-            * @since 1.1.0
-            */
+            Vertical coordinate of this group in world space;
+            that is, after parent transforms.
+            This is just aliased to the `transform` property.
+            This is READ-ONLY.
+    
+            @property worldY
+            @type number
+            @public
+            @since 1.1.0
+            **/
             get: function () {
                 return this.transform.worldY;
             },
@@ -3359,11 +3756,13 @@ var Kiwi;
         });
         Object.defineProperty(Group.prototype, "scaleX", {
             /*
-            * The Scale X of this group. This is just aliased to the transform property.
-            * @property scaleX
-            * @type Number
-            * @public
-            */
+            Horizontal scale of this group.
+            This is just aliased to the `transform` property.
+    
+            @property scaleX
+            @type number
+            @public
+            **/
             get: function () {
                 return this.transform.scaleX;
             },
@@ -3375,11 +3774,13 @@ var Kiwi;
         });
         Object.defineProperty(Group.prototype, "scaleY", {
             /*
-            * The Scale Y coordinate of this group. This is just aliased to the transform property.
-            * @property scaleY
-            * @type Number
-            * @public
-            */
+            Vertical scale of this group.
+            This is just aliased to the `transform` property.
+    
+            @property scaleY
+            @type number
+            @public
+            **/
             get: function () {
                 return this.transform.scaleY;
             },
@@ -3391,12 +3792,15 @@ var Kiwi;
         });
         Object.defineProperty(Group.prototype, "scale", {
             /**
-            * The scale of this group. This is just aliased to the transform property. This is WRITE-ONLY.
-            * @property scale
-            * @type number
-            * @public
-            * @since 1.1.0
-            */
+            Scale of this group.
+            This is just aliased to the `transform` property.
+            This is WRITE-ONLY.
+    
+            @property scale
+            @type number
+            @public
+            @since 1.1.0
+            **/
             set: function (value) {
                 this.transform.scale = value;
             },
@@ -3405,11 +3809,13 @@ var Kiwi;
         });
         Object.defineProperty(Group.prototype, "rotation", {
             /*
-            * The rotation of this group. This is just aliased to the transform property.
-            * @property rotation
-            * @type Number
-            * @public
-            */
+            Rotation of this group.
+            This is just aliased to the `transform` property.
+    
+            @property rotation
+            @type number
+            @public
+            **/
             get: function () {
                 return this.transform.rotation;
             },
@@ -3421,12 +3827,14 @@ var Kiwi;
         });
         Object.defineProperty(Group.prototype, "rotPointX", {
             /**
-            * The rotation offset of this group in the X axis. This is just aliased to the transform property.
-            * @property rotPointX
-            * @type number
-            * @public
-            * @since 1.1.0
-            */
+            Rotation offset of this group in the X axis.
+            This is just aliased to the `transform` property.
+    
+            @property rotPointX
+            @type number
+            @public
+            @since 1.1.0
+            **/
             get: function () {
                 return this.transform.rotPointX;
             },
@@ -3438,12 +3846,14 @@ var Kiwi;
         });
         Object.defineProperty(Group.prototype, "rotPointY", {
             /**
-            * The rotation offset of this group in the Y axis. This is just aliased to the transform property.
-            * @property rotPointY
-            * @type number
-            * @public
-            * @since 1.1.0
-            */
+            Rotation offset of this group in the Y axis.
+            This is just aliased to the `transform` property.
+    
+            @property rotPointY
+            @type number
+            @public
+            @since 1.1.0
+            **/
             get: function () {
                 return this.transform.rotPointY;
             },
@@ -3455,12 +3865,15 @@ var Kiwi;
         });
         Object.defineProperty(Group.prototype, "anchorPointX", {
             /**
-            * The anchor point offset of this group in the X axis. This is just aliased to the transform property, and is in turn an alias of rotPointX.
-            * @property anchorPointX
-            * @type number
-            * @public
-            * @since 1.1.0
-            */
+            Anchor point offset of this group in the X axis.
+            This is just aliased to the `transform` property,
+            and is in turn an alias of rotPointX.
+    
+            @property anchorPointX
+            @type number
+            @public
+            @since 1.1.0
+            **/
             get: function () {
                 return this.transform.anchorPointX;
             },
@@ -3472,12 +3885,15 @@ var Kiwi;
         });
         Object.defineProperty(Group.prototype, "anchorPointY", {
             /**
-            * The anchor point offset of this group in the Y axis. This is just aliased to the transform property, and is in turn an alias of rotPointY.
-            * @property anchorPointY
-            * @type number
-            * @public
-            * @since 1.1.0
-            */
+            The anchor point offset of this group in the Y axis.
+            This is just aliased to the `transform` property,
+            and is in turn an alias of rotPointY.
+    
+            @property anchorPointY
+            @type number
+            @public
+            @since 1.1.0
+            **/
             get: function () {
                 return this.transform.anchorPointY;
             },
@@ -3487,13 +3903,16 @@ var Kiwi;
             enumerable: true,
             configurable: true
         });
-        /**
-        * Returns the total number of children in this Group. Doesn't distinguish between alive and dead children.
-        * @method numChildren
-        * @return {Number} The number of children in this Group
-        * @public
-        */
         Group.prototype.numChildren = function () {
+            /**
+            Return the total number of children in this Group.
+            Note that this still counts children with `exists=false`,
+            as they are only completely removed at the end of the frame.
+
+            @method numChildren
+            @return {number} Number of children in this Group
+            @public
+            **/
             return this.members.length;
         };
         Object.defineProperty(Group.prototype, "dirty", {
@@ -3501,11 +3920,13 @@ var Kiwi;
                 return this._dirty;
             },
             /**
-            * Sets all children of the Group to be dirty.
-            * @property dirty
-            * @type boolean
-            * @public
-            */
+            Dirtiness of the Group and all its children.
+            Setting this will update dirtiness of children immediately.
+    
+            @property dirty
+            @type boolean
+            @public
+            **/
             set: function (value) {
                 if (value !== undefined) {
                     this._dirty = value;
@@ -3517,145 +3938,208 @@ var Kiwi;
             enumerable: true,
             configurable: true
         });
-        /**
-        * Checks if the given entity is in this group
-        * @method contains
-        * @param child {IChild} The IChild that you want to checked.
-        * @return {boolean} true if entity exists in group.
-        * @public
-        */
         Group.prototype.contains = function (child) {
-            return (this.members.indexOf(child) === -1) ? false : true;
+            /**
+            Check whether the given entity is in this group.
+
+            @method contains
+            @param child {IChild} IChild to check
+            @return {boolean} Whether entity exists in group
+            @public
+            **/
+            return this.members.indexOf(child) !== -1;
         };
-        /**
-        * Checks to see if the given object is contained in this group as a descendant
-        * @method containsDescendant
-        * @param child {object} The IChild that you want to check.
-        * @return {boolean}
-        * @public
-        */
         Group.prototype.containsDescendant = function (child) {
+            /**
+            Check whether the given entity is in this group,
+            or one of this group's descendants.
+
+            @method containsDescendant
+            @param child {object} IChild to check
+            @return {boolean}
+            @public
+            **/
             for (var i = 0; i < this.members.length; i++) {
                 var curMember = this.members[i];
-                if (curMember.id == child.id || curMember.childType() == Kiwi.Group && curMember.containsDesendant(child)) {
+                if (curMember.id === child.id || (curMember.childType() === Kiwi.GROUP && curMember.containsDescendant(child))) {
                     return true;
                 }
             }
             return false;
         };
-        /**
-        * Checks to see if one child is an ansector of another child.
-        * @method containsAncestor
-        * @param descendant {object} The object that you are checking.
-        * @param ancestor {Group} The parent (ancestor) that you are checking for.
-        * @return {boolean}
-        * @public
-        */
         Group.prototype.containsAncestor = function (descendant, ancestor) {
+            /**
+            Check whether a `Group` is an ancestor of another entity.
+
+            This may be called as a static method, i.e.
+            `Kiwi.Group.prototype.containsAncestor()`.
+
+            @method containsAncestor
+            @param descendant {object} Entity to check
+            @param ancestor {Group} Group to check
+            @static
+            @return {boolean}
+            @public
+            **/
             if (descendant.parent === null || descendant.parent === undefined) {
                 return false;
             }
-            if (descendant.parent == ancestor)
-                return true; //desendants parent is the same? 
-            return descendant.parent.containsAncestor(descendant.parent, ancestor); //keep going up the chain.
+            if (descendant.parent === ancestor) {
+                // Parent found
+                return true;
+            }
+            return descendant.parent.containsAncestor(descendant.parent, ancestor);
         };
-        /**
-        * -------------------------
-        * Add Children methods
-        * -------------------------
-        **/
-        /**
-        * Adds an Entity to this Group. The Entity must not already be in this Group.
-        * @method addChild
-        * @param child {object} The child to be added.
-        * @return {object} The child that was added.
-        * @public
+        /*
+        -------------------------
+        Add Children methods
+        -------------------------
         */
+        Group.prototype._validateChild = function (child) {
+            /**
+            Return whether a child may be added to this group.
+
+            A child is disqualified if it:
+            - is a `State`, which may not have parents
+            - would be its own parent
+            - would be its own descendant
+
+            If a child fails the check, its UUID will be logged.
+
+            @method _validateChild
+            @param child {IChild} Child to validate
+            @return {boolean} Whether the child is validated
+            @private
+            **/
+            if (child.childType() === Kiwi.STATE || child === this || this.containsAncestor(this, child)) {
+                Kiwi.Log.warn("#Group", "Child failed validation check and will not be added.", "UUID:", child.id);
+                return false;
+            }
+            return true;
+        };
         Group.prototype.addChild = function (child) {
-            //Implement feature where you can pass as many children to be added. Modify this script to work via the 'arguments' property
-            //make sure you aren't adding a state or itself
-            if (child.childType() === Kiwi.STATE || child == this)
-                return;
-            //make sure it is not itself.
-            if (child.parent !== null)
-                child.parent.removeChild(child);
-            //check to see if the child is already part of a group.
-            this.members.push(child);
-            child.parent = this;
-            return child;
-        };
-        /**
-        * Adds an Entity to this Group in the specific location. The Entity must not already be in this Group and it must be supported by the Group.
-        * @method addChildAt
-        * @param child {object} The child to be added.
-        * @param index {Number} The index the child will be set at.
-        * @return {object} The child.
-        * @public
-        */
-        Group.prototype.addChildAt = function (child, index) {
-            if (child.childType() === Kiwi.STATE || child == this)
-                return;
-            if (child.parent !== null)
-                child.parent.removeChild(child);
-            this.members.splice(index, 0, child);
-            child.parent = this;
-            return child;
-        };
-        /**
-        * Adds an Entity to this Group before another child.
-        * @method addChildBefore
-        * @param child {object} The child to be added.
-        * @param beforeChild {Entity} The child before which the child will be added.
-        * @return {object} The child.
-        * @public
-        */
-        Group.prototype.addChildBefore = function (child, beforeChild) {
-            if (beforeChild.transform.parent === this.transform) {
-                if (child.parent !== null)
+            /**
+            Add a child to this `Group`.
+
+            The child must be valid to add.
+            A valid child must be an `Entity` or `Group`.
+            It cannot be a `State`.
+            It cannot be this very `Group`, or an ancestor of it.
+
+            The child will be removed from its current parents, if any.
+
+            @method addChild
+            @param child {object} Child to be added
+            @return {object} Child to have been added
+            @public
+            **/
+            // TODO:
+            // Implement feature where you can pass many children to be added.
+            // Modify this script to work via the `arguments` property.
+            if (this._validateChild(child)) {
+                // Remove prior parentage
+                if (child.parent !== null) {
                     child.parent.removeChild(child);
+                }
+                // Add child to this group
+                this.members.push(child);
+                child.parent = this;
+            }
+            return child;
+        };
+        Group.prototype.addChildAt = function (child, index) {
+            /**
+            Add a child to this Group, at the specific child index.
+            Use this to place a child behind or in front of other objects
+            in the scene graph.
+
+            The child must be valid per the criteria in `addChild`.
+
+            The child will be removed from its current parents, if any.
+
+            @method addChildAt
+            @param child {object} Child to be added
+            @param index {number} Index at which to insert the child
+            @return {object} Child to have been added
+            @public
+            **/
+            if (this._validateChild(child)) {
+                if (child.parent !== null) {
+                    child.parent.removeChild(child);
+                }
+                this.members.splice(index, 0, child);
+                child.parent = this;
+            }
+            return child;
+        };
+        Group.prototype.addChildBefore = function (child, beforeChild) {
+            /**
+            Add a child to this Group, just behind another child.
+
+            The child must be valid per the criteria in `addChild`.
+
+            The child will be removed from its current parents, if any.
+
+            @method addChildBefore
+            @param child {object} Child to be added
+            @param beforeChild {Entity} Child before which to add the child
+            @return {object} Child to have been added
+            @public
+            **/
+            if (beforeChild.transform.parent === this.transform && this._validateChild(child)) {
+                if (child.parent !== null) {
+                    child.parent.removeChild(child);
+                }
                 var index = this.getChildIndex(beforeChild);
                 this.members.splice(index, 0, child);
                 child.parent = this;
             }
             return child;
         };
-        /**
-        * Adds an Entity to this Group after another child.
-        * @method addChildAfter
-        * @param child {object} The child to be added.
-        * @param beforeChild {object} The child after which the child will be added.
-        * @return {object} The child.
-        * @public
-        */
         Group.prototype.addChildAfter = function (child, afterChild) {
-            if (afterChild.transform.parent === this.transform) {
-                if (child.parent !== null)
+            /**
+            Add an Entity to this Group, just above another child.
+
+            The child must be valid per the criteria in `addChild`.
+
+            The child will be removed from its current parents, if any.
+
+            @method addChildAfter
+            @param child {object} Child to be added
+            @param afterChild {object} Child after which to add the child
+            @return {object} Child to have been added
+            @public
+            **/
+            if (afterChild.transform.parent === this.transform && this._validateChild(child)) {
+                if (child.parent !== null) {
                     child.parent.removeChild(child);
+                }
                 var index = this.getChildIndex(afterChild) + 1;
                 this.members.splice(index, 0, child);
                 child.parent = this;
             }
             return child;
         };
-        /**
-        * --------------------
-        * Remove Children Methods
-        * --------------------
-        **/
-        /**
-        * Removes an Entity from this Group if it is a child of it.
-        * @method removeChild
-        * @param child {object} The child to be removed.
-        * @param [destroy=false] {boolean} If the entity that gets removed should be destroyed as well.
-        * @return {object} The child.
-        * @public
+        /*
+        --------------------
+        Remove Children Methods
+        --------------------
         */
         Group.prototype.removeChild = function (child, destroy) {
+            /**
+            Remove a child from this Group.
+            The child must be a member of this specific group.
+
+            @method removeChild
+            @param child {object} Child to be removed
+            @param [destroy=false] {boolean} Whether to destroy the child
+            @return {object} Child that was removed
+            @public
+            **/
             if (destroy === void 0) { destroy = false; }
             if (child.parent === this) {
                 var index = this.getChildIndex(child);
-                if (index > -1) {
-                    this.members.splice(index, 1);
+                if (this.removeChildAt(index)) {
                     child.parent = null;
                     if (destroy) {
                         child.destroy();
@@ -3664,31 +4148,37 @@ var Kiwi;
             }
             return child;
         };
-        /**
-        * Removes the Entity from this Group at the given position.
-        * @method removeChildAt
-        * @param index {Number} The index of the child to be removed.
-        * @return {object} The child, or null.
-        */
         Group.prototype.removeChildAt = function (index) {
+            /**
+            Remove a child from this Group at a specific member index.
+
+            @method removeChildAt
+            @param index {number} Index of the child to be removed
+            @return {object} Child removed, or `null`
+            **/
             if (this.members[index]) {
-                var child = this.members[index];
-                return this.removeChild(child);
+                var child = this.members.splice(index, 1)[0];
+                child.parent = null;
+                return child;
             }
             else {
                 return null;
             }
         };
-        /**
-        * Removes all Entities from this Group within the given range.
-        * @method removeChildren
-        * @param begin {Number} The begining index.
-        * @param end {Number} The last index of the range.
-        * @param destroy {Number} If the children should be destroyed as well.
-        * @return {Number} The number of removed entities.
-        * @public
-        */
         Group.prototype.removeChildren = function (begin, end, destroy) {
+            /**
+            Remove all children from this Group, within the given range.
+
+            For example, `removeChildren( 3, 5 )` will remove children
+            at member indices 3 and 4 (but not 5).
+
+            @method removeChildren
+            @param [begin=0] {number} Beginning index
+            @param [end=2147483647] {number} Last index of the range
+            @param [destroy=false] {number} Whether to destroy children
+            @return {number} Number of removed entities
+            @public
+            **/
             if (begin === void 0) { begin = 0; }
             if (end === void 0) { end = 0x7fffffff; }
             if (destroy === void 0) { destroy = false; }
@@ -3702,36 +4192,42 @@ var Kiwi;
             }
             return removed.length;
         };
-        /**
-        * Removes the first Entity from this Group marked as 'alive'
-        * @method removeFirstAlive
-        * @param [destroy=false] {boolean} If the entity should run the destroy method when it is removed.
-        * @return {object} The Entity that was removed from this Group if alive, otherwise null
-        * @public
-        * @deprecated in v1.1.0
-        */
         Group.prototype.removeFirstAlive = function (destroy) {
+            /**
+            Remove the first child from this Group marked as `alive`.
+
+            @method removeFirstAlive
+            @param [destroy=false] {boolean} Whether to destroy the child
+            @return {object} Child removed, or `null`
+            @public
+            @deprecated in v1.1.0
+            **/
             if (destroy === void 0) { destroy = false; }
             return this.removeChild(this.getFirstAlive(), destroy);
         };
-        /**
-        * -------------------
-        * Get Children Methods
-        * -------------------
-        **/
-        /**
-        * Get all children of this Group. By default, this will search the entire sub-graph, including children of children etc.
-        * @method getAllChildren
-        * @param getGroups {boolean} Optional: Whether to include Groups in the results. When false, will only collect GameObjects.
-        * @param destinationArray {Array} Optional: The array in which to store the results.
-        * @return {Array}
-        * @since 1.1.0
+        /*
+        -------------------
+        Get Children Methods
+        -------------------
         */
         Group.prototype.getAllChildren = function (getGroups, destinationArray) {
+            /**
+            Get all children of this Group.
+            By default, this will search the entire sub-graph,
+            including children of children etc.
+
+            @method getAllChildren
+            @param [getGroups=true] {boolean} Whether to include Groups
+                in the results
+            @param [destinationArray] {array} Array in which to store
+                the results
+            @return {array}
+            @since 1.1.0
+            **/
             if (getGroups === void 0) { getGroups = true; }
             if (destinationArray === void 0) { destinationArray = []; }
             for (var i = 0; i < this.members.length; i++) {
-                if (this.members[i].objType() == "Group") {
+                if (this.members[i].objType() === "Group") {
                     if (getGroups) {
                         destinationArray.push(this.members[i]);
                     }
@@ -3743,14 +4239,15 @@ var Kiwi;
             }
             return destinationArray;
         };
-        /**
-        * Get the child at a specific position in this Group by its index.
-        * @method getChildAt
-        * @param index {Number} The index of the child
-        * @return {object} The child, if found or null if not.
-        * @public
-        */
         Group.prototype.getChildAt = function (index) {
+            /**
+            Get the child at a specific position in this Group by its index.
+
+            @method getChildAt
+            @param index {number} Index of the child
+            @return {object} Child if found, or `null` if not
+            @public
+            **/
             if (this.members[index]) {
                 return this.members[index];
             }
@@ -3758,21 +4255,25 @@ var Kiwi;
                 return null;
             }
         };
-        /**
-        * Get a child from this Group by its name. By default this will not check sub-groups, but if you supply the correct flag it will check the entire scene graph under this object.
-        * @method getChildByName
-        * @param name {String} The name of the child.
-        * @param recurse {Boolean} Whether to search child groups for the child. Default FALSE.
-        * @return {object} The child, if found or null if not.
-        * @public
-        */
         Group.prototype.getChildByName = function (name, recurse) {
+            /**
+            Get a child from this Group by its name.
+            By default this will not check sub-groups,
+            but if you supply the `recurse` flag
+            it will check the entire scene graph under this object.
+
+            @method getChildByName
+            @param name {string} Name of the child
+            @param [recurse=false] {boolean} Whether to search child groups
+            @return {object} Child if found, or `null` if not
+            @public
+            **/
             if (recurse === void 0) { recurse = false; }
             for (var i = 0; i < this.members.length; i++) {
                 if (this.members[i].name === name) {
                     return this.members[i];
                 }
-                else if (this.members[i].objType() == "Group" && recurse) {
+                else if (this.members[i].objType() === "Group" && recurse) {
                     var groupResponse = this.members[i].getChildByName(name, true);
                     if (groupResponse !== null) {
                         return groupResponse;
@@ -3781,21 +4282,25 @@ var Kiwi;
             }
             return null;
         };
-        /**
-        * Get a child from this Group by its UUID. By default this will not check sub-groups, but if you supply the correct flag it will check the entire scene graph under this object.
-        * @method getChildByID
-        * @param id {String} The ID of the child.
-        * @param recurse {Boolean} Whether to search child groups for the child. Default FALSE.
-        * @return {object} The child, if found or null if not.
-        * @public
-        */
         Group.prototype.getChildByID = function (id, recurse) {
+            /**
+            Get a child from this Group by its UUID (`child.id`).
+            By default this will not check sub-groups,
+            but if you supply the `recurse` flag
+            it will check the entire scene graph under this object.
+
+            @method getChildByID
+            @param id {string} UUID of the child.
+            @param [recurse=false] {boolean} Whether to search child groups
+            @return {object} Child if found, or `null` if not
+            @public
+            **/
             if (recurse === void 0) { recurse = false; }
             for (var i = 0; i < this.members.length; i++) {
                 if (this.members[i].id === id) {
                     return this.members[i];
                 }
-                else if (this.members[i].objType() == "Group" && recurse) {
+                else if (this.members[i].objType() === "Group" && recurse) {
                     var groupResponse = this.members[i].getChildByID(id, true);
                     if (groupResponse !== null) {
                         return groupResponse;
@@ -3804,24 +4309,27 @@ var Kiwi;
             }
             return null;
         };
-        /**
-        * Returns the index position of the Entity or -1 if not found.
-        * @method getChildIndex
-        * @param child {object} The child.
-        * @return {Number} The index of the child or -1 if not found.
-        * @public
-        */
         Group.prototype.getChildIndex = function (child) {
+            /**
+            Return the index position of the child, or `-1` if not found.
+
+            @method getChildIndex
+            @param child {object} Child to find
+            @return {number} Index of the child, or `-1` if not found.
+            @public
+            **/
             return this.members.indexOf(child);
         };
-        /**
-        * Returns the first Entity from this Group marked as 'alive' or null if no members are alive
-        * @method getFirstAlive
-        * @return {object}
-        * @public
-        * @deprecated in v1.1.0
-        */
         Group.prototype.getFirstAlive = function () {
+            /**
+            Return the first child from this Group marked as `exists=true`,
+            or `null` if no members are alive.
+
+            @method getFirstAlive
+            @return {IChild} First living child, or `null`
+            @public
+            @deprecated in v1.1.0
+            **/
             for (var i = 0; i < this.members.length; i++) {
                 if (this.members[i].exists === true) {
                     return this.members[i];
@@ -3829,14 +4337,16 @@ var Kiwi;
             }
             return null;
         };
-        /**
-        * Returns the first member of the Group which is not 'alive', returns null if all members are alive.
-        * @method getFirstDead
-        * @return {object}
-        * @public
-        * @deprecated in v1.1.0
-        */
         Group.prototype.getFirstDead = function () {
+            /**
+            Return the first member of the Group marked as `exists=false`.
+            Returns `null` if all members are alive.
+
+            @method getFirstDead
+            @return {IChild} First dead child, or `null`
+            @public
+            @deprecated in v1.1.0
+            **/
             for (var i = 0; i < this.members.length; i++) {
                 if (this.members[i].exists === false) {
                     return this.members[i];
@@ -3844,37 +4354,22 @@ var Kiwi;
             }
             return null;
         };
-        /**
-        * Returns a member at random from the group.
-        * @param {Number}	StartIndex	Optional offset off the front of the array. Default value is 0, or the beginning of the array.
-        * @param {Number}	Length		Optional restriction on the number of values you want to randomly select from.
-        * @return {object}	A child from the members list.
-        * @public
-        */
         Group.prototype.getRandom = function (start, length) {
+            /**
+            Return a member at random from the group.
+
+            @method getRandom
+            @param [start=0] {number} Start of sequence to randomly sample
+            @param [length=0] {number} Length of sequence to randomly sample.
+                If `0`, will sample to the end of the array.
+            @return {object} Child selected
+            @public
+            **/
             if (start === void 0) { start = 0; }
             if (length === void 0) { length = 0; }
             if (this.members.length === 0) {
                 return null;
             }
-            /*
-            if (length === 0) {
-                length = this.members.length;
-            }
-
-            if (start < 0 || start > length) {
-                start = 0;
-            }
-
-            var rnd = start + (Math.random() * (start + length));
-
-            if (rnd > this.members.length) {
-                return this.members[this.members.length - 1];
-
-            } else {
-                return this.members[rnd];
-            }
-            */
             // Comply start to viable range
             start = Kiwi.Utils.GameMath.clamp(start, this.members.length - 1);
             // Comply length to fit
@@ -3890,40 +4385,43 @@ var Kiwi;
             // Return
             return this.members[rnd];
         };
-        /**
-        * Returns an array of children which contain the tag which is passed.
-        * @method getChildrenByTag
-        * @param tag {string}
-        * @return {Array}
-        * @public
-        * @since 1.1.0
-        */
         Group.prototype.getChildrenByTag = function (tag) {
+            /**
+            Return an array of children containing a specified tag.
+
+            @method getChildrenByTag
+            @param tag {string} Tag to check
+            @return {array} List of children with that tag
+            @public
+            @since 1.1.0
+            **/
             var children = [];
             for (var i = 0; i < this.members.length; i++) {
                 if (this.members[i].hasTag(tag)) {
                     children.push(this.members[i]);
                 }
-                if (this.members[i].childType() == Kiwi.GROUP) {
+                if (this.members[i].childType() === Kiwi.GROUP) {
                     children = children.concat(this.members[i].getChildrenByTag(tag));
                 }
             }
             return children;
         };
-        /**
-        * Returns the first child which contains the tag passed.
-        * @method getFirstChildByTag
-        * @param tag {String}
-        * @return {IChild}
-        * @public
-        * @since 1.3.0
-        */
         Group.prototype.getFirstChildByTag = function (tag) {
+            /**
+            Return the first child containing a specified tag.
+            This recursively searches within groups.
+
+            @method getFirstChildByTag
+            @param tag {string} Tag to check
+            @return {IChild} Tagged child, or `null`
+            @public
+            @since 1.3.0
+            **/
             for (var i = 0; i < this.members.length; i++) {
                 if (this.members[i].hasTag(tag)) {
                     return this.members[i];
                 }
-                if (this.members[i].childType() == Kiwi.GROUP) {
+                if (this.members[i].childType() === Kiwi.GROUP) {
                     var child = (this.members[i].getFirstChildByTag(tag));
                     if (child) {
                         return child;
@@ -3932,20 +4430,22 @@ var Kiwi;
             }
             return null;
         };
-        /**
-        * Returns the last child which contains the tag passed.
-        * @method getLastChildByTag
-        * @param tag {String}
-        * @return {IChild}
-        * @public
-        * @since 1.3.0
-        */
         Group.prototype.getLastChildByTag = function (tag) {
+            /**
+            Return the last child containing the specified tag.
+            This recursively searches within groups.
+
+            @method getLastChildByTag
+            @param tag {string} Tag to check
+            @return {IChild} Tagged child, or `null`
+            @public
+            @since 1.3.0
+            **/
             for (var i = this.members.length - 1; i >= 0; i--) {
                 if (this.members[i].hasTag(tag)) {
                     return this.members[i];
                 }
-                if (this.members[i].childType() == Kiwi.GROUP) {
+                if (this.members[i].childType() === Kiwi.GROUP) {
                     var child = (this.members[i].getLastChildByTag(tag));
                     if (child) {
                         return child;
@@ -3954,21 +4454,26 @@ var Kiwi;
             }
             return null;
         };
-        /**
-        * --------------------
-        * Child Depth Sorting Methods
-        * --------------------
-        **/
-        /**
-        * Sets a new position of an existing Entity within the Group.
-        * @method setChildIndex
-        * @param child {object} The child in this Group to change.
-        * @param index {Number} The index for the child to be set at.
-        * @return {boolean} true if the Entity was moved to the new position, otherwise false.
-        * @public
+        /*
+        --------------------
+        Child Depth Sorting Methods
+        --------------------
         */
         Group.prototype.setChildIndex = function (child, index) {
-            //  If the Entity isn't in this Group, or is already at that index then bail out
+            /**
+            Move a child to a new depth index within the `Group`.
+
+            This method will fail if the child is not a child of this group,
+            or if it is already at the specified index.
+
+            @method setChildIndex
+            @param child {object} Child to change
+            @param index {number} Index to which to send the child
+            @return {boolean} Whether the child was successfully moved
+            @public
+            **/
+            // If the Entity isn't in this Group,
+            // or is already at that index, then bail out
             if (child.parent !== this || this.getChildIndex(child) === index) {
                 return false;
             }
@@ -3976,16 +4481,21 @@ var Kiwi;
             this.addChildAt(child, index);
             return true;
         };
-        /**
-        * Swaps the position of two existing Entities that are a direct child of this group.
-        * @method swapChildren
-        * @param child1 {object} The first child in this Group to swap.
-        * @param child2 {object} The second child in this Group to swap.
-        * @return {boolean} true if the Entities were swapped successfully, otherwise false.
-        * @public
-        */
         Group.prototype.swapChildren = function (child1, child2) {
-            //  If either Entity isn't in this Group, or is already at that index then bail out
+            /**
+            Swap the position of two existing direct children of this `Group`.
+
+            This method will fail if either child is not a child of this group,
+            or if they are at the same index (i.e. they are the same object).
+
+            @method swapChildren
+            @param child1 {object} First child to swap
+            @param child2 {object} Second child to swap
+            @return {boolean} Whether the children were successfully swapped
+            @public
+            **/
+            // If either Entity isn't in this Group,
+            // or is already at that index, then bail out
             if (child1.parent !== this || child2.parent !== this) {
                 return false;
             }
@@ -3998,20 +4508,23 @@ var Kiwi;
             }
             return false;
         };
-        /**
-        * Swaps the position of two existing Entities within the Group based on their index.
-        * @method swapChildrenAt
-        * @param index1 {Number} The position of the first Entity in this Group to swap.
-        * @param index2 {Number} The position of the second Entity in this Group to swap.
-        * @return {boolean} true if the Entities were swapped successfully, otherwise false.
-        * @public
-        */
         Group.prototype.swapChildrenAt = function (index1, index2) {
+            /**
+            Swap the position of two existing children of the Group,
+            based on their member indices.
+
+            @method swapChildrenAt
+            @param index1 {number} Index of the first child to swap
+            @param index2 {number} Index of the second child to swap
+            @return {boolean} Whether children were swapped successfully
+            @public
+            **/
             var child1 = this.getChildAt(index1);
             var child2 = this.getChildAt(index2);
             if (child1 !== null && child2 !== null) {
-                //  If either Entity isn't in this Group, or is already at that index then bail out
-                if (child1 == child2 || child1.parent !== this || child2.parent !== this) {
+                // If either Entity isn't in this Group,
+                // or is already at that index, then bail out
+                if (child1 === child2 || child1.parent !== this || child2.parent !== this) {
                     return false;
                 }
                 this.members[index1] = child2;
@@ -4020,41 +4533,42 @@ var Kiwi;
             }
             return false;
         };
-        /**
-        * Replaces a child Entity in this Group with a new one.
-        * @method replaceChild
-        * @param oldChild {object} The Entity in this Group to be removed.
-        * @param newChild {object} The new Entity to insert into this Group at the old Entities position.
-        * @return {boolean} true if the Entities were replaced successfully, otherwise false.
-        * @public
-        */
         Group.prototype.replaceChild = function (oldChild, newChild) {
-            //fall through if replacing child with the same child
-            if (oldChild === newChild)
+            /**
+            Replace a child in this Group with a new one.
+
+            @method replaceChild
+            @param oldChild {object} Child in this Group to be removed
+            @param newChild {object} Child to insert at old child's position
+            @return {boolean} Whether child was replaced successfully
+            @public
+            **/
+            // Fall through if replacing child with the same child
+            if (oldChild === newChild) {
                 return false;
-            // get the index of the existing child
+            }
+            // Get the index of the existing child
             var index = this.getChildIndex(oldChild);
             if (index > -1) {
-                // remove the new child from the group if the group contains it, so it can be reinserted in new position
-                if (newChild.parent) {
-                    newChild.parent.removeChild(newChild);
-                }
                 this.removeChildAt(index);
                 this.addChildAt(newChild, index);
-                newChild.parent = null;
                 return true;
             }
             return false;
         };
-        /**
-        * Loops through each member in the group and run a method on for each one.
-        * @method forEach
-        * @param context {any} The context that the callbacks are to have when called.
-        * @param callback {any} The callback method to execute on each member.
-        * @param [params]* {any} Any extra parameters.
-        * @public
-        */
         Group.prototype.forEach = function (context, callback) {
+            /**
+            Loop through each group member and run a method on each one.
+
+            The callback method will receive each child as its first parameter,
+            followed by any additional parameters provided to this method.
+
+            @method forEach
+            @param context {any} Execution context for callbacks
+            @param callback {any} Method to execute on each member
+            @param [params]* {any} Any extra parameters
+            @public
+            **/
             var params = [];
             for (var _i = 2; _i < arguments.length; _i++) {
                 params[_i - 2] = arguments[_i];
@@ -4063,35 +4577,48 @@ var Kiwi;
                 this.members.forEach(function (child) { return callback.apply(context, [child].concat(params)); });
             }
         };
-        /**
-        * Loop through each member of the groups that is alive.
-        * @method forEachAlive
-        * @param context {any} The context that the callbacks are to have when called.
-        * @param callback {any} The callback method to execute on each member.
-        * @param [params]* {any} Any extra parameters.
-        * @public
-        */
         Group.prototype.forEachAlive = function (context, callback) {
+            /**
+            Loop through each member of the group that exists.
+            This is useful for avoiding just-deleted game objects.
+
+            The callback method will receive each child as its first parameter,
+            followed by any additional parameters provided to this method.
+
+            @method forEachAlive
+            @param context {any} Execution context for callbacks
+            @param callback {any} Method to execute on each member
+            @param [params]* {any} Any extra parameters
+            @public
+            **/
             var params = [];
             for (var _i = 2; _i < arguments.length; _i++) {
                 params[_i - 2] = arguments[_i];
             }
             if (this.members.length > 0) {
                 this.members.forEach(function (child) {
-                    if (child.exists)
+                    if (child.exists) {
                         callback.apply(context, [child].concat(params));
+                    }
                 });
             }
         };
-        /**
-        * Sets a property on every member. If componentName is null the property is set on the entity itself, otherwise it is set on the named component. Uses runtime string property lookups. Not optimal for large groups if speed is an issue.
-        * @method setAll
-        * @param componentName {string} The name of the component to set the property on - set to null to set a property on the entity.
-        * @param property {string} The name of the property to set.
-        * @param value {any} The value to set the property to.
-        * @public
-        */
         Group.prototype.setAll = function (componentName, property, value) {
+            /**
+            Set a property on every member. If `componentName` is `null`,
+            the property is set on the child itself.
+            Otherwise it is set on the named component.
+
+            Uses runtime string property lookups.
+            Not optimal for large groups if speed is an issue.
+
+            @method setAll
+            @param componentName {string} Name of the component to set
+                the property on. Set to `null` to set a property on the child.
+            @param property {string} Name of the property to set
+            @param value {any} Value to which to set the property
+            @public
+            **/
             if (componentName === null) {
                 for (var i = 0; i < this.members.length; i++) {
                     this.members[i][property] = value;
@@ -4103,15 +4630,22 @@ var Kiwi;
                 }
             }
         };
-        /**
-        * Calls a function on every member. If componentName is null the function is called on the entity itself, otherwise it is called on the named component. Uses runtime string property lookups. Not optimal for large groups if speed is an issue.
-        * @method callAll
-        * @param componentName {string} The name of the component to call the function on - set to null to call a function on the entity.
-        * @param functionName {string} The name of the function to call.
-        * @param args {Array} An array of arguments to pas to the function.
-        * @public
-        */
         Group.prototype.callAll = function (componentName, functionName, args) {
+            /**
+            Call a function on every member. If `componentName` is `null`,
+            the function is called on the child itself.
+            Otherwise it is called on the named component.
+
+            Uses runtime string property lookups.
+            Not optimal for large groups if speed is an issue.
+
+            @method callAll
+            @param componentName {string} Name of the component to call
+                the function on. Set to `null` to call a function on the child.
+            @param functionName {string} Name of the function to call
+            @param args {array} Array of arguments to pass to the function
+            @public
+            **/
             if (componentName === null) {
                 for (var i = 0; i < this.members.length; i++) {
                     this.members[i][functionName].apply(this.members[i], args);
@@ -4123,12 +4657,23 @@ var Kiwi;
                 }
             }
         };
-        /**
-        * The update loop for this group.
-        * @method update
-        * @public
-        */
         Group.prototype.update = function () {
+            /**
+            Update this group. This is automatically called per frame,
+            if the group is `active`.
+
+            This method will first call `preUpdate` on components;
+            then `update` on components;
+            then `update` on all members, calling `destroy` on those
+            with `exists= false`;
+            then `postUpdate` on components.
+
+            You may extend this function, although we recommend that you use
+            `Component` objects instead.
+
+            @method update
+            @public
+            **/
             this.components.preUpdate();
             this.components.update();
             if (this.members.length > 0) {
@@ -4148,12 +4693,14 @@ var Kiwi;
                 return this._exists;
             },
             /**
-            * Toggles the exitence of this Group. An Entity that no longer exists can be garbage collected or re-allocated in a pool
-            * This method should be over-ridden to handle specific canvas/webgl implementations.
-            * @property exists
-            * @type boolean
-            * @public
-            */
+            Toggles the existence of this `Group`.
+            An `IChild` that no longer exists can be garbage collected
+            or re-allocated in a pool.
+    
+            @property exists
+            @type boolean
+            @public
+            **/
             set: function (value) {
                 this._exists = value;
             },
@@ -4165,36 +4712,40 @@ var Kiwi;
                 return this._active;
             },
             /**
-            * Toggles the active state of this Entity. An Entity that is active has its update method called by its parent.
-            * This method should be over-ridden to handle specific dom/canvas/webgl implementations.
-            * @property active
-            * @type boolean
-            * @default true
-            * @public
-            */
+            Toggles the active state of this Entity. An Entity that is active has its update method called by its parent.
+            This method should be over-ridden to handle specific dom/canvas/webgl implementations.
+            @property active
+            @type boolean
+            @default true
+            @public
+            **/
             set: function (value) {
                 this._active = value;
             },
             enumerable: true,
             configurable: true
         });
-        /**
-        * The render method that is required by the IChild.
-        * This method never gets called as the render is only worried about rendering entities.
-        * @method render
-        * @param camera {Kiwi.Camera}
-        * @public
-        * @deprecated
-        */
         Group.prototype.render = function (camera) {
+            /**
+            Render method that is required by the IChild.
+
+            This method never gets called,
+            as the renderer is only worried about rendering entities.
+
+            @method render
+            @param camera {Kiwi.Camera} Currently rendering camera
+            @public
+            @deprecated
+            **/
         };
-        /**
-        * Returns the number of member which are marked as 'alive'
-        * @method countLiving
-        * @return {Number}
-        * @public
-        */
         Group.prototype.countLiving = function () {
+            /**
+            Return the number of members which have `exists=true`.
+
+            @method countLiving
+            @return {number} Number of extant members
+            @public
+            **/
             var total = 0;
             for (var i = 0; i < this.members.length; i++) {
                 if (this.members[i].exists === true) {
@@ -4203,13 +4754,14 @@ var Kiwi;
             }
             return total;
         };
-        /**
-        * Returns the number of member which are not marked as 'alive'
-        * @method countDead
-        * @return {Number}
-        * @public
-        */
         Group.prototype.countDead = function () {
+            /**
+            Return the number of members which have `exists=false`.
+
+            @method countDead
+            @return {number} Number of non-extant members
+            @public
+            **/
             var total = 0;
             for (var i = 0; i < this.members.length; i++) {
                 if (this.members[i].exists === false) {
@@ -4218,26 +4770,29 @@ var Kiwi;
             }
             return total;
         };
-        /**
-        * Clear all children from this Group
-        * @method clear
-        * @public
-        */
         Group.prototype.clear = function () {
-            this.members.length = 0;
+            /**
+            Clear all children from this Group.
+
+            This maps to a default call to `removeChildren()`.
+
+            @method clear
+            @public
+            **/
+            this.removeChildren();
         };
         Object.defineProperty(Group.prototype, "willRender", {
             get: function () {
                 return this._willRender;
             },
             /**
-            * Controls whether render is automatically called by the parent.
-            * @property willRender
-            * @type boolean
-            * @return {boolean}
-            * @public
-            * @deprecated Use visible instead
-            */
+            Controls whether render is automatically called by the parent
+    
+            @property willRender
+            @type boolean
+            @public
+            @deprecated Use visible instead
+            **/
             set: function (value) {
                 this._willRender = value;
             },
@@ -4249,65 +4804,74 @@ var Kiwi;
                 return this._visible;
             },
             /**
-            * Set the visibility of this entity. True or False.
-            * @property visible
-            * @type boolean
-            * @default true
-            * @public
-            * @since 1.0.1
-            */
+            Whether this is visible or not.
+            Note that groups do not have alpha,
+            so this is the only way to control visibility.
+    
+            @property visible
+            @type boolean
+            @default true
+            @public
+            @since 1.0.1
+            **/
             set: function (value) {
                 this._visible = value;
             },
             enumerable: true,
             configurable: true
         });
-        /**
-        * Adds a new Tag to this Entity. Useful for identifying large amounts of the same type of GameObjects.
-        * You can pass multiple strings to add multiple tags.
-        * @method addTag
-        * @param tag {string} The tag that you would like to add to this Entity.
-        * @since 1.1.0
-        * @public
-        */
         Group.prototype.addTag = function () {
+            /**
+            Add a new tag to this `Group`.
+            Useful for distinguishing between the same type of GameObject.
+
+            You can pass multiple strings to add multiple tags.
+
+            @method addTag
+            @param tag {string} Tag to add
+            @since 1.1.0
+            @public
+            **/
             var args = [];
             for (var _i = 0; _i < arguments.length; _i++) {
                 args[_i - 0] = arguments[_i];
             }
             for (var i = 0; i < args.length; i++) {
-                if (this._tags.indexOf(args[i]) == -1) {
+                if (this._tags.indexOf(args[i]) === -1) {
                     this._tags.push(args[i]);
                 }
             }
         };
-        /**
-        * Removes a Tag from this Entity.
-        * @method removeTag
-        * @param tag {string} The tag that you would like to remove from this Entity.
-        * @since 1.1.0
-        * @public
-        */
         Group.prototype.removeTag = function () {
+            /**
+            Remove a Tag from this `Group`, if it is present.
+
+            @method removeTag
+            @param tag {string} Tag to remove
+            @since 1.1.0
+            @public
+            **/
             var args = [];
             for (var _i = 0; _i < arguments.length; _i++) {
                 args[_i - 0] = arguments[_i];
             }
             for (var i = 0; i < args.length; i++) {
                 var index = this._tags.indexOf(args[i]);
-                if (index !== -1)
+                if (index !== -1) {
                     this._tags.splice(index, 1);
+                }
             }
         };
-        /**
-        * Checks to see if this Entity has a Tag based upon a string which you pass.
-        * @method hasTag
-        * @param tag {string}
-        * @since 1.1.0
-        * @return {boolean}
-        * @public
-        */
         Group.prototype.hasTag = function (tag) {
+            /**
+            Return whether this `Group` has a specified tag.
+
+            @method hasTag
+            @param tag {string} Tag to check
+            @since 1.1.0
+            @return {boolean}
+            @public
+            **/
             var len = this._tags.length;
             while (len--) {
                 if (this._tags[len] === tag) {
@@ -4316,23 +4880,31 @@ var Kiwi;
             }
             return false;
         };
-        /**
-        * Removes all children and destroys the Group.
-        * @method destroy
-        * @param [immediate=false] {boolean} If the object should be immediately removed or if it should be removed at the end of the next update loop.
-        * @param [destroyChildren=true] {boolean} If all of the children on the group should also have their destroy methods called.
-        * @public
-        */
         Group.prototype.destroy = function (immediate, destroyChildren) {
+            /**
+            Remove all children and destroy the `Group`.
+
+            @method destroy
+            @param [immediate=false] {boolean} Whether the object should be
+                immediately removed, or should be removed at
+                the end of the next `update` loop.
+            @param [destroyChildren=true] {boolean} Whether all of the children
+                on the group should also have their `destroy` methods called
+            @public
+            **/
             if (immediate === void 0) { immediate = false; }
             if (destroyChildren === void 0) { destroyChildren = true; }
+            if (!this.onState) {
+                immediate = true;
+            }
             this._exists = false;
             this._active = false;
             this._visible = false;
             if (immediate === true) {
-                if (this._tempRemoveChildren !== null)
+                if (this._tempRemoveChildren !== null) {
                     destroyChildren = this._tempRemoveChildren;
-                if (destroyChildren == true) {
+                }
+                if (destroyChildren === true) {
                     for (var i = 0; i < this.members.length; i++) {
                         this.members[i].destroy(true);
                     }
@@ -4340,13 +4912,16 @@ var Kiwi;
                 else {
                     this.removeChildren();
                 }
-                if (this.parent !== null)
+                if (this.parent !== null) {
                     this.parent.removeChild(this);
-                if (this.state)
+                }
+                if (this.state) {
                     this.state.removeFromTrackingList(this);
-                delete this.transform;
-                if (this.components)
+                }
+                if (this.components) {
                     this.components.removeAll();
+                }
+                delete this.transform;
                 delete this.components;
                 delete this.game;
                 delete this.state;
@@ -4360,10 +4935,8 @@ var Kiwi;
     Kiwi.Group = Group;
 })(Kiwi || (Kiwi = {}));
 /**
-*
-* @module Kiwi
-*
-*/
+@module Kiwi
+**/
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -4373,28 +4946,84 @@ var __extends = this.__extends || function (d, b) {
 var Kiwi;
 (function (Kiwi) {
     /**
-    * A State in Kiwi.JS is the main class that developers use when wanting to create a Game.
-    * States in Kiwi are used keep different sections of a game seperated. So a single game maybe comprised of many different States.
-    * Such as one for the menu, in-game, leaderboard, e.t.c.
-    * There can only ever be a single State active at a given time.
-    *
-    * @class State
-    * @namespace Kiwi
-    * @extends Kiwi.Group
-    * @constructor
-    * @param name {String} Name of this State. Should be unique to differentiate itself from other States.
-    * @return {Kiwi.State}
-    */
+    A `State` is the main class used to create a game.
+    States in Kiwi are used to keep different sections of a game separated.
+    A single game may be comprised of many different States,
+    such as one for the menu, in-game, leaderboard, etc.
+    There can only ever be a single State active at a given time.
+
+    **About the State lifecycle**
+
+    Developers should know how the State works, as most of the game takes place
+    inside it. You are expected to alter State behavior to suit your purposes.
+    However, you must ensure that you do not break its regular behavior.
+
+    When you switch into a State, it runs a series of methods.
+    These prepare the State for operation.
+    You can insert custom code into this sequence,
+    but be aware that the game is only ready for certain actions
+    after certain stages in the switch process. In particular,
+    be careful about creating objects before the `create` phase,
+    because textures and other assets have not been set yet.
+    Objects created before `create` may lose their textures.
+
+    The order is as follows:
+
+    1. `init()` (may receive parameters from prior State)
+    2. `preload()` (declare asset loading here)
+    3. `loadUpdate()` EXTEND (executes during loading)
+    4. `loadProgress()` (runs every time a file is loaded)
+    5. `loadComplete()` (runs when loading is complete)
+    6. `create()` (all data is available; it is safe to create game objects)
+
+    Once the switch is complete, the State immediately begins to run
+    the update loop. This runs as follows:
+
+    1. `preUpdate()` EXTEND (updates state ComponentManager)
+    2. `update()` EXTEND (updates all children)
+    3. `postUpdate()` EXTEND (updates state ComponentManager)
+    4. ...render (not part of State; executed by the main game loop)
+    5. `postRender()`
+
+    Finally, when you switch to another State, the State runs the following
+    method:
+
+    * `shutdown()`
+
+    You may override any of these methods entirely, with the exception of
+    those marked EXTEND. These methods perform some vital function.
+    You may modify them via extension, for example:
+
+    ```
+    myState.update = function() {
+
+        // Extend
+        Kiwi.State.prototype.update.call( this );
+
+        // Custom code...
+    };
+    ```
+
+    The most common functions are `preload()`, `create()`, and `update()`.
+
+    @class State
+    @namespace Kiwi
+    @extends Kiwi.Group
+    @constructor
+    @param name {string} Name of this State.
+        Should be unique to differentiate itself from other States.
+    @return {Kiwi.State}
+    **/
     var State = (function (_super) {
         __extends(State, _super);
         function State(name) {
             _super.call(this, null, name);
             /**
-            * A reference to the Kiwi.Game that this State belongs to.
-            * @property game
-            * @type Kiwi.Game
-            * @public
-            */
+            A reference to the `Kiwi.Game` that this `State` belongs to.
+            @property game
+            @type Kiwi.Game
+            @public
+            **/
             this.game = null;
             this.config = new Kiwi.StateConfig(this, name);
             this.components = new Kiwi.ComponentManager(Kiwi.STATE, this);
@@ -4402,29 +5031,32 @@ var Kiwi;
             this._trackingList = [];
         }
         /**
-        * Returns the type of object this state is.
-        * @method objType
-        * @return {String} "State"
-        * @public
-        */
+        Returns the type of object this state is.
+        @method objType
+        @return {string} "State"
+        @public
+        **/
         State.prototype.objType = function () {
             return "State";
         };
         /**
-        * Returns the type of child this is.
-        * @method childType
-        * @return {Number} Kiwi.GROUP
-        * @public
-        */
+        Returns the type of child this is.
+        @method childType
+        @return {number} Kiwi.GROUP
+        @public
+        **/
         State.prototype.childType = function () {
             return Kiwi.GROUP;
         };
         /**
-        * This method is executed when this State is about to be switched too. This is the first method to be executed, and happens before the Init method.
-        * Is called each time a State is switched to.
-        * @method boot
-        * @public
-        */
+        Boot up the state in preparation for switching into it.
+        This is the first method to be executed,
+        and happens before the `init` method.
+        Is called each time a `State` is switched to.
+        It should not be necessary to call this method.
+        @method boot
+        @public
+        **/
         State.prototype.boot = function () {
             this.textureLibrary = new Kiwi.Textures.TextureLibrary(this.game);
             this.textures = this.textureLibrary.textures;
@@ -4434,26 +5066,30 @@ var Kiwi;
             this.data = this.dataLibrary.data;
         };
         /*
-        * Currently unused.
-        */
+        Currently unused.
+        **/
         State.prototype.setType = function (value) {
             if (this.config.isInitialised === false) {
                 this.config.type = value;
             }
         };
         /*
-        *--------------
-        * Methods that are to be Over-Ridden by Devs.
-        *--------------
+        -------------
+        Methods that are to be Over-Ridden by Devs.
+        -------------
         */
         /**
-        * Gets executed when the state has been initalised and gets switched to for the first time.
-        * This method only ever gets called once and it is before the preload method.
-        * Can have parameters passed to it by the previous state that switched to it.
-        * @method init
-        * @param [values] { Any }
-        * @public
-        */
+        Overrideable method.
+
+        Gets executed when the state has been initalised
+        and gets switched to for the first time.
+        This method only ever gets called once, before the preload method.
+        Can have parameters passed to it by the previous state.
+
+        @method init
+        @param [values] {Any}
+        @public
+        **/
         State.prototype.init = function () {
             var paramsArr = [];
             for (var _i = 0; _i < arguments.length; _i++) {
@@ -4461,36 +5097,53 @@ var Kiwi;
             }
         };
         /**
-        * This method is where you would load of all the assets that are requried for this state or in the entire game.
-        *
-        * @method preload
-        * @public
-        */
+        Overrideable method.
+
+        This method is where you load of all the assets required
+        for this state or in the entire game.
+
+        @method preload
+        @public
+        **/
         State.prototype.preload = function () {
         };
         /**
-        * This method is progressively called whilst loading files and is executed each time a file has been loaded.
-        * This can be used to create a 'progress' bar during the loading stage of a game.
-        * @method loadProgress
-        * @param percent {Number} The percent of files that have been loaded so far. This is a number from 0 - 1.
-        * @param bytesLoaded {Number} The number of bytes that have been loaded so far.
-        * @param file {Kiwi.Files.File} The last file to have been loaded.
-        * @public
-        */
+        Overrideable method.
+
+        This method is progressively called while loading files,
+        and is executed each time a file has been loaded.
+        This can be used to create a progress bar
+        during the loading stage of a game.
+
+        @method loadProgress
+        @param percent {number} The percent of files that have been loaded
+            so far. This is a number from 0 to 1.
+        @param bytesLoaded {number} Number of bytes loaded so far
+        @param file {Kiwi.Files.File} Last file to have been loaded
+        @public
+        **/
         State.prototype.loadProgress = function (percent, bytesLoaded, file) {
         };
         /**
-        * Gets executed when the game is finished loading and it is about to 'create' the state.
-        * @method loadComplete
-        * @public
-        */
+        Overrideable method.
+
+        Executes when the game finishes loading and is about to `create`
+        the state.
+
+        @method loadComplete
+        @public
+        **/
         State.prototype.loadComplete = function () {
         };
         /**
-        * The game loop that gets executed while the game is loading.
-        * @method loadUpdate
-        * @public
-        */
+        Extendable method. You may write your own, but it must call this
+        via `Kiwi.State.prototype.loadUpdate.call( this )`.
+
+        The game loop that gets executed while the game is loading.
+
+        @method loadUpdate
+        @public
+        **/
         State.prototype.loadUpdate = function () {
             for (var i = 0; i < this.members.length; i++) {
                 if (this.members[i].active === true) {
@@ -4499,11 +5152,15 @@ var Kiwi;
             }
         };
         /**
-        * Is executed once all of the assets have loaded and the game is ready to be 'created'.
-        * @method create
-        * @param [values]* {Any}
-        * @public
-        */
+        Overrideable method.
+
+        Is executed once all of the assets have loaded
+        and the game is ready to be created.
+
+        @method create
+        @param [values]* {Any}
+        @public
+        **/
         State.prototype.create = function () {
             var paramsArr = [];
             for (var _i = 0; _i < arguments.length; _i++) {
@@ -4511,18 +5168,29 @@ var Kiwi;
             }
         };
         /**
-        * Is called every frame before the update loop. When overriding make sure you include a super call.
-        * @method preUpdate
-        * @public
-        */
+        Extendable method. You may write your own, but it must call this
+        via `Kiwi.State.prototype.preUpdate.call( this )`.
+
+        Is called every frame before the update loop.
+
+        @method preUpdate
+        @public
+        **/
         State.prototype.preUpdate = function () {
             this.components.preUpdate();
         };
         /**
-        * The update loop that is executed every frame while the game is 'playing'. When overriding make sure you include a super call too.
-        * @method update
-        * @public
-        */
+        Extendable method. You may write your own, but it must call this
+        via `Kiwi.State.prototype.update.call( this )`.
+
+        Executed every frame while the state is current.
+        Updates state members and children.
+
+        Generally, this is where the game runs.
+
+        @method update
+        @public
+        **/
         State.prototype.update = function () {
             this.components.update();
             for (var i = 0; i < this.members.length; i++) {
@@ -4537,148 +5205,190 @@ var Kiwi;
             }
         };
         /**
-        * The post update loop is executed every frame after the update method.
-        * When overriding make sure you include a super call at the end of the method.
-        * @method postUpdate
-        * @public
-        */
+        Extendable method. You may write your own, but it must call this
+        via `Kiwi.State.prototype.postUpdate.call( this )`.
+
+        The post update loop is executed every frame after the update method.
+
+        @method postUpdate
+        @public
+        **/
         State.prototype.postUpdate = function () {
             this.components.postUpdate();
         };
         /**
-        * Called after all of the layers have rendered themselves, useful for debugging.
-        * @method postRender
-        * @public
-        */
+        Overrideable method.
+
+        Called after all of the members have rendered themselves.
+        Useful for debugging.
+
+        @method postRender
+        @public
+        **/
         State.prototype.postRender = function () {
         };
         /**
-        * Called just before this State is going to be Shut Down and another one is going to be switched too.
-        * @method shutDown
-        * @public
-        */
+        Overrideable method.
+
+        Called just before this `State` is going to be shut down,
+        and the game switches to another `State`.
+
+        @method shutDown
+        @public
+        **/
         State.prototype.shutDown = function () {
         };
         /*
-        *--------------
-        * Loading Methods
-        *--------------
+        -------------
+        Loading Methods
+        -------------
         */
         /**
-        * Adds a new image file that is be loaded when the state gets up to the loading all of the assets.
-        *
-        * @method addImage
-        * @param key {String} A key for this image so that you can access it when the loading has finished.
-        * @param url {String} The location of the image.
-        * @param [storeAsGlobal=true] {boolean} If the image should be deleted when switching to another state or if the other states should still be able to access this image.
-        * @param [width] {Number} The width of the image. If not passed the width will be automatically calculated.
-        * @param [height] {Number} The height of the image. If not passed the height will be automatically calculated.
-        * @param [offsetX] {Number} The offset of the image when rendering on the x axis.
-        * @param [offsetY] {Number} The offset of the image when rendering on the y axis.
-        * @public
-        */
+        Add a new image file to be loaded when the state loads assets.
+
+        @method addImage
+        @param key {string} Key for this image so that you can access it
+            when the loading has finished
+        @param url {string} Location of the image
+        @param [storeAsGlobal=true] {boolean} Whether the image should be
+            retained as a global asset after this state is destroyed,
+            or it should also be destroyed
+        @param [width] {number} Width of the image. If not passed,
+            the width will be automatically calculated.
+        @param [height] {number} Height of the image. If not passed,
+            the height will be automatically calculated.
+        @param [offsetX] {number} Horizontal offset of the image
+        @param [offsetY] {number} Vertical offset of the image
+        @public
+        **/
         State.prototype.addImage = function (key, url, storeAsGlobal, width, height, offsetX, offsetY) {
             if (storeAsGlobal === void 0) { storeAsGlobal = true; }
             return this.game.loader.addImage(key, url, width, height, offsetX, offsetY, storeAsGlobal);
         };
         /**
-        * Adds a new spritesheet image file that is be loaded when the state gets up to the loading all of the assets.
-        *
-        * @method addSpriteSheet
-        * @param key {String} A key for this image so that you can access it when the loading has finished.
-        * @param url {String} The location of the image.
-        * @param frameWidth {Number} The width of a single frame in the spritesheet
-        * @param frameHeight {Number} The height of a single frame in the spritesheet
-        * @param [storeAsGlobal=true] {boolean} If the image should be deleted when switching to another state or if the other states should still be able to access this image.
-        * @param [numCells] {Number} The number of cells/frames that are in the spritesheet. If not specified will calculate this based of the width/height of the image.
-        * @param [rows] {Number} The number of cells that are in a row. If not specified will calculate this based of the width/height of the image.
-        * @param [cols] {Number} The number of cells that are in a column. If not specified will calculate this based of the width/height of the image.
-        * @param [sheetOffsetX=0] {Number} The offset of the whole spritesheet on the x axis.
-        * @param [sheetOffsetY=0] {Number} The offset of the whole spritesheet on the y axis.
-        * @param [cellOffsetX=0] {Number} The spacing between cells on the x axis.
-        * @param [cellOffsetY=0] {Number} The spacing between cells on the y axis.
-        * @public
-        */
+        Add a new spritesheet image file to be loaded when the state loads
+        assets.
+
+        @method addSpriteSheet
+        @param key {string} Key for this image so that you can access it
+            when the loading has finished
+        @param url {string} Location of the image
+        @param frameWidth {number} Width of a single frame in the spritesheet
+        @param frameHeight {number} Height of a single frame in the
+            spritesheet
+        @param [storeAsGlobal=true] {boolean} Whether the image should be
+            retained as a global asset after this state is destroyed,
+            or it should also be destroyed
+        @param [numCells] {number} Number of cells/frames in the spritesheet.
+            If not specified, will calculate this based on the
+            width/height of the image.
+        @param [rows] {number} Number of cells in a row. If not specified,
+            will calculate this based of the width/height of the image.
+        @param [cols] {number} Number of cells in a column. If not specified,
+            will calculate this based of the width/height of the image.
+        @param [sheetOffsetX=0] {number} Horizontal offset of the whole
+            spritesheet
+        @param [sheetOffsetY=0] {number} Vertical offset of the whole
+            spritesheet
+        @param [cellOffsetX=0] {number} Horizontal spacing between cells
+        @param [cellOffsetY=0] {number} Vertical spacing between cells
+        @public
+        **/
         State.prototype.addSpriteSheet = function (key, url, frameWidth, frameHeight, storeAsGlobal, numCells, rows, cols, sheetOffsetX, sheetOffsetY, cellOffsetX, cellOffsetY) {
             if (storeAsGlobal === void 0) { storeAsGlobal = true; }
             return this.game.loader.addSpriteSheet(key, url, frameWidth, frameHeight, numCells, rows, cols, sheetOffsetX, sheetOffsetY, cellOffsetX, cellOffsetY, storeAsGlobal);
         };
         /**
-        * Adds a new texture atlas that is to be loaded when the states gets up to the stage of loading the assets.
-        *
-        * @method addTextureAtlas
-        * @param key {String} A key for this image so that you can access it when the loading has finished.
-        * @param imageURL {String} The location of the image.
-        * @param [jsonID] {String} The id for the json file that is to be loaded. So that you can access it outside of the texture atlas.
-        * @param [jsonURL] {String} The location of the json file you have loaded.
-        * @param [storeAsGlobal=true] {boolean} If the image should be delete when switching to another state or if the other states should still be able to access this image.
-        * @public
-        */
+        Add a new texture atlas to be loaded when the state loads assets.
+
+        @method addTextureAtlas
+        @param key {string} Key for this image so that you can access it
+            when the loading has finished
+        @param imageURL {string} Location of the image.
+        @param [jsonID] {string} Key for the JSON file,
+            so that you can access it outside of the texture atlas
+        @param [jsonURL] {string} Location of the JSON file describing the
+            atlas
+        @param [storeAsGlobal=true] {boolean} Whether the image should be
+            retained as a global asset after this state is destroyed,
+            or it should also be destroyed
+        @public
+        **/
         State.prototype.addTextureAtlas = function (key, imageURL, jsonID, jsonURL, storeAsGlobal) {
             if (storeAsGlobal === void 0) { storeAsGlobal = true; }
             return this.game.loader.addTextureAtlas(key, imageURL, jsonID, jsonURL, storeAsGlobal);
         };
         /**
-        * Adds a json file that is to be loaded when the state gets up to the stage of loading the assets.
-        *
-        * @method addJSON
-        * @param key {string} A key for this json so that you can access it when the loading has finished
-        * @param url {string} The location of the JSON file.
-        * @param [storeAsGlobal=true] {boolean} If the json should be deleted when switching to another state or if the other states should still be able to access this json.
-        * @public
-        */
+        Add a JSON file to be loaded when the state loads assets.
+        
+        @method addJSON
+        @param key {string} Key for this JSON so that you can access it
+            when the loading has finished
+        @param url {string} Location of the JSON file
+        @param [storeAsGlobal=true] {boolean} Whether the JSON should be
+            retained as a global asset after this state is destroyed,
+            or it should also be destroyed
+        @public
+        **/
         State.prototype.addJSON = function (key, url, storeAsGlobal) {
             if (storeAsGlobal === void 0) { storeAsGlobal = true; }
             return this.game.loader.addJSON(key, url, storeAsGlobal);
         };
         /**
-        * Adds a new audio file that is to be loaded when the state gets up to the stage of loading the assets.
-        *
-        * @method addAudio
-        * @param key {string} A key for this audio so that you can access it when the loading has finished
-        * @param url {string} The location of the audio file. You can pass a array of urls, in which case the first supported filetype will be used.
-        * @param [storeAsGlobal=true] {boolean} If the audio should be deleted when switching to another state or if the other states should still be able to access this audio.
-        */
+        Add a new audio file to be loaded when the state loads assets.
+        
+        @method addAudio
+        @param key {string} Key for this audio so that you can access it
+            when the loading has finished
+        @param url {string} Location of the audio file.
+            You can pass an array of urls, in which case the first supported
+            filetype will be used.
+        @param [storeAsGlobal=true] {boolean} Whether the audio should be
+            retained as a global asset after this state is destroyed,
+            or it should also be destroyed
+        **/
         State.prototype.addAudio = function (key, url, storeAsGlobal) {
             if (storeAsGlobal === void 0) { storeAsGlobal = true; }
             return this.game.loader.addAudio(key, url, storeAsGlobal);
         };
         /**
-        * Adds a new Objects to the tracking list.
-        * This is an INTERNAL Kiwi method and DEVS shouldn't need to worry about it.
-        * @method addToTrackingList
-        * @param child {Object} The Object which you are adding to the tracking list.
-        * @public
-        */
+        Add a new object to the tracking list.
+        This is an internal KiwiJS method and game devs
+        shouldn't need to worry about it.
+        @method addToTrackingList
+        @param child {object} Object to add to the tracking list.
+        @public
+        **/
         State.prototype.addToTrackingList = function (child) {
-            //check to see that its not already in the tracking list.
-            if (this._trackingList.indexOf(child) !== -1)
+            if (this._trackingList.indexOf(child) !== -1) {
                 return;
-            //add to the list
+            }
             this._trackingList.push(child);
         };
         /**
-        * Removes a Object from the tracking list. This should only need to happen when a child is being destroyed.
-        * This is an INTERNAL Kiwi method and DEVS shouldn't really need to worry about it.
-        * @method removeFromTrackingList
-        * @param child {Object} The object which is being removed from the tracking list.
-        * @public
-        */
+        Remove an object from the tracking list.
+        This should only need to happen when a child is destroyed.
+        This is an internal Kiwi method and game devs
+        shouldn't really need to worry about it.
+        @method removeFromTrackingList
+        @param child {object} The object which is being removed from the tracking list.
+        @public
+        **/
         State.prototype.removeFromTrackingList = function (child) {
-            //check to see that it is in the tracking list.
             var n = this._trackingList.indexOf(child);
             if (n > -1) {
                 this._trackingList.splice(n, 1);
             }
         };
         /**
-        * Destroys all of Objects in the tracking list that are not currently on stage.
-        * All that currently don't have this STATE as an ancestor.
-        * Returns the number of Objects removed.
-        * @method destroyUnused
-        * @return {Number} The amount of objects removed.
-        * @public
-        */
+        Destroys all objects in the tracking list that are
+        not currently on stage.
+        All that currently don't have this `State` as an ancestor.
+        Returns the number of objects removed.
+        @method destroyUnused
+        @return {number} Amount of objects removed
+        @public
+        **/
         State.prototype.destroyUnused = function () {
             var d = 0;
             for (var i = 0; i < this._trackingList.length; i++) {
@@ -4692,32 +5402,48 @@ var Kiwi;
             return d;
         };
         /**
-        * Used to mark all Entities that have been created for deletion, regardless of it they are on the stage or not.
-        * @method destroy
-        * @param [deleteAll=true] If all of the Objects ever created should have the destroy method executed also.
-        * @public
-        */
+        Used to mark all Entities that have been created for deletion,
+        regardless of whether they are on the stage or not.
+
+        @method destroy
+        @param [deleteAll=true] If all of the Objects ever created should
+            have the destroy method executed also.
+        @public
+        **/
         State.prototype.destroy = function (deleteAll) {
             if (deleteAll === void 0) { deleteAll = true; }
             if (deleteAll == true) {
                 while (this._trackingList.length > 0) {
-                    //If the item is a group then we don't want it to destroy it's children, as this method will do that eventually anyway.
+                    // Don't destroy group children,
+                    // as they're also on the tracking list
+                    // and we'll get to them soon enough
                     this._trackingList[0].destroy(true, false);
                 }
                 this._trackingList = [];
                 while (this.members.length > 0) {
-                    //If the item is a group then we don't want it to destroy it's children, as this method will do that eventually anyway.
-                    this.members[0].destroy(true, false);
+                    // Do destroy group children,
+                    // as we'll never visit them again
+                    this.members[0].destroy(true, true);
                 }
                 this.members = [];
             }
+            // This method can't call super,
+            // as `Kiwi.Group.prototype.destroy` will delete
+            // permanent properties and prevent the game from
+            // successfully switching back to this state.
+            // Partial duplicate functionality:
+            if (this.components) {
+                this.components.removeAll();
+            }
         };
         /**
-        * Recursively goes through a child given and runs the destroy method on all that are passed.
-        * @method _destroyChildren
-        * @param child {Object}
-        * @private
-        */
+        Recursively destroys a child and all its children.
+
+        @method _destroyChildren
+        @param child {object}
+        @deprecated As of v1.4.1. This is never called.
+        @private
+        **/
         State.prototype._destroyChildren = function (child) {
             if (child.childType() == Kiwi.GROUP) {
                 for (var i = 0; i < child.members.length; i++) {
@@ -4731,42 +5457,38 @@ var Kiwi;
     Kiwi.State = State;
 })(Kiwi || (Kiwi = {}));
 /**
-*
-* @module Kiwi
-*
-*/
+@module Kiwi
+**/
 var Kiwi;
 (function (Kiwi) {
-    /**
-    * A Camera is used to render a particular section of the game world on the stage. Each Camera has a coordinates which are held in the transform property, and a width/height. Note: This class should never be directly instantiated but instead should be made through a CameraManager's 'create' method.
-    *
-    * @class Camera
-    * @namespace Kiwi
-    * @constructor
-    * @param game {Kiwi.Game} The game that this camera belongs to.
-    * @param id {Number} A unique ID for this camera
-    * @param name {String} The name this camera goes by
-    * @param x {Number} The x coordinate of the camera
-    * @param y {Number} The y coordinate of the camera
-    * @param width {Number} The width of the camera
-    * @param height {Number} The cameras height
-    * @return {Kiwi.Camera}
-    *
-    */
     var Camera = (function () {
+        /**
+        A `Camera` is used to render a particular section of the game world
+        on the stage. Each `Camera` has coordinates which are held in the
+        `transform` property, and `width`/`height` properties.
+
+        Note: This class may be directly instantiated, but if you want
+        your camera registered in a `CameraManager`, you should use
+        `CameraManager.create()` instead.
+
+        A default camera is created as `game.cameras.defaultCamera`.
+
+        @class Camera
+        @namespace Kiwi
+        @constructor
+        @param game {Kiwi.Game} Game that this camera belongs to
+        @param id {number} Unique ID for this camera
+        @param name {string} Name for this camera
+        @param x {number} Horizontal coordinate of the camera
+        @param y {number} Vertical coordinate of the camera
+        @param width {number} Width of the camera
+        @param height {number} Height of the camera
+        @return {Kiwi.Camera}
+        **/
         function Camera(game, id, name, x, y, width, height) {
-            /**
-            * If true then the camera will be resized to fit the stage when the stage is resized
-            * @property fitToStage
-            * @type boolean
-            * @default true
-            * @public
-            */
-            this.fitToStage = true;
             this._game = game;
             this.id = id;
             this.name = name;
-            //size could autoresize to fit stage
             this.width = width;
             this.height = height;
             this.transform = new Kiwi.Geom.Transform(x, y);
@@ -4774,34 +5496,40 @@ var Kiwi;
             this.transform.rotPointY = y + height / 2;
             this._game.stage.onResize.add(this._updatedStageSize, this);
             this._scratchMatrix = new Kiwi.Geom.Matrix();
+            this.fitToStage = true;
         }
         /**
-        * The type of object this is.
-        * @method objType
-        * @return {String} "Camera"
-        * @public
-        */
+        Return the type of object that this is.
+
+        @method objType
+        @return {string} "Camera"
+        @public
+        **/
         Camera.prototype.objType = function () {
             return "Camera";
         };
-        /**
-        * Updates the width/height of this camera. Is used when the stage resizes.
-        * @method _updatedStageSize
-        * @param width {Number} The new width of the camera.
-        * @param height {Number} The new height of the camera.
-        * @private
-        */
         Camera.prototype._updatedStageSize = function (width, height) {
-            this.width = width;
-            this.height = height;
+            /**
+            Update the width/height of this camera when the stage resizes.
+
+            @method _updatedStageSize
+            @param width {number} New width of the camera
+            @param height {number} New height of the camera
+            @private
+            **/
+            if (this.fitToStage) {
+                this.width = width;
+                this.height = height;
+            }
         };
         Object.defineProperty(Camera.prototype, "visible", {
             /**
-            * Controls whether this Camera is rendered.
-            * @property visible
-            * @type boolean
-            * @public
-            */
+            Controls whether this Camera is rendered
+    
+            @property visible
+            @type boolean
+            @public
+            **/
             get: function () {
                 return this._visible;
             },
@@ -4813,12 +5541,14 @@ var Kiwi;
         });
         Object.defineProperty(Camera.prototype, "dirty", {
             /**
-            * A value used by components to control if the camera needs re-rendering.
-            * @property dirty
-            * @type boolean
-            * @public
-            * @deprecated As of 1.1.0, no use has been found for this property.
-            */
+            A value used by components
+            to control if the camera needs re-rendering.
+    
+            @property dirty
+            @type boolean
+            @public
+            @deprecated As of 1.1.0, no use has been found for this property.
+            **/
             get: function () {
                 return this._dirty;
             },
@@ -4828,54 +5558,70 @@ var Kiwi;
             enumerable: true,
             configurable: true
         });
-        /**
-        * Convert from screen coordinates to world coordinates.
-        * Apply this camera's inverted matrix to an object with x and y
-        * properties representing a point and return the transformed point.
-        * Useful for calculating coordinates with the mouse.
-        * @method transformPoint
-        * @param point {Kiwi.Geom.Point}
-        * @return {Kiwi.Geom.Point} Transformed clone of the original Point.
-        * @public
-        */
+        Camera.prototype._getCameraTransformMatrix = function () {
+            /**
+            Return the camera transformation matrix.
+
+            This is not a standard transform matrix. To make cameras work
+            as expected, they must be offset by a specific distance.
+
+            @method _getCameraTransformMatrix
+            @return Kiwi.Geom.Matrix
+            @private
+            @since 1.4.1
+            **/
+            this._scratchMatrix.setFromTransform(this.transform.anchorPointX, this.transform.anchorPointY, this.transform.scaleX, this.transform.scaleY, this.transform.rotation);
+            this._scratchMatrix.append(1, 0, 0, 1, this.transform.x - this.transform.anchorPointX, this.transform.y - this.transform.anchorPointY);
+            return this._scratchMatrix;
+        };
         Camera.prototype.transformPoint = function (point) {
-            var m, np = point.clone();
-            this._scratchMatrix.copyFrom(this.transform.getConcatenatedMatrix());
-            m = this._scratchMatrix;
-            m.append(1, 0, 0, 1, -this.transform.rotPointX, -this.transform.rotPointY);
-            m.invert();
-            return m.transformPoint(np);
+            /**
+            Convert from screen coordinates to world coordinates.
+
+            Invert the camera transformation and apply it to a point.
+            Useful for calculating coordinates with the mouse.
+
+            Note that, because cameras do not create a transformation
+            in the same way that game objects do,
+            this is not just a matrix inversion.
+
+            @method transformPoint
+            @param point {Kiwi.Geom.Point}
+            @return {Kiwi.Geom.Point} Transformed clone of the original Point
+            @public
+            **/
+            return this._getCameraTransformMatrix().invert().transformPoint(point.clone());
         };
-        /**
-        * Convert from world coordinates to screen coordinates.
-        * Useful for assessing visibility.
-        * Similar to "transformPoint", but in reverse.
-        * @method transformPointToScreen
-        * @param point {Kiwi.Geom.Point}
-        * @return {Kiwi.Geom.Point} Transformed clone of the original Point.
-        * @public
-        * @since 1.2.0
-        */
         Camera.prototype.transformPointToScreen = function (point) {
-            var m, np = point.clone();
-            this._scratchMatrix.copyFrom(this.transform.getConcatenatedMatrix());
-            m = this._scratchMatrix;
-            m.append(1, 0, 0, 1, -this.transform.rotPointX, -this.transform.rotPointY);
-            return m.transformPoint(np);
+            /**
+            Convert from world coordinates to screen coordinates.
+            Useful for assessing visibility.
+
+            Similar to `transformPoint`, but in reverse.
+
+            @method transformPointToScreen
+            @param point {Kiwi.Geom.Point}
+            @return {Kiwi.Geom.Point} Transformed clone of the original Point.
+            @public
+            @since 1.2.0
+            **/
+            return this._getCameraTransformMatrix().transformPoint(point.clone());
         };
-        /**
-        * The update loop that is executed every frame.
-        * @method update
-        * @public
-        */
         Camera.prototype.update = function () {
+            /**
+            Update every frame. You may override this method; it is empty.
+
+            @method update
+            @public
+            **/
         };
-        /**
-        * The render loop that is executed whilst the game is playing.
-        * @method render
-        * @public
-        */
         Camera.prototype.render = function () {
+            /**
+            Render this camera view. Part of the main game loop.
+
+            @method render
+            @public
+            **/
             this._game.renderer.render(this);
         };
         return Camera;
@@ -5542,7 +6288,7 @@ var Kiwi;
             /**
             * Called by the Layer to which this Game Object is attached
             * @method render
-            * @param {Kiwi.Camara} camera
+            * @param camera {Kiwi.Camera}
             * @public
             */
             StaticImage.prototype.render = function (camera) {
@@ -5581,44 +6327,41 @@ var Kiwi;
     })(GameObjects = Kiwi.GameObjects || (Kiwi.GameObjects = {}));
 })(Kiwi || (Kiwi = {}));
 /**
-* Kiwi - GameObjects
-* @module Kiwi
-* @submodule GameObjects
-*
-*/
+Kiwi - GameObjects
+@module Kiwi
+@submodule GameObjects
+**/
 var Kiwi;
 (function (Kiwi) {
     var GameObjects;
     (function (GameObjects) {
-        /**
-        * TextField is a GameObject that is used when you are wanting to render
-        * text onto the current State.
-        *
-        * TextField has width/height and a hitbox, but because text is difficult
-        * to measure, these may not be 100% accurate. It does not have an
-        * "Input" component either, although you may choose to add one. Be aware
-        * of these limitations.
-        *
-        * Note that there also exists a "Textfield" object. This is simply a
-        * legacy alias of "TextField", which was renamed in v1.2.0 for naming
-        * standardization purposes.
-        *
-        * @class TextField
-        * @namespace Kiwi.GameObjects
-        * @extends Kiwi.Entity
-        * @constructor
-        * @param state {Kiwi.State} The state that this TextField belongs to
-        * @param text {String} The text that is contained within this textfield.
-        * @param [x=0] {Number} The new x coordinate from the Position component
-        * @param [y=0] {Number} The new y coordinate from the Position component
-        * @param [color="#000000"] {String} The color of the text.
-        * @param [size=32] {Number} The size of the text in pixels.
-        * @param [weight="normal"] {String} The weight of the text.
-        * @param [fontFamily="sans-serif"] {String} The font family that is to be used when rendering.
-        * @return {TextField} This Game Object.
-        */
         var TextField = (function (_super) {
             __extends(TextField, _super);
+            /**
+            TextField is a GameObject that renders text.
+    
+            TextField has width/height and a hitbox, but because text is difficult
+            to measure, these may not be 100% accurate. It does not have an
+            `Input` component either, although you may choose to add one. Be aware
+            of these limitations.
+    
+            Note that there also exists a `Textfield` object. This is simply a
+            legacy alias of `TextField`, which was renamed in v1.2.0 for naming
+            standardization purposes.
+    
+            @class TextField
+            @namespace Kiwi.GameObjects
+            @extends Kiwi.Entity
+            @constructor
+            @param state {Kiwi.State} State this TextField belongs to
+            @param text {string} Text contained within this textfield
+            @param [x=0] {number} Horizontal position
+            @param [y=0] {number} Vertical position
+            @param [color="#000000"] {string} Color of the text
+            @param [size=32] {number} Size of the text in pixels
+            @param [weight="normal"] {string} Weight of the text
+            @param [fontFamily="sans-serif"] {string} Font family to be used
+            **/
             function TextField(state, text, x, y, color, size, weight, fontFamily) {
                 if (x === void 0) { x = 0; }
                 if (y === void 0) { y = 0; }
@@ -5628,54 +6371,57 @@ var Kiwi;
                 if (fontFamily === void 0) { fontFamily = "sans-serif"; }
                 _super.call(this, state, x, y);
                 /**
-                * If the temporary canvas is dirty and needs to be re-rendered. Only used when the text field rendering is being optimised.
-                * @property _tempDirty
-                * @type boolean
-                * @private
-                */
+                Whether the temporary canvas is dirty and needs to be re-rendered
+        
+                @property _tempDirty
+                @type boolean
+                @private
+                **/
                 this._tempDirty = true;
                 /**
-                * Geometry point used in rendering.
-                *
-                * @property _pt1
-                * @type Kiwi.Geom.Point
-                * @private
-                */
+                Geometry point used in rendering
+        
+                @property _pt1
+                @type Kiwi.Geom.Point
+                @private
+                **/
                 this._pt1 = new Kiwi.Geom.Point(0, 0);
                 /**
-                * Geometry point used in rendering.
-                *
-                * @property _pt2
-                * @type Kiwi.Geom.Point
-                * @private
-                */
+                Geometry point used in rendering
+        
+                @property _pt2
+                @type Kiwi.Geom.Point
+                @private
+                **/
                 this._pt2 = new Kiwi.Geom.Point(0, 0);
                 /**
-                * Geometry point used in rendering.
-                *
-                * @property _pt3
-                * @type Kiwi.Geom.Point
-                * @private
-                */
+                Geometry point used in rendering
+        
+                @property _pt3
+                @type Kiwi.Geom.Point
+                @private
+                **/
                 this._pt3 = new Kiwi.Geom.Point(0, 0);
                 /**
-                * Geometry point used in rendering.
-                *
-                * @property _pt4
-                * @type Kiwi.Geom.Point
-                * @private
-                */
+                Geometry point used in rendering
+        
+                @property _pt4
+                @type Kiwi.Geom.Point
+                @private
+                **/
                 this._pt4 = new Kiwi.Geom.Point(0, 0);
                 if (this.game.renderOption === Kiwi.RENDERER_WEBGL) {
                     this.glRenderer = this.game.renderer.requestSharedRenderer("TextureAtlasRenderer");
                 }
                 this._text = text;
-                this._fontWeight = weight;
-                this._fontSize = size;
-                this._fontColor = new Kiwi.Utils.Color(color);
                 this._fontFamily = fontFamily;
-                this._textAlign = "left";
+                this._fontSize = size;
+                this._fontWeight = weight;
+                this._fontColor = new Kiwi.Utils.Color();
+                this.color = color;
+                this._alignWidth = 0;
                 this._baseline = "top";
+                this._textAlign = "left";
                 this._tempDirty = true;
                 // Create the canvas
                 this._canvas = document.createElement("canvas");
@@ -5686,21 +6432,20 @@ var Kiwi;
                 this.atlas = new Kiwi.Textures.SingleImage(this.game.rnd.uuid(), this._canvas);
                 this.state.textureLibrary.add(this.atlas);
                 this.atlas.dirty = true;
-                // Track actual text width - not canvas width (which rounds up to powers of 2), necessary for proper alignment
-                this._alignWidth = 0;
                 // Setup components
                 this.box = this.components.add(new Kiwi.Components.Box(this, x, y, this.width, this.height));
             }
             /**
-            * Returns the type of object that this is.
-            *
-            * Note: This is not camel-cased because of an error in early development.
-            * To preserve API compatibility, all 1.x.x releases retail this form.
-            * This will be fixed in v2.
-            * @method objType
-            * @return {string} "Textfield"
-            * @public
-            */
+            Return the type of object that this is.
+    
+            Note: This is not camel-cased because of an error in early development.
+            To preserve API compatibility, all 1.x.x releases retail this form.
+            This will be fixed in v2.
+    
+            @method objType
+            @return {string} "Textfield"
+            @public
+            **/
             TextField.prototype.objType = function () {
                 return "Textfield";
             };
@@ -5709,11 +6454,12 @@ var Kiwi;
                     return this._text;
                 },
                 /**
-                * The text that you would like to appear in this textfield.
-                * @property text
-                * @type string
-                * @public
-                */
+                Text string to render
+        
+                @property text
+                @type string
+                @public
+                **/
                 set: function (value) {
                     this._text = value;
                     this._tempDirty = true;
@@ -5726,14 +6472,15 @@ var Kiwi;
                     return "#" + this._fontColor.getHex();
                 },
                 /**
-                * The color of the font that is contained in this textfield.
-                * May be set with a string, or an array of any valid
-                * Kiwi.Utils.Color arguments.
-                * Returns a hex string prepended with "#".
-                * @property color
-                * @type string
-                * @public
-                */
+                Color of the font of this textfield.
+                May be set with a string, or an array of any valid
+                Kiwi.Utils.Color arguments.
+                Returns a hex string prepended with "#".
+        
+                @property color
+                @type string
+                @public
+                **/
                 set: function (val) {
                     if (!Kiwi.Utils.Common.isArray(val)) {
                         val = [val];
@@ -5749,11 +6496,12 @@ var Kiwi;
                     return this._fontWeight;
                 },
                 /**
-                * The weight of the font.
-                * @property fontWeight
-                * @type string
-                * @public
-                */
+                Weight of the font
+        
+                @property fontWeight
+                @type string
+                @public
+                **/
                 set: function (val) {
                     this._fontWeight = val;
                     this._tempDirty = true;
@@ -5766,11 +6514,12 @@ var Kiwi;
                     return this._fontSize;
                 },
                 /**
-                * The size on font when being displayed onscreen.
-                * @property fontSize
-                * @type number
-                * @public
-                */
+                Point size of font
+        
+                @property fontSize
+                @type number
+                @public
+                **/
                 set: function (val) {
                     this._fontSize = val;
                     this._tempDirty = true;
@@ -5783,11 +6532,12 @@ var Kiwi;
                     return this._fontFamily;
                 },
                 /**
-                * The font family that is being used to render the text.
-                * @property fontFamily
-                * @type string
-                * @public
-                */
+                Font family used to render the text
+        
+                @property fontFamily
+                @type string
+                @public
+                **/
                 set: function (val) {
                     this._fontFamily = val;
                     this._tempDirty = true;
@@ -5800,11 +6550,13 @@ var Kiwi;
                     return this._textAlign;
                 },
                 /**
-                * Alignment of the text. You can either use the static TEXT_ALIGN constants or pass a string.
-                * @property textAlign
-                * @type string
-                * @public
-                */
+                Alignment of the text. You can either use the static
+                `TEXT_ALIGN` constants or pass a string.
+        
+                @property textAlign
+                @type string
+                @public
+                **/
                 set: function (val) {
                     this._textAlign = val;
                     this._tempDirty = true;
@@ -5813,17 +6565,20 @@ var Kiwi;
                 configurable: true
             });
             /**
-            * This method is used to render the text to an offscreen-canvas which is held in a TextureAtlas (which is generated upon the instanitation of this class).
-            * This is so that the canvas doesn't render it every frame as it can be costly and so that it can be used in WebGL with the TextureAtlasRenderer.
-            *
-            * @method _renderText
-            * @private
-            */
+            Render the text to an off-screen canvas held in a `TextureAtlas`
+            (which is generated upon the instantiation of this class).
+            This is so that the canvas doesn't render it every frame,
+            as text rendering can be costly,
+            and so that it can be used in WebGL with the `TextureAtlasRenderer`.
+    
+            @method _renderText
+            @private
+            **/
             TextField.prototype._renderText = function () {
-                //Get/Set the width
+                // Get/Set the width
                 this._ctx.font = this._fontWeight + " " + this._fontSize + "px " + this._fontFamily;
-                // Get the size of the text.
-                var _measurements = this._ctx.measureText(this._text); //when you measure the text for some reason it resets the values?! 
+                // Get the size of the text
+                var _measurements = this._ctx.measureText(this._text); //when you measure the text for some reason it resets the values?!
                 var width = _measurements.width;
                 var height = this._fontSize * 1.3; //Need to find a better way to calculate
                 // Cache alignment width
@@ -5831,23 +6586,25 @@ var Kiwi;
                 // Is the width base2?
                 if (Kiwi.Utils.Common.base2Sizes.indexOf(width) == -1) {
                     var i = 0;
-                    while (width > Kiwi.Utils.Common.base2Sizes[i])
+                    while (width > Kiwi.Utils.Common.base2Sizes[i]) {
                         i++;
+                    }
                     width = Kiwi.Utils.Common.base2Sizes[i];
                 }
                 // Is the height base2?
                 if (Kiwi.Utils.Common.base2Sizes.indexOf(height) == -1) {
                     var i = 0;
-                    while (height > Kiwi.Utils.Common.base2Sizes[i])
+                    while (height > Kiwi.Utils.Common.base2Sizes[i]) {
                         i++;
+                    }
                     height = Kiwi.Utils.Common.base2Sizes[i];
                 }
-                // Apply the width/height
+                // Apply the width/height.
                 this._canvas.width = width;
                 this._canvas.height = height;
-                // Clear the canvas
+                // Clear the canvas.
                 this._ctx.clearRect(0, 0, width, height);
-                // Reapply the styles....cause it unapplies after a measurement...?!?
+                // Reapply the styles because it unapplies after a measurement.
                 this._ctx.font = this._fontWeight + " " + this._fontSize + "px " + this._fontFamily;
                 this._ctx.fillStyle = this.color.slice(0, 7);
                 this._ctx.textBaseline = this._baseline;
@@ -5873,24 +6630,26 @@ var Kiwi;
                 this.atlas.dirty = true;
             };
             /**
-            * Called by the Layer to which this Game Object is attached
-            * @method render
-            * @param {Kiwi.Camera}
-            * @public
-            */
+            Draw the TextField to the canvas.
+    
+            @method render
+            @param camera {Kiwi.Camera} Current camera
+            @public
+            **/
             TextField.prototype.render = function (camera) {
                 if (this.alpha > 0 && this.visible) {
-                    //render on stage
+                    // Render on stage
                     var ctx = this.game.stage.ctx;
                     ctx.save();
                     var t = this.transform;
                     if (this.alpha > 0 && this.alpha <= 1) {
                         ctx.globalAlpha = this.alpha;
                     }
-                    //Does the text need re-rendering
-                    if (this._tempDirty)
+                    // Does the text need re-rendering?
+                    if (this._tempDirty) {
                         this._renderText();
-                    //Align the text
+                    }
+                    // Align the text
                     var x = 0;
                     switch (this._textAlign) {
                         case Kiwi.GameObjects.TextField.TEXT_ALIGN_LEFT:
@@ -5903,7 +6662,7 @@ var Kiwi;
                             x = this._alignWidth;
                             break;
                     }
-                    //Draw the Image
+                    // Draw the Image
                     var m = t.getConcatenatedMatrix();
                     ctx.transform(m.a, m.b, m.c, m.d, m.tx, m.ty);
                     ctx.drawImage(this._canvas, 0, 0, this._canvas.width, this._canvas.height, -t.rotPointX - x, -t.rotPointY, this._canvas.width, this._canvas.height);
@@ -5911,77 +6670,92 @@ var Kiwi;
                 }
             };
             /**
-            * Renders the GameObject using WebGL.
-            * @method renderGL
-            * @param {WebGLRenderingContext} gl
-            * @param {Kiwi.Camera} camera
-            * @param {Object} params
-            * @public
-            */
+            Render the GameObject using WebGL.
+    
+            @method renderGL
+            @param gl {WebGLRenderingContext} GL rendering context
+            @param camera {Kiwi.Camera} Current camera
+            @param params {Object} Optional parameters (unused)
+            @public
+            **/
             TextField.prototype.renderGL = function (gl, camera, params) {
                 if (params === void 0) { params = null; }
-                //Does the text need re-rendering
-                if (this._tempDirty)
+                // Does the text need re-rendering?
+                if (this._tempDirty) {
                     this._renderText();
-                //Set-up the xyuv and alpha
-                var vertexItems = [];
-                //Transform/Matrix
+                }
+                // Transform/Matrix
                 var t = this.transform;
                 var m = t.getConcatenatedMatrix();
-                //See where the text should be.
+                // Determine alignment
                 var x = 0;
                 switch (this._textAlign) {
                     case Kiwi.GameObjects.TextField.TEXT_ALIGN_LEFT:
                         x = 0;
                         break;
                     case Kiwi.GameObjects.TextField.TEXT_ALIGN_CENTER:
-                        x = -(this._alignWidth * 0.5);
+                        x = -this._alignWidth * 0.5;
                         break;
                     case Kiwi.GameObjects.TextField.TEXT_ALIGN_RIGHT:
-                        x = -(this._alignWidth);
+                        x = -this._alignWidth;
                         break;
                 }
-                //Create the Point Objects.
+                // Set the Point Objects.
                 this._pt1.setTo(x - t.rotPointX, 0 - t.rotPointY);
                 this._pt2.setTo(this._canvas.width + x - t.rotPointX, 0 - t.rotPointY);
                 this._pt3.setTo(this._canvas.width + x - t.rotPointX, this._canvas.height - t.rotPointY);
                 this._pt4.setTo(x - t.rotPointX, this._canvas.height - t.rotPointY);
-                //Add on the matrix to the points
+                // Add on the matrix to the points
                 m.transformPoint(this._pt1);
                 m.transformPoint(this._pt2);
                 m.transformPoint(this._pt3);
                 m.transformPoint(this._pt4);
-                //Append to the xyuv and alpha arrays 
+                // Append to the xyuv and alpha arrays
+                var vertexItems = [];
                 vertexItems.push(this._pt1.x, this._pt1.y, 0, 0, this.alpha, this._pt2.x, this._pt2.y, this._canvas.width, 0, this.alpha, this._pt3.x, this._pt3.y, this._canvas.width, this._canvas.height, this.alpha, this._pt4.x, this._pt4.y, 0, this._canvas.height, this.alpha);
                 //Add to the batch!
                 this.glRenderer.concatBatch(vertexItems);
             };
+            TextField.prototype.destroy = function (immediate) {
+                if (immediate === void 0) { immediate = false; }
+                if (!this.onState) {
+                    immediate = true;
+                }
+                if (immediate) {
+                    this.state.textureLibrary.remove(this.atlas);
+                    delete this._canvas;
+                }
+                _super.prototype.destroy.call(this, immediate);
+            };
             /**
-            * A static property that contains the string to center align the text.
-            * @property TEXT_ALIGN_CENTER
-            * @type string
-            * @static
-            * @final
-            * @public
-            */
+            Static property that contains the string to center align the text
+    
+            @property TEXT_ALIGN_CENTER
+            @type string
+            @static
+            @final
+            @public
+            **/
             TextField.TEXT_ALIGN_CENTER = "center";
             /**
-            * A static property that contains the string to right align the text.
-            * @property TEXT_ALIGN_RIGHT
-            * @type string
-            * @static
-            * @final
-            * @public
-            */
+            Static property that contains the string to right align the text
+    
+            @property TEXT_ALIGN_RIGHT
+            @type string
+            @static
+            @final
+            @public
+            **/
             TextField.TEXT_ALIGN_RIGHT = "right";
             /**
-            * A static property that contains the string to left align the text.
-            * @property TEXT_ALIGN_LEFT
-            * @type string
-            * @static
-            * @final
-            * @public
-            */
+            Static property that contains the string to left align the text
+    
+            @property TEXT_ALIGN_LEFT
+            @type string
+            @static
+            @final
+            @public
+            **/
             TextField.TEXT_ALIGN_LEFT = "left";
             return TextField;
         })(Kiwi.Entity);
@@ -6079,11 +6853,13 @@ var Kiwi;
             * @param [tileMapDataKey] {String} The Data key for the JSON you would like to use.
             * @param [atlas] {Kiwi.Textures.TextureAtlas} The texture atlas that you would like the tilemap layers to use.
             * @param [startingCell=0] {number} The number for the initial cell that the first TileType should use. See 'createFromFileStore' for more information.
+            * @param [substitution=false] {boolean} Whether to create a buffered substitution for these tiles, to accelerate rendering on some devices.
             * @return {TileMap}
             */
             var TileMap = (function () {
-                function TileMap(state, tileMapData, atlas, startingCell) {
+                function TileMap(state, tileMapData, atlas, startingCell, substitution) {
                     if (startingCell === void 0) { startingCell = 0; }
+                    if (substitution === void 0) { substitution = false; }
                     /**
                     * The default width of a single tile that a TileMapLayer is told to have upon its creation.
                     * @property tileWidth
@@ -6131,7 +6907,7 @@ var Kiwi;
                     this.state = state;
                     this.game = state.game;
                     if (tileMapData !== undefined && atlas !== undefined) {
-                        this.createFromFileStore(tileMapData, atlas, startingCell);
+                        this.createFromFileStore(tileMapData, atlas, startingCell, substitution);
                     }
                     else if (tileMapData !== undefined || atlas !== undefined) {
                         Kiwi.Log.warn('You must pass BOTH the TileMapDataKey and TextureAtlas inorder to create a TileMap from the File Store.', '#tilemap');
@@ -6174,8 +6950,9 @@ var Kiwi;
                 * @param [startingCell=0] {number} The number for the initial cell that the first TileType should use. If you pass -1 then no new TileTypes will be created.
                 * @public
                 */
-                TileMap.prototype.createFromFileStore = function (tileMapData, atlas, startingCell) {
+                TileMap.prototype.createFromFileStore = function (tileMapData, atlas, startingCell, substitution) {
                     if (startingCell === void 0) { startingCell = 0; }
+                    if (substitution === void 0) { substitution = false; }
                     var json = null;
                     if (Kiwi.Utils.Common.isString(atlas)) {
                         atlas = this.state.textures[atlas];
@@ -6229,6 +7006,10 @@ var Kiwi;
                                 layer.alpha = (layerData.opacity == undefined) ? 1 : layerData.opacity;
                                 if (layerData.properties !== undefined)
                                     layer.properties = layerData.properties;
+                                // Substitution
+                                if (substitution) {
+                                    this.createSubstitute(layer);
+                                }
                                 break;
                             case "objectgroup":
                                 this.createNewObjectLayer();
@@ -6418,6 +7199,96 @@ var Kiwi;
                     //Add the new layer to the array
                     this.layers.push(layer);
                     return layer;
+                };
+                TileMap.prototype.createSubstitute = function (tileLayer) {
+                    /**
+                    Create a substitute buffer to accelerate rendering tiles.
+        
+                    @method createSubstitute
+                    @param tileLayer {TileMapLayer} Layer to substitute
+                    **/
+                    var state = tileLayer.state;
+                    // Define resolution.
+                    var stepX = state.game.stage.width;
+                    var stepY = state.game.stage.height;
+                    // Assert buffering system.
+                    var buffers;
+                    if (!state.buffers) {
+                        state.buffers = new Kiwi.Buffers.Bufferer({
+                            state: state,
+                        });
+                    }
+                    buffers = state.buffers;
+                    // Create substitute host.
+                    var substitute = new Kiwi.Group(state, tileLayer.name + "-substitute");
+                    substitute.tileSampleGrid = [];
+                    tileLayer.parent.addChildAfter(substitute, tileLayer);
+                    // Create capture mechanism.
+                    var captureBuffer = buffers.createGroupBuffer({
+                        width: stepX,
+                        height: stepY,
+                    });
+                    // Create sampling grid.
+                    var sample;
+                    var textureKey;
+                    var x;
+                    var y;
+                    var xLimit = tileLayer.widthInPixels;
+                    var yLimit = tileLayer.heightInPixels;
+                    for (x = 0; x * stepX < xLimit; x++) {
+                        substitute.tileSampleGrid[x] = [];
+                        for (y = 0; y * stepY < yLimit; y++) {
+                            captureBuffer.camera.transform.x = -x * stepX;
+                            captureBuffer.camera.transform.y = -y * stepY;
+                            textureKey = tileLayer.name + "-x" + x + "-y" + y;
+                            captureBuffer.drawCopy(tileLayer);
+                            captureBuffer.exportImage(textureKey);
+                            // Generate substitute.
+                            sample = new Kiwi.GameObjects.StaticImage(state, state.textures[textureKey], x * stepX, y * stepY);
+                            substitute.addChild(sample);
+                            substitute.tileSampleGrid[x][y] = sample;
+                        }
+                    }
+                    // Disable rendering on original tiles.
+                    tileLayer.visible = false;
+                    // Set up AABB visibility acceleration on substitute host.
+                    var component = new Kiwi.Component(substitute, "Visibility Control");
+                    substitute.components.add(component);
+                    component.update = function visibilityControlUpdate() {
+                        var minX, minY, maxX, maxY, x, y, sample;
+                        var game = this.game;
+                        var camera = game.cameras.defaultCamera;
+                        var stage = game.stage;
+                        var corner1 = new Kiwi.Geom.Point(0, 0);
+                        var corner2 = new Kiwi.Geom.Point(0, stage.height);
+                        var corner3 = new Kiwi.Geom.Point(stage.width, 0);
+                        var corner4 = new Kiwi.Geom.Point(stage.width, stage.height);
+                        var grid = this.owner.tileSampleGrid;
+                        var gridX = grid.length;
+                        var gridY = grid[0].length;
+                        // Project bounds of game camera.
+                        corner1 = camera.transformPoint(corner1);
+                        corner2 = camera.transformPoint(corner2);
+                        corner3 = camera.transformPoint(corner3);
+                        corner4 = camera.transformPoint(corner4);
+                        // Identify upper and lower bounds.
+                        minX = Math.min(corner1.x, corner2.x, corner3.x, corner4.x);
+                        maxX = Math.max(corner1.x, corner2.x, corner3.x, corner4.x);
+                        minY = Math.min(corner1.y, corner2.y, corner3.y, corner4.y);
+                        maxY = Math.max(corner1.y, corner2.y, corner3.y, corner4.y);
+                        for (x = 0; x < gridX; x++) {
+                            for (y = 0; y < gridY; y++) {
+                                grid[x][y].visible = false;
+                            }
+                        }
+                        // Reveal AABB slot.
+                        sample = grid[0][0];
+                        for (x = Math.floor(minX / sample.width); x < Math.min(gridX, Math.floor(maxX / sample.width) + 1); x++) {
+                            for (y = Math.floor(minY / sample.height); y < Math.min(gridY, Math.floor(maxY / sample.height) + 1); y++) {
+                                grid[x][y].visible = true;
+                            }
+                        }
+                    };
                 };
                 /**
                 * Eventually will create a new object layer. Currently does nothing.
@@ -7294,36 +8165,75 @@ var Kiwi;
                 };
                 TileMapLayerOrthogonal.prototype.renderGL = function (gl, camera, params) {
                     if (params === void 0) { params = null; }
+                    // When not to render the map.
+                    if (this.visible === false || this.alpha <= 0 || this.exists === false) {
+                        return;
+                    }
                     //Setup
                     var vertexItems = [];
+                    var corner1 = this._corner1;
+                    var corner2 = this._corner2;
+                    var corner3 = this._corner3;
+                    var corner4 = this._corner4;
                     //Transform/Matrix
                     var t = this.transform;
                     var m = t.getConcatenatedMatrix();
                     //Find which ones we need to render.
                     this._calculateBoundaries(camera, m);
-                    for (var y = this._startY; y < this._maxY; y++) {
-                        for (var x = this._startX; x < this._maxX; x++) {
-                            //Get the tile type
+                    var startX = this._startX;
+                    var startY = this._startY;
+                    var maxX = this._maxX;
+                    var maxY = this._maxY;
+                    var tileWidth = this.tileWidth;
+                    var tileHeight = this.tileHeight;
+                    var alpha = this.alpha;
+                    // Compute linear tile space. These are the corners:
+                    // 1 2
+                    // 3 4
+                    corner1.setTo(startX * tileWidth - t.rotPointX, startY * tileHeight - t.rotPointY);
+                    corner4.setTo(maxX * tileWidth - t.rotPointX, maxY * tileHeight - t.rotPointY);
+                    corner2.setTo(corner4.x, corner1.y);
+                    corner3.setTo(corner1.x, corner4.y);
+                    // Project linear tile space.
+                    m.transformPoint(corner1);
+                    m.transformPoint(corner2);
+                    m.transformPoint(corner3);
+                    m.transformPoint(corner4);
+                    // Compute tile step values.
+                    var stepX = new Kiwi.Geom.Point((corner2.x - corner1.x) / (maxX - startX), (corner2.y - corner1.y) / (maxY - startY));
+                    var stepY = new Kiwi.Geom.Point((corner3.x - corner1.x) / (maxX - startX), (corner3.y - corner1.y) / (maxY - startY));
+                    var stepXPixel = new Kiwi.Geom.Point(stepX.x / tileWidth, stepX.y / tileWidth);
+                    var stepYPixel = new Kiwi.Geom.Point(stepY.x / tileWidth, stepY.y / tileHeight);
+                    // Loop through the tiles.
+                    var x, y;
+                    for (y = startY; y < maxY; y++) {
+                        for (x = startX; x < maxX; x++) {
+                            // Get the tile type
                             this._temptype = this.getTileFromXY(x, y);
-                            //Skip tiletypes that don't use a cellIndex.
+                            // Skip tiletypes that don't use a cellIndex.
                             if (this._temptype.cellIndex == -1)
                                 continue;
-                            //Get the cell index
+                            // Get the cell data
                             var cell = this.atlas.cells[this._temptype.cellIndex];
-                            var tx = x * this.tileWidth + this._temptype.offset.x;
-                            var ty = y * this.tileHeight + this._temptype.offset.y;
-                            //Set up the points
-                            this._corner1.setTo(tx - t.rotPointX, ty - t.rotPointY - (cell.h - this.tileHeight));
-                            this._corner2.setTo(tx + cell.w - t.rotPointX, ty - t.rotPointY - (cell.h - this.tileHeight));
-                            this._corner3.setTo(tx + cell.w - t.rotPointX, ty + cell.h - t.rotPointY - (cell.h - this.tileHeight));
-                            this._corner4.setTo(tx - t.rotPointX, ty + cell.h - t.rotPointY - (cell.h - this.tileHeight));
-                            //Add on the matrix to the points
-                            m.transformPoint(this._corner1);
-                            m.transformPoint(this._corner2);
-                            m.transformPoint(this._corner3);
-                            m.transformPoint(this._corner4);
-                            //Append to the xyuv array
-                            vertexItems.push(this._corner1.x + t.rotPointX, this._corner1.y + t.rotPointY, cell.x, cell.y, this.alpha, this._corner2.x + t.rotPointX, this._corner2.y + t.rotPointY, cell.x + cell.w, cell.y, this.alpha, this._corner3.x + t.rotPointX, this._corner3.y + t.rotPointY, cell.x + cell.w, cell.y + cell.h, this.alpha, this._corner4.x + t.rotPointX, this._corner4.y + t.rotPointY, cell.x, cell.y + cell.h, this.alpha);
+                            var cellW = cell.w;
+                            var cellH = cell.h;
+                            var cellX = cell.x;
+                            var cellY = cell.y;
+                            var offsetX = this._temptype.offset.x;
+                            var offsetY = this._temptype.offset.y;
+                            var offsetXXX = offsetX * stepXPixel.x;
+                            var offsetYYX = offsetY * stepYPixel.x;
+                            var offsetXXY = offsetX * stepXPixel.y;
+                            var offsetYYY = offsetY * stepYPixel.y;
+                            var dxx0 = x * stepX.x + offsetXXX;
+                            var dxx1 = (x + 1) * stepX.x + offsetXXX;
+                            var dxy0 = y * stepY.x + offsetYYX;
+                            var dxy1 = (y + 1) * stepY.x + offsetYYX;
+                            var dyx0 = x * stepX.y + offsetXXY;
+                            var dyx1 = (x + 1) * stepX.y + offsetXXY;
+                            var dyy0 = y * stepY.y + offsetYYY;
+                            var dyy1 = (y + 1) * stepY.y + offsetYYY;
+                            vertexItems.push(dxx0 + dxy0 + t.rotPointX, dyx0 + dyy0 + t.rotPointY, cellX, cellY, alpha, dxx1 + dxy0 + t.rotPointX, dyx1 + dyy0 + t.rotPointY, cellX + cellW, cellY, alpha, dxx1 + dxy1 + t.rotPointX, dyx1 + dyy1 + t.rotPointY, cellX + cellW, cellY + cellH, alpha, dxx0 + dxy1 + t.rotPointX, dyx0 + dyy1 + t.rotPointY, cellX, cellY + cellH, alpha);
                         }
                     }
                     //Concat points to the Renderer.
@@ -7944,60 +8854,69 @@ var Kiwi;
     })(Components = Kiwi.Components || (Kiwi.Components = {}));
 })(Kiwi || (Kiwi = {}));
 /**
-*
-* @module Kiwi
-* @submodule Components
-*
-*/
+@module Kiwi
+@submodule Components
+**/
 var Kiwi;
 (function (Kiwi) {
     var Components;
     (function (Components) {
-        /**
-        * The Box Component is used to handle the various 'bounds' that each GameObject has.
-        * There are two main different types of bounds (Bounds and Hitbox) with each one having three variants (each one is a rectangle) depending on what you are wanting:
-        *
-        * RawBounds: The bounding box of the GameObject before rotation/scale.
-        *
-        * RawHitbox: The hitbox of the GameObject before rotation/scale. This can be modified to be different than the normal bounds but if not specified it will be the same as the raw bounds.
-        *
-        * Bounds: The bounding box of the GameObject after rotation/scale.
-        *
-        * Hitbox: The hitbox of the GameObject after rotation/scale. If you modified the raw hitbox then this one will be modified as well, otherwise it will be the same as the normal bounds.
-        *
-        * WorldBounds: The bounding box of the Entity using its world coordinates and after rotation/scale.
-        *
-        * WorldHitbox: The hitbox of the Entity using its world coordinates and after rotation/scale.
-        *
-        * @class Box
-        * @extends Kiwi.Component
-        * @namespace Kiwi.Components
-        * @constructor
-        * @param parent {Kiwi.Entity} The entity that this box belongs to.
-        * @param [x=0] {Number} Its position on the x axis
-        * @param [y=0] {Number} Its position on the y axis
-        * @param [width=0] {Number} The width of the box.
-        * @param [height=0] {Number} The height of the box.
-        * @return {Kiwi.Components.Box}
-        */
         var Box = (function (_super) {
             __extends(Box, _super);
+            /**
+            The Box Component is used to handle the various bounds
+            of each GameObject.
+    
+            All bounds are rectangles.
+            There are two main different types of bounds: Bounds and Hitbox.
+            Each has three variants:
+    
+            * `rawBounds`: Bounding box of the GameObject before rotation/scale.
+            * `rawHitbox`: Hitbox of the GameObject before rotation/scale.
+              This can be modified to be different than the normal bounds but if
+              not specified it will be the same as the raw bounds.
+            * `bounds`: Bounding box of the GameObject after rotation/scale.
+            * `hitbox`: Hitbox of the GameObject after rotation/scale.
+              If you modified the raw hitbox then this one will be modified
+              as well, otherwise it will be the same as the normal bounds.
+            * `worldBounds`: Bounding box of the Entity using its world coordinates
+              and after rotation/scale.
+            * `worldHitbox`: Hitbox of the Entity using its world coordinates
+              and after rotation/scale.
+    
+            NOTE: If you want to alter the hitbox, you must set `hitbox`
+            to a new `Geom.Rect` object. This will update internal Box values.
+    
+            @class Box
+            @extends Kiwi.Component
+            @namespace Kiwi.Components
+            @constructor
+            @param parent {Kiwi.Entity} Entity that this box belongs to
+            @param [x=0] {number} Horizontal position
+            @param [y=0] {number} Vertical position
+            @param [width=0] {number} Width of the box
+            @param [height=0] {number} Height of the box
+            **/
             function Box(parent, x, y, width, height) {
                 if (x === void 0) { x = 0; }
                 if (y === void 0) { y = 0; }
                 if (width === void 0) { width = 0; }
                 if (height === void 0) { height = 0; }
-                _super.call(this, parent, 'Box');
+                _super.call(this, parent, "Box");
                 /**
-                * Controls whether the hitbox should update automatically to match the hitbox of the current cell on the entity this Box component is attached to (default behaviour).
-                * Or if the hitbox shouldn't auto update. Which will mean it will stay the same as the last value it had.
-                * This property is automatically set to 'false' when you override the hitboxes width/height, but you can set this to true afterwards.
-                *
-                * @property autoUpdate
-                * @type boolean
-                * @default true
-                * @private
-                */
+                Whether the hitbox should update automatically to match the hitbox
+                of the current cell on the entity this Box component is attached to
+                (default behaviour).
+                If the hitbox shouldn't auto update, it will keep its last value.
+        
+                This property is automatically set to `false` when you override
+                the hitbox, but you can set this to true afterwards.
+        
+                @property autoUpdate
+                @type boolean
+                @default true
+                @public
+                **/
                 this.autoUpdate = true;
                 this.entity = parent;
                 this._rawBounds = new Kiwi.Geom.Rectangle(x, y, width, height);
@@ -8009,24 +8928,26 @@ var Kiwi;
                 this._scratchMatrix = new Kiwi.Geom.Matrix();
             }
             /**
-            * The type of object that this is.
-            * @method objType
-            * @return {string} "Box"
-            * @public
-            */
+            Type of object that this is
+    
+            @method objType
+            @return {string} "Box"
+            @public
+            **/
             Box.prototype.objType = function () {
                 return "Box";
             };
             Object.defineProperty(Box.prototype, "hitboxOffset", {
-                /**
-                * Returns the offset value of the hitbox as a point for the X/Y axis for the developer to use.
-                * This is without rotation or scaling.
-                * This is a READ ONLY property.
-                * @property hitboxOffset
-                * @type Kiwi.Geom.Point
-                * @public
-                */
                 get: function () {
+                    /**
+                    Offset value of the hitbox as a point on the X/Y axis.
+                    This is without rotation or scaling.
+                    This is a READ ONLY property.
+        
+                    @property hitboxOffset
+                    @type Kiwi.Geom.Point
+                    @public
+                    **/
                     if (this.autoUpdate == true && this.entity.atlas !== null && this.entity.atlas.cells && this.entity.atlas.cells[0].hitboxes) {
                         this._hitboxOffset.x = this.entity.atlas.cells[this.entity.cellIndex].hitboxes[0].x || 0;
                         this._hitboxOffset.y = this.entity.atlas.cells[this.entity.cellIndex].hitboxes[0].y || 0;
@@ -8037,18 +8958,21 @@ var Kiwi;
                 configurable: true
             });
             Object.defineProperty(Box.prototype, "rawHitbox", {
-                /**
-                * Returns the raw hitbox rectangle for the developer to use.
-                * 'Raw' means where it would be without rotation or scaling.
-                * This is READ ONLY.
-                * @property rawHitbox
-                * @type Kiwi.Geom.Rectangle
-                * @public
-                */
                 get: function () {
+                    /**
+                    Raw hitbox rectangle.
+                    "Raw" means where it would be without rotation or scaling.
+                    This is READ ONLY.
+        
+                    @property rawHitbox
+                    @type Kiwi.Geom.Rectangle
+                    @public
+                    **/
                     this._rawHitbox.x = this.rawBounds.x + this.hitboxOffset.x;
                     this._rawHitbox.y = this.rawBounds.y + this.hitboxOffset.y;
-                    //If the hitbox has not already been set, then update the width/height based upon the current cell that the entity has.
+                    // If the hitbox has not already been set,
+                    // then update the width/height based upon
+                    // the current cell that the entity has.
                     if (this.autoUpdate == true) {
                         var atlas = this.entity.atlas;
                         if (atlas !== null && atlas.cells && atlas.cells[0].hitboxes) {
@@ -8067,17 +8991,23 @@ var Kiwi;
             });
             Object.defineProperty(Box.prototype, "hitbox", {
                 /**
-                * The 'normal' or transformed hitbox for the entity. This is its box after rotation/Kiwi.Geom.Rectangle.
-                * @property hitbox
-                * @type Kiwi.Geom.Rectangle
-                * @public
-                */
+                "Normal" or transformed hitbox for the entity.
+                This is its box after rotation/Kiwi.Geom.Rectangle.
+        
+                You cannot modify this value in place. You must set it to
+                a new `Kiwi.Geom.Rectangle` object, which will update
+                internal records.
+        
+                @property hitbox
+                @type Kiwi.Geom.Rectangle
+                @public
+                **/
                 get: function () {
                     this._transformedHitbox = this._rotateHitbox(this.rawHitbox.clone());
                     return this._transformedHitbox;
                 },
                 set: function (value) {
-                    //Use custom hitbox defined by user.
+                    // Use custom hitbox defined by user.
                     this._hitboxOffset.x = value.x;
                     this._hitboxOffset.y = value.y;
                     this._rawHitbox = value;
@@ -8090,12 +9020,14 @@ var Kiwi;
             });
             Object.defineProperty(Box.prototype, "worldHitbox", {
                 /**
-                * Returns the transformed hitbox for the entity using its 'world' coordinates.
-                * This is READ ONLY.
-                * @property worldHitbox
-                * @type Kiwi.Geom.Rectangle
-                * @public
-                */
+                Transformed hitbox for the entity
+                using its "world" coordinates.
+        
+                This is READ ONLY.
+                @property worldHitbox
+                @type Kiwi.Geom.Rectangle
+                @public
+                **/
                 get: function () {
                     this._worldHitbox = this._rotateHitbox(this.rawHitbox.clone(), true);
                     return this._worldHitbox;
@@ -8105,12 +9037,13 @@ var Kiwi;
             });
             Object.defineProperty(Box.prototype, "rawBounds", {
                 /**
-                * Returns the 'raw' bounds for this entity.
-                * This is READ ONLY.
-                * @property rawBounds
-                * @type Kiwi.Geom.Rectangle
-                * @public
-                */
+                "Raw" bounds for this entity.
+                This is READ ONLY.
+        
+                @property rawBounds
+                @type Kiwi.Geom.Rectangle
+                @public
+                **/
                 get: function () {
                     this._rawBounds.x = this.entity.x;
                     this._rawBounds.y = this.entity.y;
@@ -8123,12 +9056,13 @@ var Kiwi;
             });
             Object.defineProperty(Box.prototype, "rawCenter", {
                 /**
-                * Returns the raw center point of the box.
-                * This is READ ONLY.
-                * @property rawCenter
-                * @type Kiwi.Geom.Point
-                * @public
-                */
+                Raw center point of the box.
+                This is READ ONLY.
+        
+                @property rawCenter
+                @type Kiwi.Geom.Point
+                @public
+                **/
                 get: function () {
                     this._rawCenter.x = this.rawBounds.x + this.rawBounds.width / 2;
                     this._rawCenter.y = this.rawBounds.y + this.rawBounds.height / 2;
@@ -8139,13 +9073,14 @@ var Kiwi;
             });
             Object.defineProperty(Box.prototype, "center", {
                 /**
-                * Returns the center point for the box after it has been transformed.
-                * World coordinates.
-                * This is READ ONLY.
-                * @property center
-                * @type Kiwi.Geom.Point
-                * @public
-                */
+                Center point for the box after it has been transformed.
+                World coordinates.
+                This is READ ONLY.
+        
+                @property center
+                @type Kiwi.Geom.Point
+                @public
+                **/
                 get: function () {
                     var m = this.entity.transform.getConcatenatedMatrix();
                     this._transformedCenter = m.transformPoint(new Kiwi.Geom.Point(this.entity.width / 2 - this.entity.anchorPointX, this.entity.height / 2 - this.entity.anchorPointY));
@@ -8156,12 +9091,13 @@ var Kiwi;
             });
             Object.defineProperty(Box.prototype, "bounds", {
                 /**
-                * Returns the 'transformed' or 'normal' bounds for this box.
-                * This is READ ONLY.
-                * @property bounds
-                * @type Kiwi.Geom.Rectangle
-                * @public
-                */
+                "Transformed" or "normal" bounds for this box.
+                This is READ ONLY.
+        
+                @property bounds
+                @type Kiwi.Geom.Rectangle
+                @public
+                **/
                 get: function () {
                     this._transformedBounds = this._rotateRect(this.rawBounds.clone());
                     return this._transformedBounds;
@@ -8171,12 +9107,13 @@ var Kiwi;
             });
             Object.defineProperty(Box.prototype, "worldBounds", {
                 /**
-                * Returns the 'transformed' bounds for this entity using the world coodinates.
-                * This is READ ONLY.
-                * @property worldBounds
-                * @type Kiwi.Geom.Rectangle
-                * @public
-                */
+                "Transformed" bounds for this entity using the world coodinates.
+                This is READ ONLY.
+        
+                @property worldBounds
+                @type Kiwi.Geom.Rectangle
+                @public
+                **/
                 get: function () {
                     this._worldBounds = this._rotateRect(this.rawBounds.clone(), true);
                     return this._worldBounds;
@@ -8184,15 +9121,47 @@ var Kiwi;
                 enumerable: true,
                 configurable: true
             });
-            /**
-            * Private internal method only. Used to calculate the transformed bounds after rotation/scale.
-            * @method _rotateRect
-            * @param rect {Kiwi.Geom.Rectangle}
-            * @param [useWorldCoords=false] {Boolean}
-            * @return {Kiwi.Geom.Rectangle}
-            * @private
-            */
             Box.prototype._rotateRect = function (rect, useWorldCoords) {
+                /**
+                Calculate the transformed bounds after rotation/scale.
+    
+                @method _rotateRect
+                @param rect {Kiwi.Geom.Rectangle}
+                @param [useWorldCoords=false] {Boolean}
+                @return {Kiwi.Geom.Rectangle}
+                @private
+                **/
+                if (useWorldCoords === void 0) { useWorldCoords = false; }
+                var out = new Kiwi.Geom.Rectangle(), t = this.entity.transform, m = this._scratchMatrix.copyFrom(t.getConcatenatedMatrix());
+                // Use world coordinates?
+                if (!useWorldCoords) {
+                    m.setTo(m.a, m.b, m.c, m.d, t.x + t.rotPointX, t.y + t.rotPointY);
+                }
+                out = this.extents(m.transformPoint({
+                    x: -t.rotPointX,
+                    y: -t.rotPointY
+                }), m.transformPoint({
+                    x: -t.rotPointX + rect.width,
+                    y: -t.rotPointY
+                }), m.transformPoint({
+                    x: -t.rotPointX + rect.width,
+                    y: -t.rotPointY + rect.height
+                }), m.transformPoint({
+                    x: -t.rotPointX,
+                    y: -t.rotPointY + rect.height
+                }));
+                return out;
+            };
+            Box.prototype._rotateHitbox = function (rect, useWorldCoords) {
+                /**
+                Calculate the transformed hitbox's coordinates after rotation.
+    
+                @method _rotateHitbox
+                @param rect {Kiwi.Geom.Rectangle}
+                @param [useWorldCoords=false] {Boolean}
+                @return {Kiwi.Geom.Rectangle}
+                @private
+                **/
                 if (useWorldCoords === void 0) { useWorldCoords = false; }
                 var out = new Kiwi.Geom.Rectangle();
                 var t = this.entity.transform;
@@ -8201,37 +9170,33 @@ var Kiwi;
                 if (!useWorldCoords) {
                     m.setTo(m.a, m.b, m.c, m.d, t.x + t.rotPointX, t.y + t.rotPointY);
                 }
-                out = this.extents(m.transformPoint({ x: -t.rotPointX, y: -t.rotPointY }), m.transformPoint({ x: -t.rotPointX + rect.width, y: -t.rotPointY }), m.transformPoint({ x: -t.rotPointX + rect.width, y: -t.rotPointY + rect.height }), m.transformPoint({ x: -t.rotPointX, y: -t.rotPointY + rect.height }));
+                out = this.extents(m.transformPoint({
+                    x: -t.rotPointX + this._hitboxOffset.x,
+                    y: -t.rotPointY + this._hitboxOffset.y
+                }), m.transformPoint({
+                    x: -t.rotPointX + rect.width + this._hitboxOffset.x,
+                    y: -t.rotPointY + this._hitboxOffset.y
+                }), m.transformPoint({
+                    x: -t.rotPointX + rect.width + this._hitboxOffset.x,
+                    y: -t.rotPointY + rect.height + this._hitboxOffset.y
+                }), m.transformPoint({
+                    x: -t.rotPointX + this._hitboxOffset.x,
+                    y: -t.rotPointY + rect.height + this._hitboxOffset.y
+                }));
                 return out;
             };
-            /**
-            * A private method that is used to calculate the transformed hitbox's coordinates after rotation.
-            * @method _rotateHitbox
-            * @param rect {Kiwi.Geom.Rectangle}
-            * @param [useWorldCoords=false] {Boolean}
-            * @return {Kiwi.Geom.Rectangle}
-            * @private
-            */
-            Box.prototype._rotateHitbox = function (rect, useWorldCoords) {
-                if (useWorldCoords === void 0) { useWorldCoords = false; }
-                var out = new Kiwi.Geom.Rectangle();
-                var t = this.entity.transform;
-                var m = this._scratchMatrix.copyFrom(t.getConcatenatedMatrix());
-                //Use world coordinates?
-                if (!useWorldCoords) {
-                    m.setTo(m.a, m.b, m.c, m.d, t.x + t.rotPointX, t.y + t.rotPointY);
-                }
-                out = this.extents(m.transformPoint({ x: -t.rotPointX + this._hitboxOffset.x, y: -t.rotPointY + this._hitboxOffset.y }), m.transformPoint({ x: -t.rotPointX + rect.width + this._hitboxOffset.x, y: -t.rotPointY + this._hitboxOffset.y }), m.transformPoint({ x: -t.rotPointX + rect.width + this._hitboxOffset.x, y: -t.rotPointY + rect.height + this._hitboxOffset.y }), m.transformPoint({ x: -t.rotPointX + this._hitboxOffset.x, y: -t.rotPointY + rect.height + this._hitboxOffset.y }));
-                return out;
-            };
-            /**
-            * Draws the various bounds on a context that is passed. Useful for debugging and using in combination with the debug canvas.
-            * @method draw
-            * @param ctx {CanvasRenderingContext2D} Context of the canvas that this box component is to be rendered on top of.
-            * @param [camera] {Kiwi.Camera} A camera that should be taken into account before rendered. This is the default camera by default.
-            * @public
-            */
             Box.prototype.draw = function (ctx, camera) {
+                /**
+                Draw the various bounds on a context that is passed.
+                Useful for debugging with the debug canvas.
+    
+                @method draw
+                @param ctx {CanvasRenderingContext2D} Rendering context
+                    to draw the box to
+                @param [camera] {Kiwi.Camera} Camera to use for drawing.
+                    This is the default camera by default.
+                @public
+                **/
                 if (camera === void 0) { camera = this.game.cameras.defaultCamera; }
                 var t = this.entity.transform;
                 var ct = camera.transform;
@@ -8255,31 +9220,33 @@ var Kiwi;
                 ctx.strokeStyle = "cyan";
                 ctx.strokeRect(this.worldHitbox.x, this.worldHitbox.y, this.worldHitbox.width, this.worldHitbox.height);
             };
-            /**
-            * Method which takes four Points and then converts it into a Rectangle, which represents the area those points covered.
-            * The points passed can be maybe in any order, as the are checked for validity first.
-            *
-            * @method extents
-            * @param topLeftPoint {Kiwi.Geom.Point} The top left Point that the Rectangle should have.
-            * @param topRightPoint {Kiwi.Geom.Point} The top right Point that the Rectangle should have.
-            * @param bottomRightPoint {Kiwi.Geom.Point} The bottom right Point that the Rectangle should have.
-            * @param bottomLeftPoint {Kiwi.Geom.Point} The bottom left Point that the Rectangle should have.
-            * @return {Kiwi.Geom.Rectangle} The new Rectangle that represents the area the points covered.
-            * @return Rectangle
-            */
             Box.prototype.extents = function (topLeftPoint, topRightPoint, bottomRightPoint, bottomLeftPoint) {
-                var left = Math.min(topLeftPoint.x, topRightPoint.x, bottomRightPoint.x, bottomLeftPoint.x);
-                var right = Math.max(topLeftPoint.x, topRightPoint.x, bottomRightPoint.x, bottomLeftPoint.x);
-                var top = Math.min(topLeftPoint.y, topRightPoint.y, bottomRightPoint.y, bottomLeftPoint.y);
-                var bottom = Math.max(topLeftPoint.y, topRightPoint.y, bottomRightPoint.y, bottomLeftPoint.y);
+                /**
+                Method which takes four Points and then converts it into
+                a Rectangle, which represents the area those points covered.
+                The points passed can be in any order,
+                as they are checked for validity first.
+    
+                @method extents
+                @param topLeftPoint {Kiwi.Geom.Point} Rectangle corner
+                @param topRightPoint {Kiwi.Geom.Point} Rectangle corner
+                @param bottomRightPoint {Kiwi.Geom.Point} Rectangle corner
+                @param bottomLeftPoint {Kiwi.Geom.Point} Rectangle corner
+                @return {Kiwi.Geom.Rectangle} Rectangle that represents
+                    the area the points covered.
+                @return Rectangle
+                **/
+                var left = Math.min(topLeftPoint.x, topRightPoint.x, bottomRightPoint.x, bottomLeftPoint.x), right = Math.max(topLeftPoint.x, topRightPoint.x, bottomRightPoint.x, bottomLeftPoint.x), top = Math.min(topLeftPoint.y, topRightPoint.y, bottomRightPoint.y, bottomLeftPoint.y), bottom = Math.max(topLeftPoint.y, topRightPoint.y, bottomRightPoint.y, bottomLeftPoint.y);
                 return new Kiwi.Geom.Rectangle(left, top, right - left, bottom - top);
             };
-            /**
-            * Destroys this component and all of the links it may have to other objects.
-            * @method destroy
-            * @public
-            */
             Box.prototype.destroy = function () {
+                /**
+                Destroy this component and all of the links it may have
+                to other objects.
+    
+                @method destroy
+                @public
+                **/
                 _super.prototype.destroy.call(this);
                 delete this.entity;
             };
@@ -8299,28 +9266,37 @@ var Kiwi;
     var Components;
     (function (Components) {
         /**
-        * The Input Component is used on GameObjects in which the user may interactive with via a Mouse or Touch
-        * and as such this class contains useful methods and callbacks you can subscribe to.
-        * By default the Input component is disabled (this is because when enabled the input component can be process intensive)
-        * but you can enabled it yourself (which is recommened) BUT in case you forget the input component will automagically
-        * be enabled once you access a Signal on this class.
+        * `Input` adds interaction to `GameObjects` via `Mouse` and/or `Touch`.
+        * Callbacks and methods are supplied to ease interaction.
+        *
+        * By default, `Input` components are disabled, as they are process
+        * intensive. You may enable input by calling `enabled = true`.
+        * Alternatively, the game will automagically enable input
+        * once you access any `Signal`. Be careful when enumerating
+        * properties on this component, and be prepared to disable
+        * input again.
+        *
+        * `GameObjects.Sprite` comes with an `Input` component.
+        * Other `GameObjects` do not.
         *
         * @class Input
         * @extends Kiwi.Component
         * @namespace Kiwi.Components
         * @constructor
-        * @param owner {Object} The Object that this Component is on. Generally this will be a Entity.
-        * @param box {Kiwi.Components.Box} The box which contains the worldHitbox that is to be used for the event firing.
-        * @param [enabled=false] {boolean} If this input component should be enabled or not.
+        * @param owner {Object} Object, generally `Entity`, to own this
+        *	input component
+        * @param box {Kiwi.Components.Box} Box which contains the `worldHitbox`
+        *	used for input detection
+        * @param [enabled=false] {boolean} Whether to enable this component
         * @return {Kiwi.Components.Input}
         */
         var Input = (function (_super) {
             __extends(Input, _super);
             function Input(owner, box, enabled) {
                 if (enabled === void 0) { enabled = false; }
-                _super.call(this, owner, 'Input');
+                _super.call(this, owner, "Input");
                 /**
-                * A reference to the pointer that is currently 'dragging' this Object.
+                * Reference to the pointer that is currently "dragging" this Object.
                 * If not dragging then this is null.
                 * @property _isDragging
                 * @type Kiwi.Input.Pointer
@@ -8329,7 +9305,7 @@ var Kiwi;
                 */
                 this._isDragging = null;
                 /**
-                * Indicates if dragging is currently enabled.
+                * Whether dragging is currently enabled.
                 * @property _dragEnabled
                 * @type boolean
                 * @default false
@@ -8337,7 +9313,8 @@ var Kiwi;
                 */
                 this._dragEnabled = false;
                 /**
-                * If when dragging, the IChild should snap to the center of the pointer it is being dragged by.
+                * Whether, when dragging, the IChild should snap to the center
+                * of the pointer it is being dragged by.
                 * @property _dragSnapToCenter
                 * @type boolean
                 * @default false
@@ -8345,7 +9322,9 @@ var Kiwi;
                 */
                 this._dragSnapToCenter = false;
                 /**
-                * Temporary property that gets updated everyframe with the pointer that is currently 'down' on this entity.
+                * Temporary property that gets updated every frame
+                * with the pointer that is currently down on this entity
+                *
                 * @property _nowDown
                 * @type Kiwi.Input.Pointer
                 * @default null
@@ -8353,7 +9332,10 @@ var Kiwi;
                 */
                 this._nowDown = null;
                 /**
-                * Temporary property that gets updated everyframe with the pointer that was just 'released' from being down on this entity
+                * Temporary property that gets updated every frame
+                * with the pointer that was just released
+                * from being down on this entity
+                *
                 * @property _nowUp
                 * @type Kiwi.Input.Pointer
                 * @default null
@@ -8361,7 +9343,9 @@ var Kiwi;
                 */
                 this._nowUp = null;
                 /**
-                * Temporary property of the pointer that is now within the bounds of the entity
+                * Temporary property of the pointer that is now
+                * within the bounds of the entity
+                *
                 * @property _nowEntered
                 * @type Kiwi.Input.Pointer
                 * @default null
@@ -8369,7 +9353,9 @@ var Kiwi;
                 */
                 this._nowEntered = null;
                 /**
-                * Temporary property of the pointer that just left the bounds of the entity.
+                * Temporary property of the pointer that just
+                * left the bounds of the entity
+                *
                 * @property _nowLeft
                 * @type Kiwi.Input.Pointer
                 * @default null
@@ -8377,7 +9363,9 @@ var Kiwi;
                 */
                 this._nowLeft = null;
                 /**
-                * Temporary property of the pointer that just started draggging the entity.
+                * Temporary property of the pointer that just
+                * started dragging the entity
+                *
                 * @property _nowDragging
                 * @type Kiwi.Input.Pointer
                 * @default null
@@ -8416,16 +9404,21 @@ var Kiwi;
             };
             Object.defineProperty(Input.prototype, "onEntered", {
                 /**
-                * Returns the onEntered Signal, that fires events when a pointer enters the hitbox of a entity.
+                * Fires callbacks when a pointer is active
+                * and has entered the entity's hitbox.
+                *
                 * Note: Accessing this signal enables the input.
+                *
                 * This is READ ONLY.
+                *
                 * @property onEntered
                 * @type Kiwi.Signal
                 * @public
                 */
                 get: function () {
-                    if (this.enabled == false)
+                    if (this.enabled == false) {
                         this.enabled = true;
+                    }
                     return this._onEntered;
                 },
                 enumerable: true,
@@ -8433,16 +9426,21 @@ var Kiwi;
             });
             Object.defineProperty(Input.prototype, "onLeft", {
                 /**
-                * Returns the onLeft Signal, that fires events when a pointer leaves the hitbox of a entity.
+                * Fires callbacks when a pointer is active
+                * and has left the entity's hit box.
+                *
                 * Note: Accessing this signal enables the input.
+                *
                 * This is READ ONLY.
+                *
                 * @property onLeft
                 * @type Kiwi.Signal
                 * @public
                 */
                 get: function () {
-                    if (this.enabled == false)
+                    if (this.enabled == false) {
                         this.enabled = true;
+                    }
                     return this._onLeft;
                 },
                 enumerable: true,
@@ -8450,16 +9448,21 @@ var Kiwi;
             });
             Object.defineProperty(Input.prototype, "onDown", {
                 /**
-                * Returns the onDown Signal, that fires events when a pointer is pressed within the bounds of the signal.
+                * Fires callbacks when a pointer is active
+                * and just pressed down on the entity.
+                *
                 * Note: Accessing this signal enables the input.
+                *
                 * This is READ ONLY.
+                *
                 * @property onDown
                 * @type Kiwi.Signal
                 * @public
                 */
                 get: function () {
-                    if (this.enabled == false)
+                    if (this.enabled == false) {
                         this.enabled = true;
+                    }
                     return this._onDown;
                 },
                 enumerable: true,
@@ -8467,16 +9470,22 @@ var Kiwi;
             });
             Object.defineProperty(Input.prototype, "onUp", {
                 /**
-                * Returns the onUp Signal, that fires events when a pointer is released either within the bounds or was pressed initially within the bounds..
+                * Fires callbacks when a pointer just released,
+                * either directly above the entity,
+                * or after having been pressed down above the entity.
+                *
                 * Note: Accessing this signal enables the input.
+                *
                 * This is READ ONLY.
+                *
                 * @property onUp
                 * @type Kiwi.Signal
                 * @public
                 */
                 get: function () {
-                    if (this.enabled == false)
+                    if (this.enabled == false) {
                         this.enabled = true;
+                    }
                     return this._onUp;
                 },
                 enumerable: true,
@@ -8484,8 +9493,10 @@ var Kiwi;
             });
             Object.defineProperty(Input.prototype, "onDragStarted", {
                 /**
-                * Returns the onDragStarted Signal.
+                * Fires callbacks when the entity starts being dragged.
+                *
                 * This is READ ONLY.
+                *
                 * @property onDragStarted
                 * @type Kiwi.Signal
                 * @public
@@ -8498,8 +9509,11 @@ var Kiwi;
             });
             Object.defineProperty(Input.prototype, "onDragStopped", {
                 /**
-                * Returns the onDragStopped Signal.
+                * Fires callbacks when the entity stops being dragged,
+                * such as on release.
+                *
                 * This is READ ONLY.
+                *
                 * @property onDragStopped
                 * @type Kiwi.Signal
                 * @public
@@ -8512,8 +9526,10 @@ var Kiwi;
             });
             Object.defineProperty(Input.prototype, "onRelease", {
                 /**
-                * A alias for the on release signal.
+                * Alias for `onUp`.
+                *
                 * This is READ ONLY.
+                *
                 * @property onRelease
                 * @type Kiwi.Signal
                 * @public
@@ -8526,8 +9542,10 @@ var Kiwi;
             });
             Object.defineProperty(Input.prototype, "onPress", {
                 /**
-                * A alias for the on press signal.
+                * Alias for `onDown`.
+                *
                 * This is READ ONLY.
+                *
                 * @property onPress
                 * @type Kiwi.Signal
                 * @public
@@ -8540,7 +9558,10 @@ var Kiwi;
             });
             Object.defineProperty(Input.prototype, "enabled", {
                 /**
-                * Get if the input is enabled or not. Note: Inputs should only be enabled when needed, otherwise unnecessary processing does occur which can result in a slower game.
+                * Whether this input is enabled.
+                *
+                * Note: Inputs should only be enabled when needed,
+                * as they can use processing power and slow the game down.
                 * @property enabled
                 * @type boolean
                 * @public
@@ -8549,6 +9570,8 @@ var Kiwi;
                     return this._enabled;
                 },
                 set: function (val) {
+                    // Perhaps later the signals should only be set
+                    // if the input is enabled.
                     this._enabled = val;
                 },
                 enumerable: true,
@@ -8556,8 +9579,10 @@ var Kiwi;
             });
             Object.defineProperty(Input.prototype, "isDown", {
                 /**
-                * Used to see if a pointer is currently on this input. Returns a boolean indicating either true or false.
+                * Whether a pointer is currently on this input.
+                *
                 * This is READ ONLY.
+                *
                 * @property isDown
                 * @type boolean
                 * @public
@@ -8570,8 +9595,10 @@ var Kiwi;
             });
             Object.defineProperty(Input.prototype, "isUp", {
                 /**
-                * Used to see if no pointer is on this input (so it is up).
+                * Whether no pointer is on this input (so it is up).
+                *
                 * This is READ ONLY.
+                *
                 * @property isUp
                 * @type boolean
                 * @public
@@ -8584,8 +9611,10 @@ var Kiwi;
             });
             Object.defineProperty(Input.prototype, "withinBounds", {
                 /**
-                * Check to see if any pointer is within the bounds of this input.
+                * Whether any pointer is within the bounds of this entity.
+                *
                 * This is READ ONLY.
+                *
                 * @property withinBounds
                 * @type boolean
                 * @public
@@ -8598,8 +9627,10 @@ var Kiwi;
             });
             Object.defineProperty(Input.prototype, "outsideBounds", {
                 /**
-                * See if no pointers are within the bounds of this entity.
+                * Whether no pointers are within the bounds of this entity.
+                *
                 * This is READ ONLY.
+                *
                 * @property outsideBounds
                 * @type boolean
                 * @public
@@ -8612,8 +9643,10 @@ var Kiwi;
             });
             Object.defineProperty(Input.prototype, "isDragging", {
                 /**
-                * Returns a boolean indicating if this is currently dragging something.
+                * Whether this is currently dragging something.
+                *
                 * This is READ ONLY.
+                *
                 * @property isDragging
                 * @type boolean
                 * @public
@@ -8626,7 +9659,13 @@ var Kiwi;
             });
             Object.defineProperty(Input.prototype, "dragDistance", {
                 /**
-                * The drag distance that is used when dragging this object. See _dragDistance for more information.
+                * Used while dragging so that you can make the IChild "snap"
+                * to specific numbers to give a grid-like effect.
+                *
+                * E.g. If you had a 32 by 32 grid and you wanted to make an element
+                * draggable but snap to the grid you can set this to 32.
+                *
+                * Default value is 1.
                 * @property dragDistance
                 * @type number
                 * @public
@@ -8641,24 +9680,29 @@ var Kiwi;
                 configurable: true
             });
             /**
-            * Enables the dragging of this entity.
+            * Enable dragging of this entity.
+            *
             * @method enableDrag
-            * @param [snapToCenter=false] {boolean} If when dragging the Entity should snap to the center of the pointer.
-            * @param [distance=1] {number} If when dragging the Entity should snap to numbers divisible by this amount.
+            * @param [snapToCenter=false] {boolean} If when dragging the Entity
+            *	should snap to the center of the pointer
+            * @param [distance=1] {number} If when dragging the Entity
+            *	should snap to numbers divisible by this amount
             * @public
             */
             Input.prototype.enableDrag = function (snapToCenter, distance) {
                 if (snapToCenter === void 0) { snapToCenter = false; }
                 if (distance === void 0) { distance = 1; }
-                if (this.enabled == false)
+                if (this.enabled == false) {
                     this.enabled = true;
+                }
                 this._dragEnabled = true;
                 this._dragSnapToCenter = snapToCenter;
                 this._dragDistance = distance;
                 this._isDragging = null;
             };
             /**
-            * Disables the dragging of this entity.
+            * Disable dragging of this entity.
+            *
             * @method disableDrag
             * @public
             */
@@ -8667,7 +9711,7 @@ var Kiwi;
                 this._isDragging = null;
             };
             /**
-            * The update loop for the input.
+            * Update loop for the input.
             * @method update
             * @protected
             */
@@ -8681,14 +9725,13 @@ var Kiwi;
                 this._nowEntered = null;
                 this._nowLeft = null;
                 this._nowDragging = null;
-                //Use the appropriate method of checking.
+                // Use the appropriate method of checking.
                 if (Kiwi.DEVICE.touch) {
                     this._updateTouch();
                 }
-                else {
-                    this._updateMouse();
-                }
-                //If the entity is dragging.
+                // Always check mouse. E.g. Windows 10 with touch display can fire touch and mouse event.
+                this._updateMouse();
+                // If the entity is dragging.
                 if (this.isDragging) {
                     this._tempPoint = this.game.cameras.defaultCamera.transformPoint(this._isDragging.point);
                     if (this._dragSnapToCenter === false) {
@@ -8702,13 +9745,13 @@ var Kiwi;
                 }
             };
             /**
-            * The update loop that gets executed when the game is using the touch manager.
+            * Update loop executed when the game is using the touch manager.
             * @method _updateTouch
             * @private
             */
             Input.prototype._updateTouch = function () {
                 for (var i = 0; i < this.game.input.touch.maximumPointers; i++) {
-                    //if that pointer is active then see where it is
+                    // If the pointer is active then see where it is
                     if (this.game.input.touch.fingers[i].active === true) {
                         this._evaluateTouchPointer(this.game.input.touch.fingers[i]);
                     }
@@ -8719,7 +9762,7 @@ var Kiwi;
                         this._nowUp = this.game.input.touch.fingers[i];
                     }
                 }
-                //Fire the events. LOTS OF CONDITIONS
+                // Fire the events. LOTS OF CONDITIONS
                 if (this._nowEntered !== null && this.withinBounds === false) {
                     this._withinBounds = this._nowEntered;
                     this._outsideBounds = false;
@@ -8747,7 +9790,7 @@ var Kiwi;
                     this._isUp = true;
                     this._withinBounds = null;
                     this._outsideBounds = true;
-                    //dispatch drag event
+                    // Dispatch drag event
                     if (this.isDragging === true && this._isDragging.id == this._nowUp.id) {
                         this._isDragging = null;
                         this._onDragStopped.dispatch(this.owner, this._nowUp);
@@ -8755,13 +9798,13 @@ var Kiwi;
                 }
             };
             /**
-            * A private method for checking to see if a touch pointer should activate any events.
+            * Check to see if a touch pointer should activate any events.
             * @method _evaluateTouchPointer
-            * @param pointer {Kiwi.Input.Finger} The pointer you are checking against.
+            * @param pointer {Kiwi.Input.Finger} Pointer checking against
             * @private
             */
             Input.prototype._evaluateTouchPointer = function (pointer) {
-                //if nothing isdown or what is down is the current pointer
+                // If nothing is down or what is down is the current pointer
                 if (this.isDown === false || this._isDown.id === pointer.id) {
                     this._tempPoint = this.game.cameras.defaultCamera.transformPoint(pointer.point);
                     this._tempCircle.setTo(this._tempPoint.x, this._tempPoint.y, pointer.circle.diameter);
@@ -8789,13 +9832,14 @@ var Kiwi;
                 }
             };
             /**
-            * The update loop that runs when the mouse manager is the method for interacting with the screen.
+            * Update loop that runs when the mouse manager is
+            * the method for interacting with the screen.
             * @method _updateMouse
             * @private
             */
             Input.prototype._updateMouse = function () {
                 this._evaluateMousePointer(this.game.input.mouse.cursor);
-                //dispatch the events
+                // Dispatch the events
                 if (this._nowLeft !== null) {
                     this._onLeft.dispatch(this.owner, this._nowLeft);
                 }
@@ -8823,7 +9867,8 @@ var Kiwi;
                 }
             };
             /**
-            * Evaluates where and what the mouse cursor is doing in relation to this box. Needs a little bit more love.
+            * Evaluates where and what the mouse cursor is doing
+            * in relation to this box.
             * @method _evaluateMousePointer
             * @param pointer {Kiwi.Input.MouseCursor}
             * @private
@@ -8853,7 +9898,7 @@ var Kiwi;
                 }
                 //  Input is down (click/touch)
                 if (pointer.isDown === true) {
-                    //if is was a mouse, did it just enter?
+                    // If it was a mouse, did it just enter?
                     if (this._justEntered) {
                         this._isDown = pointer;
                         this._isUp = false;
@@ -8870,18 +9915,20 @@ var Kiwi;
                     }
                 }
                 else {
-                    if (this._tempDragDisabled === true)
+                    if (this._tempDragDisabled === true) {
                         this._tempDragDisabled = false;
+                    }
                     if (this.isDown === true) {
                         this._nowUp = pointer;
                     }
                 }
-                if (this._justEntered)
+                if (this._justEntered) {
                     this._justEntered = false;
+                }
             };
             /**
-            * Destroys the input.
-            * @method destory
+            * Destroy the input.
+            * @method destroy
             * @public
             */
             Input.prototype.destroy = function () {
@@ -8892,23 +9939,29 @@ var Kiwi;
                 delete this._isUp;
                 delete this._isDragging;
                 delete this._dragEnabled;
-                if (this._onDown)
+                if (this._onDown) {
                     this._onDown.dispose();
+                }
                 delete this._onDown;
-                if (this._onDragStarted)
+                if (this._onDragStarted) {
                     this._onDragStarted.dispose();
+                }
                 delete this._onDragStarted;
-                if (this._onUp)
+                if (this._onUp) {
                     this._onUp.dispose();
+                }
                 delete this._onUp;
-                if (this._onLeft)
+                if (this._onLeft) {
                     this._onLeft.dispose();
+                }
                 delete this._onLeft;
-                if (this._onEntered)
+                if (this._onEntered) {
                     this._onEntered.dispose();
+                }
                 delete this._onEntered;
-                if (this._onDragStopped)
+                if (this._onDragStopped) {
                     this._onDragStopped.dispose();
+                }
                 delete this._onDragStopped;
                 delete this._dragDistance;
             };
@@ -10052,197 +11105,253 @@ var Kiwi;
         Components.ArcadePhysics = ArcadePhysics;
     })(Components = Kiwi.Components || (Kiwi.Components = {}));
 })(Kiwi || (Kiwi = {}));
-/**
-*
-* @module Kiwi
-* @submodule Files
-*
-*/
 var Kiwi;
 (function (Kiwi) {
     var Files;
     (function (Files) {
         /**
-        * Used for the loading of files and game assets. This usually happens when a State is at the 'loading' stage (executing the 'preload' method).
-        *
-        * @class Loader
-        * @namespace Kiwi.Files
-        * @constructor
-        * @param game {Kiwi.Game} The game that this loader belongs to.
-        * @return {Kiwi.Files.Loader} This Object
-        *
-        */
+    
+        @module Kiwi
+        @submodule Files
+    
+        **/
         var Loader = (function () {
+            /**
+            Used for the loading of files and game assets.
+            This usually happens when a State is at the loading stage
+            (directly after executing the `preload` method).
+    
+            @class Loader
+            @namespace Kiwi.Files
+            @constructor
+            @param game {Kiwi.Game} Game to which this loader belongs
+            **/
             function Loader(game) {
                 /**
-                * A flag indicating if the files inside the file queue are loading or not.
-                *
-                * @property _fileQueueLoading
-                * @type Boolean
-                * @default false
-                * @since 1.2.0
-                * @private
-                */
-                this._queueLoading = false;
-                /**
-                * When 'calculateBytes' is true the percentLoaded will be the `bytesLoaded / bytesTotal`.
-                * Otherwise it is based on the `filesLoaded / numberOfFilesToLoad`.
-                *
-                * @property percentLoaded
-                * @type Number
-                * @since 1.2.0
-                * @readOnly
-                * @public
-                */
-                this.percentLoaded = 0;
-                /**
-                * When enabled, files which can be loaded in parallel (those which are loaded via tags)
-                * will be loaded at the same time.
-                *
-                * The default behaviour is to have the files loading in a queued fashion instead of one after another.
-                *
-                * @property enableParallelLoading
-                * @type Boolean
-                * @default false
-                * @since 1.2.0
-                * @public
-                */
-                this.enableParallelLoading = false;
-                /**
-                * The number of files in the file queue that have been updated.
-                *
-                * @property _completeFiles
-                * @type number
-                * @default 0
-                * @private
-                */
+                Number of files in the file queue that have been updated.
+        
+                @property _completeFiles
+                @type number
+                @default 0
+                @private
+                **/
                 this._completedFiles = 0;
                 /**
-                * -----------------------------
-                * Bytes Loaded Methods
-                * -----------------------------
+                Whether files inside the file queue are loading or not
+        
+                @property _queueLoading
+                @type boolean
+                @default false
+                @since 1.2.0
+                @private
                 **/
+                this._queueLoading = false;
                 /**
-                * If the number of bytes for each file should be calculated before the queue starts loading.
-                * If true each file in the queue makes a XHR HEAD request first to get the total values.
-                *
-                * @property _calculateBytes
-                * @type Boolean
-                * @private
-                */
-                this._calculateBytes = false;
+                When enabled, files which can be loaded in parallel
+                (those which are loaded via tags) will be loaded at the same time.
+        
+                The default behaviour is to have the files loading
+                in a queued fashion, one after another.
+        
+                @property enableParallelLoading
+                @type boolean
+                @default false
+                @since 1.2.0
+                @public
+                **/
+                this.enableParallelLoading = false;
                 /**
-                * The index of the current file in the filelist thats size is being retrieved.
-                * @property _currentFileIndex
-                * @type number
-                * @private
-                */
-                this._currentFileIndex = 0;
+                When `calculateBytes` is true, this equals `bytesLoaded / bytesTotal`.
+                Otherwise it equals `filesLoaded / numberOfFilesToLoad`.
+        
+                @property percentLoaded
+                @type number
+                @default 0
+                @since 1.2.0
+                @readOnly
+                @public
+                **/
+                this.percentLoaded = 0;
+                // -----------------------------
+                // Bytes Loaded Methods
+                // -----------------------------
                 /**
-                * Total file size (in bytes) of all files in the queue to be loaded.
-                *
-                * @property _bytesTotal
-                * @type Number
-                * @private
-                */
+                Number of bytes loaded of files in the file queue.
+        
+                @property _bytesLoaded
+                @type number
+                @default 0
+                @private
+                **/
+                this._bytesLoaded = 0;
+                /**
+                Total file size (in bytes) of all files in the queue to be loaded
+        
+                @property _bytesTotal
+                @type number
+                @private
+                **/
                 this._bytesTotal = 0;
                 /**
-                * The number of bytes loaded of files in the file queue.
-                *
-                * @property _bytesLoaded
-                * @type Number
-                * @private
-                */
-                this._bytesLoaded = 0;
+                Whether the number of bytes for each file should be calculated
+                before the queue starts loading.
+                If true, each file in the queue makes a XHR HEAD request first
+                to get the total values.
+        
+                @property _calculateBytes
+                @type boolean
+                @private
+                **/
+                this._calculateBytes = false;
+                /**
+                Index of the file in the filelist which is currently
+                having its size retrieved
+        
+                @property _currentFileIndex
+                @type number
+                @private
+                **/
+                this._currentFileIndex = 0;
                 this.game = game;
             }
-            /**
-            * The type of object this is.
-            * @method objType
-            * @return {String} "Loader"
-            * @public
-            */
             Loader.prototype.objType = function () {
+                /**
+                Type of object this is.
+    
+                @method objType
+                @return {string} "Loader"
+                @public
+                **/
                 return "Loader";
             };
             Object.defineProperty(Loader.prototype, "queueLoading", {
                 /**
-                * READ ONLY: A flag indicating if the files inside the file queue are loading or not.
-                *
-                * @property fileQueueLoading
-                * @type Boolean
-                * @default false
-                * @readOnly
-                * @since 1.2.0
-                * @public
-                */
+                Whether files inside the file queue are loading or not. READ ONLY.
+        
+                @property fileQueueLoading
+                @type boolean
+                @default false
+                @readOnly
+                @since 1.2.0
+                @public
+                **/
                 get: function () {
                     return this._queueLoading;
                 },
                 enumerable: true,
                 configurable: true
             });
-            /**
-            * The boot method is executed when the DOM has successfully loaded and we can now start the game.
-            * @method boot
-            * @public
-            */
-            Loader.prototype.boot = function () {
-                this._loadingList = [];
-                this._loadingParallel = [];
-                this._loadingQueue = [];
-                this.onQueueComplete = new Kiwi.Signal();
-                this.onQueueProgress = new Kiwi.Signal();
-            };
-            /**
-            * Starts loading all the files which are in the file queue.
-            *
-            * To accurately use the bytesLoaded or bytesTotal properties you will need to set the 'calculateBytes' boolean to true.
-            * This may increase load times, as each file in the queue will firstly make XHR HEAD requests for information.
-            *
-            * When 'calculateBytes' is true the percentLoaded will be the `bytesLoaded / bytesTotal`.
-            * Otherwise it is based on the `filesLoaded / numberOfFilesToLoad`.
-            *
-            * @method start
-            * @param [calculateBytes] {Boolean} Setter for the 'calculateBytes' property.
-            * @since 1.2.0
-            * @public
-            */
-            Loader.prototype.start = function (calculateBytes) {
-                if (calculateBytes === void 0) { calculateBytes = null; }
-                if (calculateBytes !== null) {
-                    this._calculateBytes = calculateBytes;
-                }
-                if (this._queueLoading) {
-                    Kiwi.Log.warn('Kiwi.Files.Loader: Files in the queue are already being loaded');
+            Loader.prototype._fileQueueUpdate = function (file, forceProgressCheck) {
+                /**
+                Check to see if the files are in the file queue,
+                and dispatch the appropriate events.
+                Executed by files when they have successfully been loaded.
+    
+                @method _fileQueueUpdate
+                @param file {Kiwi.Files.File} File which has been recently loaded
+                @param [forceProgressCheck=false] {boolean} Whether progress of
+                    file loading should be checked, regardless of the file
+                    being in the queue or not
+                @since 1.2.0
+                @private
+                **/
+                if (forceProgressCheck === void 0) { forceProgressCheck = false; }
+                // If the file loaded is in the loadingList
+                if (!forceProgressCheck && this._loadingList.indexOf(file) === -1) {
                     return;
                 }
-                //Reset the number of bytes laoded
-                this._bytesLoaded = 0;
-                this._bytesTotal = 0;
-                this.percentLoaded = 0;
-                if (this._calculateBytes) {
-                    this.calculateQueuedSize(this._startLoading, this);
-                }
-                else {
-                    this._startLoading();
+                // Update the file information.
+                this._updateFileListInformation();
+                // Dispatch progress event.
+                this.onQueueProgress.dispatch(this.percentLoaded, this.bytesLoaded, file);
+                // Clear the file queue and dispatch the loaded event
+                if (this._completedFiles >= this._loadingList.length) {
+                    this._queueLoading = false;
+                    this.clearQueue();
+                    this.onQueueComplete.dispatch();
                 }
             };
-            /**
-            * Loops through the file queue and starts the loading process.
-            *
-            * @method _startLoading
-            * @private
-            */
+            Loader.prototype._parallelFileComplete = function (file) {
+                /**
+                Remove file from the list and get the `fileQueue` to
+                check its progress.
+                Executed when a file in the `loadingParallel` list
+                has been successfully loaded.
+    
+                @method _parallelFileComplete
+                @param file {Kiwi.Files.File}
+                @since 1.2.0
+                @private
+                **/
+                var index = this._loadingParallel.indexOf(file);
+                if (index === -1) {
+                    Kiwi.Log.warn("Something has gone wrong? " + "The file which executed this method " + "doesn't exist in the loadingParallel.", "#loading", "#error");
+                    return;
+                }
+                this._loadingParallel.splice(index, 1);
+            };
+            Loader.prototype._queueFileComplete = function (file) {
+                /**
+                Remove file from `loadingQueue` and execute `_startLoadingQueue`
+                to start loading the next file.
+                Executed when a file in `loadingQueue` has successfully loaded.
+    
+                @method _queueFileComplete
+                @param file {Kiwi.Files.File}
+                @since 1.2.0
+                @private
+                **/
+                // Remove from the loadingQueue
+                var index = this._loadingQueue.indexOf(file);
+                if (index === -1) {
+                    Kiwi.Log.warn("Something has gone wrong? " + "The file which executed this method " + "doesn't exist in the loadingQueue.", "#loading", "#error");
+                    return;
+                }
+                this._loadingQueue.splice(index, 1);
+                //Start loading the next file
+                this._startLoadingQueue();
+            };
+            Loader.prototype._sortFile = function (file, startLoading) {
+                /**
+                Sort a file and place it into either `loadingParallel` or
+                `loadingQueue` depending on the loading method it is using.
+    
+                @method _sortFile
+                @param file {Kiwi.Files.File}
+                @since 1.2.0
+                @private
+                **/
+                if (startLoading === void 0) { startLoading = false; }
+                if (this.enableParallelLoading && file.loadInParallel) {
+                    // Push into the tag loader queue
+                    this._loadingParallel.push(file);
+                    if (startLoading) {
+                        this._startLoadingParallel(file);
+                    }
+                }
+                else {
+                    // Push into the xhr queue
+                    this._loadingQueue.push(file);
+                    if (startLoading) {
+                        this._startLoadingQueue();
+                    }
+                }
+            };
             Loader.prototype._startLoading = function () {
-                //Any files to load?
+                /**
+                Loop through the file queue and start the loading process.
+    
+                @method _startLoading
+                @private
+                **/
+                // Any files to load?
                 if (this._loadingList.length <= 0) {
-                    Kiwi.Log.log('Kiwi.Files.Loader: No files are to load have been found.', '#loading');
+                    Kiwi.Log.log("Kiwi.Files.Loader: " + "No files to load have been found.", "#loading");
                     this.onQueueProgress.dispatch(100, 0, null);
                     this.onQueueComplete.dispatch();
                     return;
                 }
-                //There are files to load
+                // There are files to load
                 var i = 0, file;
                 while (i < this._loadingList.length) {
                     if (this._calculateBytes) {
@@ -10258,139 +11367,87 @@ var Kiwi;
                 this._startLoadingAllParallel();
                 this._fileQueueUpdate(null, true);
             };
-            /**
-            * Adds a file to the queue of files to be loaded.
-            * Files cannot be added whilst the queue is currently loading,
-            * the file to add is currently loading, or has been loaded before.
-            *
-            * @method addFileToQueue
-            * @param file {Kiwi.Files.File} The file to add.
-            * @return {Boolean} If the file was added to the queue or not.
-            * @since 1.2.0
-            * @public
-            */
-            Loader.prototype.addFileToQueue = function (file) {
-                if (this._queueLoading) {
-                    Kiwi.Log.warn('Kiwi.Files.Loader: File cannot be added to the queue whilst the queue is currently loading.', '#loading', '#filequeue');
+            Loader.prototype._startLoadingAllParallel = function () {
+                /**
+                Start loading all files which can be loaded in parallel.
+    
+                @method _startLoadingAllParallel
+                @since 1.2.0
+                @private
+                **/
+                var i = this._loadingParallel.length;
+                while (i--) {
+                    this._startLoadingParallel(this._loadingParallel[i]);
+                }
+            };
+            Loader.prototype._startLoadingParallel = function (file) {
+                /**
+                Start loading a file which can be loaded in parallel.
+    
+                @method _startLoadingParallel
+                @param params file {Kiwi.Files.File}
+                @since 1.2.0
+                @private
+                **/
+                if (!file.loading) {
+                    file.onComplete.add(this._parallelFileComplete, this, 1);
+                    file.load();
+                }
+            };
+            Loader.prototype._startLoadingQueue = function () {
+                /**
+                Start the loading process in `loadingQueue`.
+    
+                @method _startLoadingQueue
+                @private
+                @since 1.2.0
+                @return {boolean} Whether the first file is loading
+                **/
+                // Any files to load?
+                if (this._loadingQueue.length <= 0) {
+                    Kiwi.Log.log("Kiwi.Files.Loader: No queued files to load.", "#loading");
                     return false;
                 }
-                if (file.loading || file.complete) {
-                    Kiwi.Log.warn('Kiwi.Files.Loader: File could not be added as it is currently loading or has already loaded.', '#loading', '#filequeue');
+                // Is the first file currently loading?
+                if (this._loadingQueue[0].loading) {
                     return false;
                 }
-                this._loadingList.push(file);
+                // Attempt to load the file!
+                this._loadingQueue[0].onComplete.addOnce(this._queueFileComplete, this, 1);
+                this._loadingQueue[0].load();
                 return true;
             };
-            /**
-            * Removes a file from the file queue.
-            * Files cannot be removed whilst the queue is loading.
-            *
-            * @method removeFileFromQueue
-            * @param file {Kiwi.Files.File} The file to remove.
-            * @return {Boolean} If the file was added to the queue or not.
-            * @since 1.2.0
-            * @public
-            */
-            Loader.prototype.removeFileFromQueue = function (file) {
-                if (this._queueLoading) {
-                    Kiwi.Log.warn('Kiwi.Files.Loader: File cannot be remove from the queue whilst the queue is currently loading.', '#loading', '#filequeue');
-                    return false;
-                }
-                var index = this._loadingList.indexOf(file);
-                if (index === -1) {
-                    return false;
-                }
-                if (file.loading) {
-                    Kiwi.Log.warn('Kiwi.Files.Loader: Cannot remove the file from the list as it is currently loading.', '#loading', '#filequeue');
-                    return false;
-                }
-                this._loadingList.splice(index, 1);
-                return true;
-            };
-            /**
-            * Clears the file queue of all files.
-            *
-            * @method clearQueue
-            * @since 1.2.0
-            * @public
-            */
-            Loader.prototype.clearQueue = function () {
-                if (!this._queueLoading) {
-                    this._loadingList.length = 0;
-                }
-                else {
-                    Kiwi.Log.error('Kiwi.Files.Loader: Cannot clear the file queue whilst the files are being loaded.', '#loading', '#filequeue');
-                }
-            };
-            /**
-            * Starts the process of loading a file outside of the regular queue loading process.
-            * Callbacks for load completion need to be added onto the file via 'onComplete' Signal.
-            *
-            * @method loadFile
-            * @public
-            */
-            Loader.prototype.loadFile = function (file) {
-                if (file.loading || file.complete) {
-                    Kiwi.Log.error('Kiwi.Files.Loader: Could not add file. File is already loading or has completed loading.');
-                    return;
-                }
-                this._sortFile(file, true);
-            };
-            /**
-            * Sorts a file and places it into either the 'loadingParallel' or 'loadingQueue'
-            * depending on the method of loading it is using.
-            *
-            * @method _sortFile
-            * @param file {Kiwi.Files.File}
-            * @since 1.2.0
-            * @private
-            */
-            Loader.prototype._sortFile = function (file, startLoading) {
-                if (startLoading === void 0) { startLoading = false; }
-                if (this.enableParallelLoading && file.loadInParallel) {
-                    //Push into the tag loader queue
-                    this._loadingParallel.push(file);
-                    if (startLoading) {
-                        this._startLoadingParallel(file);
-                    }
-                }
-                else {
-                    //Push into the xhr queue
-                    this._loadingQueue.push(file);
-                    if (startLoading) {
-                        this._startLoadingQueue();
-                    }
-                }
-            };
-            /**
-            * Called each time a file has processed whilst loading, or has just completed loading.
-            *
-            * Calculates the new number of bytes loaded and
-            * the percentage of loading done by looping through all of the files.
-            *
-            * @method _updateFileListInformation
-            * @private
-            */
             Loader.prototype._updateFileListInformation = function () {
+                /**
+                Calculates the new number of bytes loaded and
+                the percentage of loading done by looping through all of the files.
+    
+                Called each time a file has processed while loading,
+                or has just completed loading.
+    
+                @method _updateFileListInformation
+                @private
+                **/
                 var i = 0;
                 this._completedFiles = 0;
                 this._bytesLoaded = 0;
                 while (i < this._loadingList.length) {
-                    //Was the file loaded, but we have no bytes (must have used the tag loader) and we have their details?
+                    // Was the file loaded, but we have no bytes
+                    // (must have used the tag loader) and we have their details?
                     if (this._loadingList[i].bytesLoaded === 0 && this._loadingList[i].success && this._loadingList[i].detailsReceived) {
                         this._bytesLoaded += this._loadingList[i].size;
                     }
                     else {
-                        //Add the bytes loaded to the list 
+                        // Add the bytes loaded to the list
                         this._bytesLoaded += this._loadingList[i].bytesLoaded;
                     }
-                    //Calculate percentage
+                    // Calculate percentage
                     if (this._loadingList[i].complete) {
                         this._completedFiles++;
                     }
                     i++;
                 }
-                //Calculate the percentage depending on how accurate we can be.
+                // Calculate the percentage depending on how accurate we can be.
                 if (this._calculateBytes) {
                     this.percentLoaded = (this._bytesLoaded / this._bytesTotal) * 100;
                 }
@@ -10398,175 +11455,245 @@ var Kiwi;
                     this.percentLoaded = (this._completedFiles / this._loadingList.length) * 100;
                 }
             };
-            /**
-            * Executed by files when they have successfully been loaded.
-            * This method checks to see if the files are in the file queue, and dispatches the appropriate events.
-            *
-            * @method _fileQueueUpdate
-            * @param file {Kiwi.Files.File} The file which has been recently loaded.
-            * @param [forceProgressCheck=false] {Boolean} If the progress of file loading should be checked, regardless of the file being in the queue or not.
-            * @since 1.2.0
-            * @private
-            */
-            Loader.prototype._fileQueueUpdate = function (file, forceProgressCheck) {
-                if (forceProgressCheck === void 0) { forceProgressCheck = false; }
-                //If the file loaded is in the loadingList
-                if (!forceProgressCheck && this._loadingList.indexOf(file) === -1) {
-                    return;
-                }
-                //Update the file information.
-                this._updateFileListInformation();
-                //Dispatch progress event.
-                this.onQueueProgress.dispatch(this.percentLoaded, this.bytesLoaded, file);
-                if (this._completedFiles >= this._loadingList.length) {
-                    //Clear the file queue and dispatch the loaded event
-                    this._queueLoading = false;
-                    this.clearQueue();
-                    this.onQueueComplete.dispatch();
-                }
-            };
-            /**
-            * Starts the loading process in the loadingQueue.
-            * @method _startLoadingQueue
-            * @return {Boolean}
-            * @private
-            * @since 1.2.0
-            * @return {boolean} Whether the first file is loading
-            */
-            Loader.prototype._startLoadingQueue = function () {
-                //Any files to load?
-                if (this._loadingQueue.length <= 0) {
-                    Kiwi.Log.log('Kiwi.Files.Loader: No queued files to load.', '#loading');
+            Loader.prototype.addFileToQueue = function (file) {
+                /**
+                Add a file to the queue of files to be loaded.
+                Files cannot be added while the queue is currently loading,
+                the file to add is currently loading, or has been loaded before.
+    
+                @method addFileToQueue
+                @param file {Kiwi.Files.File} File to add
+                @return {boolean} Whether the file was added to the queue
+                @since 1.2.0
+                @public
+                **/
+                if (this._queueLoading) {
+                    Kiwi.Log.warn("Kiwi.Files.Loader: " + "File cannot be added to the queue " + "while the queue is currently loading.", "#loading", "#filequeue");
                     return false;
                 }
-                //Is the first file currently loading?
-                if (this._loadingQueue[0].loading) {
+                if (file.loading || file.complete) {
+                    Kiwi.Log.warn("Kiwi.Files.Loader: " + "File could not be added as it is " + "currently loading or has already loaded.", "#loading", "#filequeue");
                     return false;
                 }
-                //Attempt to load the file!
-                this._loadingQueue[0].onComplete.addOnce(this._queueFileComplete, this, 1);
-                this._loadingQueue[0].load();
+                this._loadingList.push(file);
                 return true;
             };
-            /**
-            * Executed when a file in the 'loadingQueue' has been successfully loaded.
-            * Removes the file from the loadingQueue and executes the '_startLoadingQueue' to start loading the next file.
-            *
-            * @method _queueFileComplete
-            * @param file {Kiwi.Files.File}
-            * @since 1.2.0
-            * @private
-            */
-            Loader.prototype._queueFileComplete = function (file) {
-                //Remove from the loadingQueue
-                var index = this._loadingQueue.indexOf(file);
-                if (index === -1) {
-                    Kiwi.Log.warn("Something has gone wrong? The file which executed this method doesn't exist in the loadingQueue.", '#loading', '#error');
-                    return;
-                }
-                this._loadingQueue.splice(index, 1);
-                //Start loading the next file
-                this._startLoadingQueue();
-            };
-            /**
-            * Starts loading a file which can be loaded in parallel.
-            * @method _startLoadingParallel
-            * @param params file {Kiwi.Files.File}
-            * @since 1.2.0
-            * @private
-            */
-            Loader.prototype._startLoadingParallel = function (file) {
-                if (!file.loading) {
-                    file.onComplete.add(this._parallelFileComplete, this, 1);
-                    file.load();
-                }
-            };
-            /**
-            * Starts loading all files which can be loaded in parallel.
-            * @method _startLoadingAllParallel
-            * @since 1.2.0
-            * @private
-            */
-            Loader.prototype._startLoadingAllParallel = function () {
-                var i = this._loadingParallel.length, file;
-                while (i--) {
-                    this._startLoadingParallel(this._loadingParallel[i]);
-                }
-            };
-            /**
-            * Executed when a file in the 'loadingParallel' lsit has been successfully loaded.
-            * Removes the file from the list and get the fileQueue to check its progress.
-            *
-            * @method _parallelFileComplete
-            * @param file {Kiwi.Files.File}
-            * @since 1.2.0
-            * @private
-            */
-            Loader.prototype._parallelFileComplete = function (file) {
-                var index = this._loadingParallel.indexOf(file);
-                if (index === -1) {
-                    Kiwi.Log.warn("Something has gone wrong? The file which executed this method doesn't exist in the loadingParallel.", '#loading', '#error');
-                    return;
-                }
-                this._loadingParallel.splice(index, 1);
-            };
-            Object.defineProperty(Loader.prototype, "bytesTotal", {
+            Loader.prototype.boot = function () {
                 /**
-                * READ ONLY: Returns the total number of bytes for the files in the file queue.
-                * Only contains a value if you use the 'calculateBytes' and are loading files
-                * OR if you use the 'calculateQueuedSize' method.
-                *
-                * @property bytesTotal
-                * @readOnly
-                * @default 0
-                * @since 1.2.0
-                * @type Number
-                * @public
-                */
-                get: function () {
-                    return this._bytesTotal;
-                },
-                enumerable: true,
-                configurable: true
-            });
+                Set up loader systems. Executed when the DOM has
+                successfully loaded and we can now start the game.
+    
+                @method boot
+                @public
+                **/
+                this._loadingList = [];
+                this._loadingParallel = [];
+                this._loadingQueue = [];
+                this.onQueueComplete = new Kiwi.Signal();
+                this.onQueueProgress = new Kiwi.Signal();
+            };
+            Loader.prototype.clearQueue = function () {
+                /**
+                Clear the file queue of all files.
+    
+                @method clearQueue
+                @since 1.2.0
+                @public
+                **/
+                if (!this._queueLoading) {
+                    this._loadingList.length = 0;
+                }
+                else {
+                    Kiwi.Log.error("Kiwi.Files.Loader: " + "Cannot clear the file queue " + "while the files are being loaded.", "#loading", "#filequeue");
+                }
+            };
+            Loader.prototype.loadFile = function (file) {
+                /**
+                Start the process of loading a file outside of the
+                regular queue loading process.
+                Callbacks for load completion need to be added onto the file
+                via `onComplete` Signal.
+    
+                @method loadFile
+                @public
+                **/
+                if (file.loading || file.complete) {
+                    Kiwi.Log.error("Kiwi.Files.Loader: " + "Could not add file. " + "File is already loading or has completed loading.");
+                    return;
+                }
+                this._sortFile(file, true);
+            };
+            Loader.prototype.removeFileFromQueue = function (file) {
+                /**
+                Remove a file from the file queue.
+                Files cannot be removed while the queue is loading.
+    
+                @method removeFileFromQueue
+                @param file {Kiwi.Files.File} File to remove
+                @return {boolean} Whether the file was added to the queue
+                @since 1.2.0
+                @public
+                **/
+                if (this._queueLoading) {
+                    Kiwi.Log.warn("Kiwi.Files.Loader: File cannot be removed " + "from the queue whilst the queue is currently loading.", "#loading", "#filequeue");
+                    return false;
+                }
+                var index = this._loadingList.indexOf(file);
+                if (index === -1) {
+                    return false;
+                }
+                if (file.loading) {
+                    Kiwi.Log.warn("Kiwi.Files.Loader: " + "Cannot remove the file from the list " + "as it is currently loading.", "#loading", "#filequeue");
+                    return false;
+                }
+                this._loadingList.splice(index, 1);
+                return true;
+            };
+            Loader.prototype.start = function (calculateBytes) {
+                /**
+                Start loading all the files which are in the file queue.
+    
+                To accurately use the `bytesLoaded` or `bytesTotal` properties,
+                you will need to set the `calculateBytes` boolean to true.
+                This may increase load times, as each file in the queue will
+                first make XHR HEAD requests for information.
+    
+                When `calculateBytes` is true, `percentLoaded` equals
+                `bytesLoaded / bytesTotal`.
+                Otherwise it equals `filesLoaded / numberOfFilesToLoad`.
+    
+                @method start
+                @param [calculateBytes] {boolean} Set `calculateBytes` property
+                    on loader
+                @since 1.2.0
+                @public
+                **/
+                if (calculateBytes === void 0) { calculateBytes = null; }
+                if (calculateBytes !== null) {
+                    this._calculateBytes = calculateBytes;
+                }
+                if (this._queueLoading) {
+                    Kiwi.Log.warn("Kiwi.Files.Loader: " + "Files in the queue are already being loaded");
+                    return;
+                }
+                // Reset the number of bytes laoded
+                this._bytesLoaded = 0;
+                this._bytesTotal = 0;
+                this.percentLoaded = 0;
+                if (this._calculateBytes) {
+                    this.calculateQueuedSize(this._startLoading, this);
+                }
+                else {
+                    this._startLoading();
+                }
+            };
             Object.defineProperty(Loader.prototype, "bytesLoaded", {
                 /**
-                * READ ONLY: Returns the total number of bytes for the files in the file queue.
-                *
-                * If you are using this make sure you set the 'calculateBytes' property to true OR execute the 'calculateQueuedSize' method.
-                * Otherwise files that are loaded via tags will not be accurate!
-                *
-                * @property bytesLoaded
-                * @readOnly
-                * @default 0
-                * @since 1.2.0
-                * @type Number
-                * @public
-                */
+                Total number of bytes for the files in the file queue.
+        
+                Files loaded via tags will only be accurately measured
+                if `calculateBytes` is true, or `calculateQueuedSize()` is called.
+        
+                Read only.
+        
+                @property bytesLoaded
+                @readOnly
+                @default 0
+                @since 1.2.0
+                @type number
+                @public
+                **/
                 get: function () {
                     return this._bytesLoaded;
                 },
                 enumerable: true,
                 configurable: true
             });
-            /**
-            * Loops through the file queue and gets file information (filesize, ETag, filetype) for each.
-            *
-            * To get accurate information about the bytesLoaded, bytesTotal, and the percentLoaded
-            * set the 'calculateBytes' property to true, as the loader will automatically execute this method before hand.
-            *
-            * Can only be executed when the file queue is not currently loading.
-            *
-            * @method calculateQueuedSize
-            * @param callback {any}
-            * @param [context=null] {any}
-            * @public
-            */
+            Object.defineProperty(Loader.prototype, "bytesTotal", {
+                /**
+                Total number of bytes for the files in the file queue.
+                Only contains a value if `calculateBytes` is true
+                and files are loading, or if you use `calculateQueuedSize()`.
+        
+                Read only.
+        
+                @property bytesTotal
+                @readOnly
+                @default 0
+                @since 1.2.0
+                @type number
+                @public
+                **/
+                get: function () {
+                    return this._bytesTotal;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Loader.prototype._calculateNextFileSize = function () {
+                /**
+                Check to see whether all the file sizes have been retrieved.
+                If so, complete the "calculateQueuedSize" call.
+                Otherwise request the next file's details.
+    
+                @method _calculateNextFileSize
+                @private
+                **/
+                if (this._currentFileIndex >= this._loadingList.length) {
+                    this._queueLoading = false;
+                    this.onSizeCallback.call(this.onSizeContext, this._bytesTotal);
+                    ;
+                    return;
+                }
+                var file = this._loadingList[this._currentFileIndex];
+                // Have we already got the details for this file?
+                if (file.detailsReceived) {
+                    this._detailsReceived();
+                }
+                else {
+                    var details = file.loadDetails(this._detailsReceived, this);
+                    // Skip to the next file if the request could not be made.
+                    // Shouldn't happen.
+                    if (!details) {
+                        this._detailsReceived();
+                    }
+                }
+            };
+            Loader.prototype._detailsReceived = function () {
+                /**
+                Executed when by `_calculateNextFileSize` when the files information has been retrieved.
+                Adds its calculated size to the `_bytesTotal` and executes the `nextFileSize` method.
+    
+                @method _detailsReceived
+                @private
+                **/
+                var file = this._loadingList[this._currentFileIndex];
+                if (file.detailsReceived) {
+                    this._bytesTotal += file.size;
+                }
+                this._currentFileIndex++;
+                this._calculateNextFileSize();
+            };
             Loader.prototype.calculateQueuedSize = function (callback, context) {
+                /**
+                Loop through the file queue and get file information
+                (filesize, ETag, filetype) for each.
+    
+                To get accurate information about `bytesLoaded`, `bytesTotal`,
+                and `percentLoaded`, set the `calculateBytes` property to true,
+                as the loader will automatically execute this method before hand.
+    
+                Can only be executed when the file queue is not currently loading.
+    
+                @method calculateQueuedSize
+                @param callback {any}
+                @param [context=null] {any}
+                @public
+                **/
                 if (context === void 0) { context = null; }
-                //Is the queue currently loading files?
+                // Is the queue currently loading files?
                 if (this._queueLoading) {
-                    Kiwi.Log.warn('Kiwi.Files.Loader: Cannot calculate the size of the files in the filequeue whilst they are loading. ');
+                    Kiwi.Log.warn("Kiwi.Files.Loader: " + "Cannot calculate the size of the files " + "in the filequeue whilst they are loading.");
                     return;
                 }
                 //Set the callbacks
@@ -10578,69 +11705,183 @@ var Kiwi;
                 this._queueLoading = true;
                 this._calculateNextFileSize();
             };
-            /**
-            * Checks to see if all the file sizes have been retrieved.
-            * If so completes the "calculateQueuedSize" call.
-            * Otherwise requests the next file's details.
-            *
-            * @method _calculateNextFileSize
-            * @private
-            */
-            Loader.prototype._calculateNextFileSize = function () {
-                if (this._currentFileIndex >= this._loadingList.length) {
-                    this._queueLoading = false;
-                    this.onSizeCallback.call(this.onSizeContext, this._bytesTotal);
-                    ;
-                    return;
+            // -----------------------------
+            // File Addition Methods
+            // -----------------------------
+            Loader.prototype._attemptToAddAudio = function (params, onlyIfSupported) {
+                /**
+                Check to see if the AUDIO file being loaded is supported or not by the browser/device before adding it to the loading queue.
+                Return a boolean specifying whether the audio file
+                was successfully added to the filestore.
+    
+                @method _attemptToAddAudio
+                @param params {object}
+                    @param params.key {string} Key for the audio file
+                    @param params.url {string} URL of the audio to load
+                    @param [params.state=true] {Kiwi.State} State this file is for
+                    @param [params.fileStore] {Kiwi.Files.FileStore}
+                @param [onlyIfSupported=true] {boolean} Whether the audio file
+                    should only be loaded if Kiwi detects that the audio file
+                    could be played.
+                @return {Kiwi.Files.File} File which was created
+                @private
+                **/
+                var file = new Kiwi.Files.AudioFile(this.game, params);
+                var support = false;
+                switch (file.extension) {
+                    case "mp3":
+                        support = Kiwi.DEVICE.mp3;
+                        break;
+                    case "ogg":
+                    case "oga":
+                        support = Kiwi.DEVICE.ogg;
+                        break;
+                    case "m4a":
+                        support = Kiwi.DEVICE.m4a;
+                        break;
+                    case "wav":
+                    case "wave":
+                        support = Kiwi.DEVICE.wav;
+                        break;
                 }
-                var file = this._loadingList[this._currentFileIndex];
-                //Have we already got the details for this file?
-                if (file.detailsReceived) {
-                    this._detailsReceived();
+                if (support == true || onlyIfSupported == false) {
+                    this.addFileToQueue(file);
+                    return file;
                 }
                 else {
-                    var details = file.loadDetails(this._detailsReceived, this);
-                    //Skip to the next file if the request could not be made.
-                    //Shouldn't happen.
-                    if (!details) {
-                        this._detailsReceived();
+                    Kiwi.Log.error("Kiwi.Loader: " + "Audio Format not supported on this Device/Browser.", "#audio", "#unsupported");
+                    return null;
+                }
+            };
+            Loader.prototype.addAudio = function (key, url, storeAsGlobal, onlyIfSupported) {
+                /**
+                Create a new File to store an audio piece.
+                
+                First check to see if the AUDIO file being loaded is supported
+                by the browser/device before adding it to the loading queue.
+                You can override this behaviour and tell the audio data to load
+                even if not supported by setting the `onlyIfSupported` parameter
+                to `false`.
+    
+                If you pass an array of filepaths as `url`, the first audio
+                filetype that is supported will be loaded.
+    
+                @method addAudio
+                @param key {string} Key for the audio file
+                @param url {string} URL of the audio to load.
+                    You can pass an array of URLs, in which case
+                    the first supported audio filetype in the array will be loaded.
+                @param [storeAsGlobal=true] {boolean} Whether the file
+                    should be stored globally
+                @param [onlyIfSupported=true] {boolean} Whether the audio file
+                    should only be loaded if Kiwi detects that
+                    the audio file is supported
+                @return {Kiwi.Files.File} File which was created
+                @public
+                **/
+                if (storeAsGlobal === void 0) { storeAsGlobal = true; }
+                if (onlyIfSupported === void 0) { onlyIfSupported = true; }
+                var params = {
+                    type: Kiwi.Files.File.AUDIO,
+                    key: null,
+                    url: null,
+                    state: null,
+                    fileStore: this.game.fileStore
+                };
+                if (Kiwi.Utils.Common.isObject(key)) {
+                    params = key;
+                    params.type = Kiwi.Files.File.AUDIO;
+                    params.fileStore = this.game.fileStore;
+                }
+                else {
+                    params.key = key;
+                    params.url = url;
+                    if (!storeAsGlobal && this.game.states.current) {
+                        params.state = this.game.states.current;
                     }
                 }
-            };
-            /**
-            * Executed when by '_calculateNextFileSize' when the files information has been retrieved.
-            * Adds its calculated size to the _bytesTotal and executes the 'nextFileSize' method.
-            *
-            * @method _detailsReceived
-            * @private
-            */
-            Loader.prototype._detailsReceived = function () {
-                var file = this._loadingList[this._currentFileIndex];
-                if (file.detailsReceived) {
-                    this._bytesTotal += file.size;
+                var i = 0, urls, file;
+                // If it is a string then try to load that file
+                if (Kiwi.Utils.Common.isString(params.url)) {
+                    urls = [params.url];
                 }
-                this._currentFileIndex++;
-                this._calculateNextFileSize();
+                else {
+                    urls = params.url;
+                }
+                while (i < urls.length) {
+                    params.url = urls[i];
+                    file = this._attemptToAddAudio(params, onlyIfSupported);
+                    if (file) {
+                        return file;
+                    }
+                    i++;
+                }
+                return null;
             };
-            /**
-            * -----------------------------
-            * File Addition Methods
-            * -----------------------------
-            */
-            /**
-            * Creates a new file for an image and adds a the file to loading queue.
-            * @method addImage
-            * @param key {String} The key for the file.
-            * @param url {String} The url of the image to load.
-            * @param [width] {number} The width of the cell on the image to use once the image is loaded.
-            * @param [height] {number} The height of the cell on the image to use once the image is loaded.
-            * @param [offsetX] {number} An offset on the x axis of the cell.
-            * @param [offsetY] {number} An offset of the y axis of the cell.
-            * @param [storeAsGlobal=true] {boolean} If the image should be stored globally or not.
-            * @return {Kiwi.Files.File} The file which was created.
-            * @public
-            */
+            Loader.prototype.addBinaryFile = function (key, url, storeAsGlobal) {
+                /**
+                Create a new File for a Binary file
+                and add it to the loading queue.
+    
+                @method addBinaryFile
+                @param key {string} Key for the file
+                @param url {string} URL to the Binary file
+                @param [storeAsGlobal=true] {boolean} Whether the file
+                    should be stored globally
+                @return {Kiwi.Files.File} File which was created
+                @public
+                **/
+                if (storeAsGlobal === void 0) { storeAsGlobal = true; }
+                var params = {
+                    type: Kiwi.Files.File.BINARY_DATA,
+                    key: key,
+                    url: url,
+                    fileStore: this.game.fileStore
+                };
+                if (Kiwi.Utils.Common.isObject(key)) {
+                    var p = key;
+                    params.key = p.key;
+                    params.url = p.url;
+                    if (p.parse) {
+                        params.parse = p.parse;
+                    }
+                    if (p.state) {
+                        params.state = p.state;
+                    }
+                    if (p.tags) {
+                        params.tags = p.tags;
+                    }
+                    if (p.crossOrigin) {
+                        params.crossOrigin = p.crossOrigin;
+                    }
+                }
+                else {
+                    if (!storeAsGlobal && this.game.states.current) {
+                        params.state = this.game.states.current;
+                    }
+                }
+                var file = new Kiwi.Files.DataFile(this.game, params);
+                this.addFileToQueue(file);
+                return file;
+            };
             Loader.prototype.addImage = function (key, url, width, height, offsetX, offsetY, storeAsGlobal) {
+                /**
+                Create a new file for an image and adds it to the loading queue.
+    
+                @method addImage
+                @param key {string} Key for the file
+                @param url {string} URL of the image to load
+                @param [width] {number} Width of the cell on the image to use
+                    once the image is loaded
+                @param [height] {number} Height of the cell on the image to use
+                    once the image is loaded
+                @param [offsetX] {number} Horizontal offset of the cell
+                @param [offsetY] {number} Vertical offset of the cell
+                @param [storeAsGlobal=true] {boolean} Whether the image
+                    should be stored globally
+                @return {Kiwi.Files.File} File which was created
+                @public
+                **/
                 if (storeAsGlobal === void 0) { storeAsGlobal = true; }
                 var params = {
                     type: Kiwi.Files.File.IMAGE,
@@ -10659,12 +11900,19 @@ var Kiwi;
                         offsetX: p.offsetX,
                         offsetY: p.offsetY
                     };
-                    if (p.xhrLoading)
-                        params.xhrLoading = p.xhrLoading; //forces blob loading
-                    if (p.state)
+                    if (p.xhrLoading) {
+                        // Forces BLOB loading
+                        params.xhrLoading = p.xhrLoading;
+                    }
+                    if (p.state) {
                         params.state = p.state;
-                    if (p.tags)
+                    }
+                    if (p.tags) {
                         params.tags = p.tags;
+                    }
+                    if (p.crossOrigin) {
+                        params.crossOrigin = p.crossOrigin;
+                    }
                 }
                 else {
                     if (!storeAsGlobal && this.game.states.current) {
@@ -10683,25 +11931,77 @@ var Kiwi;
                 this.addFileToQueue(file);
                 return file;
             };
-            /**
-            * Creates a new file for a spritesheet and adds the file to the loading queue.
-            * @method addSpriteSheet
-            * @param key {String} The key for the file.
-            * @param url {String} The url of the image to load.
-            * @param frameWidth {number} The width of a single cell in the spritesheet.
-            * @param frameHeight {number} The height of a single cell in the spritesheet.
-            * @param [numCells] {number} The number of cells that are in this spritesheet.
-            * @param [rows] {number} The number of cells that are in a row.
-            * @param [cols] {number} The number of cells that are in a column.
-            * @param [sheetOffsetX] {number} The offset of the whole spritesheet on the x axis.
-            * @param [sheetOffsetY] {number} The offset of the whole spritesheet on the y axis.
-            * @param [cellOffsetX] {number} The spacing between each cell on the x axis.
-            * @param [cellOffsetY] {number} The spacing between each cell on the y axis.
-            * @param [storeAsGlobal=true] {boolean}
-            * @return {Kiwi.Files.File} The file which was created.
-            * @public
-            */
+            Loader.prototype.addJSON = function (key, url, storeAsGlobal) {
+                /**
+                Create a new File to store JSON and add it to the loading queue.
+    
+                @method addJSON
+                @param key {string} Key for the file
+                @param url {string} URL to the json file
+                @param [storeAsGlobal=true] {boolean} Whether the file
+                    should be stored globally.
+                @return {Kiwi.Files.File} File which was created
+                @public
+                **/
+                if (storeAsGlobal === void 0) { storeAsGlobal = true; }
+                var params = {
+                    type: Kiwi.Files.File.JSON,
+                    key: key,
+                    url: url,
+                    fileStore: this.game.fileStore
+                };
+                if (Kiwi.Utils.Common.isObject(key)) {
+                    var p = key;
+                    params.key = p.key;
+                    params.url = p.url;
+                    if (p.parse) {
+                        params.parse = p.parse;
+                    }
+                    if (p.state) {
+                        params.state = p.state;
+                    }
+                    if (p.tags) {
+                        params.tags = p.tags;
+                    }
+                    if (p.crossOrigin) {
+                        params.crossOrigin = p.crossOrigin;
+                    }
+                }
+                else {
+                    if (!storeAsGlobal && this.game.states.current) {
+                        params.state = this.game.states.current;
+                    }
+                }
+                var file = new Kiwi.Files.DataFile(this.game, params);
+                this.addFileToQueue(file);
+                return file;
+            };
             Loader.prototype.addSpriteSheet = function (key, url, frameWidth, frameHeight, numCells, rows, cols, sheetOffsetX, sheetOffsetY, cellOffsetX, cellOffsetY, storeAsGlobal) {
+                /**
+                Create a new file for a spritesheet
+                and add it to the loading queue.
+    
+                @method addSpriteSheet
+                @param key {string} Key for the file
+                @param url {string} URL of the image to load
+                @param frameWidth {number} Width of a single cell
+                    in the spritesheet
+                @param frameHeight {number} Height of a single cell
+                    in the spritesheet
+                @param [numCells] {number} Number of cells in this spritesheet
+                @param [rows] {number} Number of cells in a row
+                @param [cols] {number} Number of cells in a column
+                @param [sheetOffsetX] {number} Horizontal offset of the whole
+                    spritesheet
+                @param [sheetOffsetY] {number} Vertical offset of the whole
+                    spritesheet
+                @param [cellOffsetX] {number} Horizontal spacing between each cell
+                @param [cellOffsetY] {number} Vertical spacing between each cell
+                @param [storeAsGlobal=true] {boolean} Whether the image
+                    should be stored globally
+                @return {Kiwi.Files.File} File which was created
+                @public
+                **/
                 if (storeAsGlobal === void 0) { storeAsGlobal = true; }
                 var params = {
                     type: Kiwi.Files.File.SPRITE_SHEET,
@@ -10725,12 +12025,19 @@ var Kiwi;
                         cellOffsetX: p.cellOffsetX,
                         cellOffsetY: p.cellOffsetY
                     };
-                    if (p.xhrLoading)
-                        params.xhrLoading = p.xhrLoading; //forces blob loading
-                    if (p.state)
+                    // Force BLOB loading
+                    if (p.xhrLoading) {
+                        params.xhrLoading = p.xhrLoading;
+                    }
+                    if (p.state) {
                         params.state = p.state;
-                    if (p.tags)
+                    }
+                    if (p.tags) {
                         params.tags = p.tags;
+                    }
+                    if (p.crossOrigin) {
+                        params.crossOrigin = p.crossOrigin;
+                    }
                 }
                 else {
                     if (!storeAsGlobal && this.game.states.current) {
@@ -10754,18 +12061,21 @@ var Kiwi;
                 this.addFileToQueue(file);
                 return file;
             };
-            /**
-            * Creates new file's for loading a texture atlas and adds those files to the loading queue.
-            * @method addTextureAtlas
-            * @param key {String} The key for the image file.
-            * @param imageUrl {String} The url of the image to load.
-            * @param jsonID {String} A key for the JSON file.
-            * @param jsonURL {String} The url of the json file to load.
-            * @param [storeAsGlobal=true] {Boolean} If hte files should be stored globally or not.
-            * @return {Kiwi.Files.File} The file which was created.
-            * @public
-            */
             Loader.prototype.addTextureAtlas = function (key, imageURL, jsonID, jsonURL, storeAsGlobal) {
+                /**
+                Create new files for loading a texture atlas
+                and add those files to the loading queue.
+    
+                @method addTextureAtlas
+                @param key {string} Key for the image file
+                @param imageUrl {string} URL of the image to load
+                @param jsonID {string} Key for the JSON file
+                @param jsonURL {string} URL of the JSON file to load
+                @param [storeAsGlobal=true] {boolean} Whether the files
+                    should be stored globally
+                @return {Kiwi.Files.File} File which was created
+                @public
+                **/
                 if (storeAsGlobal === void 0) { storeAsGlobal = true; }
                 var textureParams = {
                     type: Kiwi.Files.File.TEXTURE_ATLAS,
@@ -10775,8 +12085,7 @@ var Kiwi;
                     metadata: {
                         jsonID: jsonID
                     }
-                };
-                var jsonParams = {
+                }, jsonParams = {
                     type: Kiwi.Files.File.JSON,
                     key: jsonID,
                     url: jsonURL,
@@ -10797,12 +12106,18 @@ var Kiwi;
                     jsonParams.url = p.jsonURL;
                     textureParams.metadata.jsonID = jsonParams.key;
                     jsonParams.metadata.imageID = textureParams.key;
+                    if (p.crossOrigin) {
+                        textureParams.crossOrigin = p.crossOrigin;
+                        jsonParams.crossOrigin = p.crossOrigin;
+                    }
                     if (p.state) {
                         textureParams.state = p.state;
                         jsonParams.state = p.state;
                     }
-                    if (p.xhrLoading)
-                        textureParams.xhrLoading = p.xhrLoading; //forces blob loading
+                    // Forces BLOB loading
+                    if (p.xhrLoading) {
+                        textureParams.xhrLoading = p.xhrLoading;
+                    }
                     if (p.tags) {
                         jsonParams.tags = p.tags;
                         textureParams.tags = p.tags;
@@ -10814,222 +12129,19 @@ var Kiwi;
                 this.addFileToQueue(jsonFile);
                 return imageFile;
             };
-            /**
-            * Creates a new File to store a audio piece.
-            * This method firstly checks to see if the AUDIO file being loaded is supported or not by the browser/device before adding it to the loading queue.
-            * You can override this behaviour and tell the audio data to load even if not supported by setting the 'onlyIfSupported' boolean to false.
-            * Also you can now pass an array of filepaths, and the first audio filetype that is supported will be loaded.
-            *
-            * @method addAudio
-            * @param key {String} The key for the audio file.
-            * @param url {String} The url of the audio to load. You can pass an array of URLs, in which case the first supported audio filetype in the array will be loaded.
-            * @param [storeAsGlobal=true] {Boolean} If the file should be stored globally.
-            * @param [onlyIfSupported=true] {Boolean} If the audio file should only be loaded if Kiwi detects that the audio file could be played.
-            * @return {Kiwi.Files.File} The file which was created.
-            * @public
-            */
-            Loader.prototype.addAudio = function (key, url, storeAsGlobal, onlyIfSupported) {
-                if (storeAsGlobal === void 0) { storeAsGlobal = true; }
-                if (onlyIfSupported === void 0) { onlyIfSupported = true; }
-                var params = {
-                    type: Kiwi.Files.File.AUDIO,
-                    key: null,
-                    url: null,
-                    state: null,
-                    fileStore: this.game.fileStore
-                };
-                if (Kiwi.Utils.Common.isObject(key)) {
-                    params = key;
-                    params.type = Kiwi.Files.File.AUDIO;
-                    params.fileStore = this.game.fileStore;
-                }
-                else {
-                    params.key = key;
-                    params.url = url;
-                    if (!storeAsGlobal && this.game.states.current) {
-                        params.state = this.game.states.current;
-                    }
-                }
-                var i = 0, urls, file;
-                //If it is a string then try to load that file
-                if (Kiwi.Utils.Common.isString(params.url)) {
-                    urls = [params.url];
-                }
-                else {
-                    urls = params.url;
-                }
-                while (i < urls.length) {
-                    params.url = urls[i];
-                    file = this._attemptToAddAudio(params, onlyIfSupported);
-                    if (file) {
-                        return file;
-                    }
-                    i++;
-                }
-                return null;
-            };
-            /**
-            * This method firstly checks to see if the AUDIO file being loaded is supported or not by the browser/device before adding it to the loading queue.
-            * Returns a boolean if the audio file was successfully added or not to the file directory.
-            * @method _attemptToAddAudio
-            * @param params {Object}
-            *   @param params.key {String} The key for the audio file.
-            *   @param params.url {String} The url of the audio to load.
-            *   @param [params.state=true] {Kiwi.State} The state this file should be for.
-            *   @param [params.fileStore] {Kiwi.Files.FileStore}
-            * @param [onlyIfSupported=true] {Boolean} If the audio file should only be loaded if Kiwi detects that the audio file could be played.
-            * @return {Kiwi.Files.File} The file which was created.
-            * @private
-            */
-            Loader.prototype._attemptToAddAudio = function (params, onlyIfSupported) {
-                var file = new Kiwi.Files.AudioFile(this.game, params);
-                var support = false;
-                switch (file.extension) {
-                    case 'mp3':
-                        support = Kiwi.DEVICE.mp3;
-                        break;
-                    case 'ogg':
-                    case 'oga':
-                        support = Kiwi.DEVICE.ogg;
-                        break;
-                    case 'm4a':
-                        support = Kiwi.DEVICE.m4a;
-                        break;
-                    case 'wav':
-                    case 'wave':
-                        support = Kiwi.DEVICE.wav;
-                        break;
-                }
-                if (support == true || onlyIfSupported == false) {
-                    this.addFileToQueue(file);
-                    return file;
-                }
-                else {
-                    Kiwi.Log.error('Kiwi.Loader: Audio Format not supported on this Device/Browser.', '#audio', '#unsupported');
-                    return null;
-                }
-            };
-            /**
-            * Creates a new File to store JSON and adds it to the loading queue.
-            * @method addJSON
-            * @param key {String} The key for the file.
-            * @param url {String} The url to the json file.
-            * @param [storeAsGlobal=true] {Boolean} If the file should be stored globally.
-            * @return {Kiwi.Files.File} The file which was created.
-            * @public
-            */
-            Loader.prototype.addJSON = function (key, url, storeAsGlobal) {
-                if (storeAsGlobal === void 0) { storeAsGlobal = true; }
-                var params = {
-                    type: Kiwi.Files.File.JSON,
-                    key: key,
-                    url: url,
-                    fileStore: this.game.fileStore
-                };
-                if (Kiwi.Utils.Common.isObject(key)) {
-                    var p = key;
-                    params.key = p.key;
-                    params.url = p.url;
-                    if (p.parse)
-                        params.parse = p.parse;
-                    if (p.state)
-                        params.state = p.state;
-                    if (p.tags)
-                        params.tags = p.tags;
-                }
-                else {
-                    if (!storeAsGlobal && this.game.states.current) {
-                        params.state = this.game.states.current;
-                    }
-                }
-                var file = new Kiwi.Files.DataFile(this.game, params);
-                this.addFileToQueue(file);
-                return file;
-            };
-            /**
-            * Creates a new File to store XML and adds it to the loading queue.
-            * @method addXML
-            * @param key {String} The key for the file.
-            * @param url {String} The url to the xml file.
-            * @param [storeAsGlobal=true] {Boolean} If the file should be stored globally.
-            * @return {Kiwi.Files.File} The file which was created.
-            * @public
-            */
-            Loader.prototype.addXML = function (key, url, storeAsGlobal) {
-                if (storeAsGlobal === void 0) { storeAsGlobal = true; }
-                var params = {
-                    type: Kiwi.Files.File.XML,
-                    key: key,
-                    url: url,
-                    fileStore: this.game.fileStore
-                };
-                if (Kiwi.Utils.Common.isObject(key)) {
-                    var p = key;
-                    params.key = p.key;
-                    params.url = p.url;
-                    if (p.parse)
-                        params.parse = p.parse;
-                    if (p.state)
-                        params.state = p.state;
-                    if (p.tags)
-                        params.tags = p.tags;
-                }
-                else {
-                    if (!storeAsGlobal && this.game.states.current) {
-                        params.state = this.game.states.current;
-                    }
-                }
-                var file = new Kiwi.Files.DataFile(this.game, params);
-                this.addFileToQueue(file);
-                return file;
-            };
-            /**
-            * Creates a new File for a Binary file and adds it to the loading queue.
-            * @method addBinaryFile
-            * @param key {String} The key for the file.
-            * @param url {String} The url to the Binary file.
-            * @param [storeAsGlobal=true] {Boolean} If the file should be stored globally.
-            * @return {Kiwi.Files.File} The file which was created.
-            * @public
-            */
-            Loader.prototype.addBinaryFile = function (key, url, storeAsGlobal) {
-                if (storeAsGlobal === void 0) { storeAsGlobal = true; }
-                var params = {
-                    type: Kiwi.Files.File.BINARY_DATA,
-                    key: key,
-                    url: url,
-                    fileStore: this.game.fileStore
-                };
-                if (Kiwi.Utils.Common.isObject(key)) {
-                    var p = key;
-                    params.key = p.key;
-                    params.url = p.url;
-                    if (p.parse)
-                        params.parse = p.parse;
-                    if (p.state)
-                        params.state = p.state;
-                    if (p.tags)
-                        params.tags = p.tags;
-                }
-                else {
-                    if (!storeAsGlobal && this.game.states.current) {
-                        params.state = this.game.states.current;
-                    }
-                }
-                var file = new Kiwi.Files.DataFile(this.game, params);
-                this.addFileToQueue(file);
-                return file;
-            };
-            /**
-            * Creates a new File to store a text file and adds it to the loading queue.
-            * @method addTextFile
-            * @param key {String} The key for the file.
-            * @param url {String} The url to the text file.
-            * @param [storeAsGlobal=true] {Boolean} If the file should be stored globally.
-            * @return {Kiwi.Files.File} The file which was created.
-            * @public
-            */
             Loader.prototype.addTextFile = function (key, url, storeAsGlobal) {
+                /**
+                Create a new File to store a text file
+                and add it to the loading queue.
+    
+                @method addTextFile
+                @param key {string} Key for the file
+                @param url {string} URL to the text file
+                @param [storeAsGlobal=true] {boolean} Whether the file
+                    should be stored globally
+                @return {Kiwi.Files.File} File which was created
+                @public
+                **/
                 if (storeAsGlobal === void 0) { storeAsGlobal = true; }
                 var params = {
                     type: Kiwi.Files.File.TEXT_DATA,
@@ -11041,12 +12153,18 @@ var Kiwi;
                     var p = key;
                     params.key = p.key;
                     params.url = p.url;
-                    if (p.parse)
+                    if (p.parse) {
                         params.parse = p.parse;
-                    if (p.state)
+                    }
+                    if (p.state) {
                         params.state = p.state;
-                    if (p.tags)
+                    }
+                    if (p.tags) {
                         params.tags = p.tags;
+                    }
+                    if (p.crossOrigin) {
+                        params.crossOrigin = p.crossOrigin;
+                    }
                 }
                 else {
                     if (!storeAsGlobal && this.game.states.current) {
@@ -11057,14 +12175,60 @@ var Kiwi;
                 this.addFileToQueue(file);
                 return file;
             };
-            /**
-            * Flags this loader for garbage collection. Only use this method if you are SURE you will no longer need it.
-            * Otherwise it is best to leave it alone.
-            *
-            * @method destroy
-            * @public
-            */
+            Loader.prototype.addXML = function (key, url, storeAsGlobal) {
+                /**
+                Create a new File to store XML and add it to the loading queue.
+    
+                @method addXML
+                @param key {string} Key for the file
+                @param url {string} URL to the xml file
+                @param [storeAsGlobal=true] {boolean} Whether the file
+                    should be stored globally
+                @return {Kiwi.Files.File} File which was created
+                @public
+                **/
+                if (storeAsGlobal === void 0) { storeAsGlobal = true; }
+                var params = {
+                    type: Kiwi.Files.File.XML,
+                    key: key,
+                    url: url,
+                    fileStore: this.game.fileStore
+                };
+                if (Kiwi.Utils.Common.isObject(key)) {
+                    var p = key;
+                    params.key = p.key;
+                    params.url = p.url;
+                    if (p.parse) {
+                        params.parse = p.parse;
+                    }
+                    if (p.state) {
+                        params.state = p.state;
+                    }
+                    if (p.tags) {
+                        params.tags = p.tags;
+                    }
+                    if (p.crossOrigin) {
+                        params.crossOrigin = p.crossOrigin;
+                    }
+                }
+                else {
+                    if (!storeAsGlobal && this.game.states.current) {
+                        params.state = this.game.states.current;
+                    }
+                }
+                var file = new Kiwi.Files.DataFile(this.game, params);
+                this.addFileToQueue(file);
+                return file;
+            };
             Loader.prototype.destroy = function () {
+                /**
+                Flag this loader for garbage collection.
+                Only use this method if you are SURE you will no longer need it.
+                Otherwise it is best to leave it alone.
+    
+                @method destroy
+                @public
+                **/
                 this.onQueueComplete.dispose();
                 this.onQueueProgress.dispose();
                 delete this.game;
@@ -11089,23 +12253,23 @@ var Kiwi;
                 }
                 this._loadingParallel = [];
             };
-            /**
-            * -----------------------
-            * Deprecated - Functionality exists. Maps to its equalvent
-            * -----------------------
-            **/
-            /**
-            * Initialise the properities that are needed on this loader.
-            * Recommended you use the 'onQueueProgress' / 'onQueueComplete' signals instead.
-            *
-            * @method init
-            * @param [progress=null] {Any} Progress callback method.
-            * @param [complete=null] {Any} Complete callback method.
-            * @param [calculateBytes=false] {boolean}
-            * @deprecated Deprecated as of 1.2.0
-            * @public
-            */
+            // -----------------------
+            // Deprecated - Functionality exists. Maps to its equivalent.
+            // -----------------------
             Loader.prototype.init = function (progress, complete, calculateBytes) {
+                /**
+                Initialise the properties that are needed on this loader.
+                Recommended you use the `onQueueProgress` and
+                `onQueueComplete` signals instead.
+    
+                @method init
+                @param [progress] {Any} Progress callback method
+                @param [complete] {Any} Complete callback method
+                @param [calculateBytes] {boolean} Value to which
+                    to set `calculateBytes`
+                @deprecated Deprecated as of 1.2.0
+                @public
+                **/
                 if (progress === void 0) { progress = null; }
                 if (complete === void 0) { complete = null; }
                 if (calculateBytes === void 0) { calculateBytes = null; }
@@ -11119,60 +12283,71 @@ var Kiwi;
                     this.onQueueComplete.addOnce(complete);
                 }
             };
-            /**
-            * Loops through all of the files that need to be loaded and start the load event on them.
-            * @method startLoad
-            * @deprecated Use 'start' instead. Deprecated as of 1.2.0
-            * @public
-            */
-            Loader.prototype.startLoad = function () {
-                this.start();
-            };
-            /**
-            * Returns a percentage of the amount that has been loaded so far.
-            * @method getPercentLoaded
-            * @return {Number}
-            * @deprecated Use 'percentLoaded' instead. Deprecated as of 1.2.0
-            * @public
-            */
-            Loader.prototype.getPercentLoaded = function () {
-                return this.percentLoaded;
-            };
-            /**
-            * Returns a boolean indicating if everything in the loading que has been loaded or not.
-            * @method complete
-            * @return {boolean}
-            * @deprecated Use 'percentLoaded' instead. Deprecated as of 1.2.0
-            * @public
-            */
-            Loader.prototype.complete = function () {
-                return (this.percentLoaded === 100);
-            };
-            /**
-            * Quick way of getting / setting the private variable 'calculateBytes'
-            * To be made into a public variable once removed.
-            * @method calculateBytes
-            * @param [value] {boolean}
-            * @return {boolean}
-            * @public
-            */
             Loader.prototype.calculateBytes = function (value) {
+                /**
+                Get/set whether the number of bytes for each file
+                should be calculated before the queue starts loading.
+                If true, each file in the queue makes a XHR HEAD request first
+                to get the total values.
+    
+                In the next major version, this should become a property.
+    
+                @method calculateBytes
+                @param [value] {boolean} Value to set
+                @return {boolean} Current value of byte calculation
+                @public
+                **/
                 if (typeof value !== "undefined") {
                     this._calculateBytes = value;
                 }
                 return this._calculateBytes;
             };
-            /**
-            * Returns the total number of bytes that have been loaded so far from files in the file queue.
-            *
-            * @method getBytesLoaded
-            * @return {Number}
-            * @readOnly
-            * @deprecated Use 'bytesLoaded' instead. Deprecated as of 1.2.0
-            * @public
-            */
+            Loader.prototype.complete = function () {
+                /**
+                Return a boolean indicating whether
+                everything in the loading queue has been loaded.
+    
+                @method complete
+                @return {boolean}
+                @deprecated Use `percentLoaded` instead. Deprecated as of 1.2.0
+                @public
+                **/
+                return (this.percentLoaded === 100);
+            };
             Loader.prototype.getBytesLoaded = function () {
+                /**
+                Return the total number of bytes that have been loaded so far
+                from files in the file queue.
+    
+                @method getBytesLoaded
+                @return {number}
+                @readOnly
+                @deprecated Use `bytesLoaded` instead. Deprecated as of 1.2.0
+                @public
+                **/
                 return this.bytesLoaded;
+            };
+            Loader.prototype.getPercentLoaded = function () {
+                /**
+                Return a percentage of the amount that has been loaded so far.
+    
+                @method getPercentLoaded
+                @return {number}
+                @deprecated Use `percentLoaded` instead. Deprecated as of 1.2.0
+                @public
+                **/
+                return this.percentLoaded;
+            };
+            Loader.prototype.startLoad = function () {
+                /**
+                Loop through all of the files that need to be loaded
+                and start the load event on them.
+    
+                @method startLoad
+                @deprecated Use `start` instead. Deprecated as of 1.2.0.
+                @public
+                **/
+                this.start();
             };
             return Loader;
         })();
@@ -11266,302 +12441,354 @@ var Kiwi;
     })(Files = Kiwi.Files || (Kiwi.Files = {}));
 })(Kiwi || (Kiwi = {}));
 /**
-*
-* @module Kiwi
-* @submodule Files
-*
-*/
+@module Kiwi
+@submodule Files
+**/
 var Kiwi;
 (function (Kiwi) {
     var Files;
     (function (Files) {
-        /**
-        * Base class which handles the loading of an external data file an xhr.
-        * TextureFile, AudioFile contain fallback loading via tags and all extended Files contain methods for processing the files.
-        *
-        * Also can contain information about the file (like file size, last modified, e.t.c.)
-        * Uses an object literal in its constructor since 1.2 (which is preferred), but also contains previous construction support.
-        *
-        * @class File
-        * @namespace Kiwi.Files
-        * @constructor
-        * @param game {Kiwi.Game} The game that this file is for
-        * @param params {Object} Options for this file.
-        *   @param params.key {String} User defined name for this file. This would be how the user would access it in the file store.
-        *   @param params.url {String} Location of the file to be loaded.
-        *   @param {Object} [params.metadata={}] Any metadata to be associated with the file.
-        *   @param [params.state=null] {Kiwi.State} The state that this file belongs to. Used for defining global assets vs local assets.
-        *   @param [params.fileStore=null] {Kiwi.Files.FileStore} The filestore that this file should be save in automatically when loaded.
-        *   @param [params.type=UNKNOWN] {Number} The type of file this is.
-        *   @param [params.tags] {Array} Any tags to be associated with this file.
-        *   @param [params.timeout=TIMEOUT_DELAY] {Number} Sets the timeout delay when loading via ajax.
-        * @return {Kiwi.Files.File}
-        *
-        */
         var File = (function () {
+            /**
+            Base class which handles the loading of an external data file.
+            TextureFile, AudioFile contain fallback loading via tags
+            and all extended Files contain methods for processing the files.
+    
+            Also can contain information about the file
+            (like file size, last modified, etc).
+            Uses an object literal in its constructor since 1.2
+            (which is preferred), but also contains previous construction support.
+    
+            @class File
+            @namespace Kiwi.Files
+            @constructor
+            @param game {Kiwi.Game} Game that this file is for
+            @param params {object} Options for this file
+                @param params.key {string} User defined name for this file.
+                    How the user accesses it in the file store.
+                @param params.url {string} Location of the file to be loaded
+                @param [params.metadata={}] {object} Any metadata to be associated
+                    with the file
+                @param [params.state=null] {Kiwi.State} State that this file
+                    belongs to. Used for defining global assets vs local assets.
+                @param [params.fileStore=null] {Kiwi.Files.FileStore} Filestore
+                    that this file should be saved in when loaded
+                @param [params.type=UNKNOWN] {number} Type of file this is.
+                    Choose one of the following:
+                    * Kiwi.Files.AUDIO
+                    * Kiwi.Files.BINARY_DATA
+                    * Kiwi.Files.IMAGE
+                    * Kiwi.Files.JSON
+                    * Kiwi.Files.SPRITE_SHEET
+                    * Kiwi.Files.TEXT_DATA
+                    * Kiwi.Files.TEXTUREATLAS
+                    * Kiwi.Files.UNKNOWN
+                    * Kiwi.Files.XML
+                @param [params.tags] {array} Any tags
+                    to be associated with this file
+                @param [params.timeout=TIMEOUT_DELAY] {number} Timeout delay
+                    when loading via ajax
+            **/
             function File(game, params) {
-                /**
-                * ---------------
-                * Generic Properties
-                * ---------------
-                **/
-                /**
-                * Indicates if this file can be loaded in parallel to other files.
-                * This is usually only used files are using the tag loaders and not XHR.
-                *
-                * @property _loadInParallel
-                * @type Boolean
-                * @default false
-                * @since 1.2.0
-                * @private
+                /*
+                ---------------
+                Generic Properties
+                ---------------
                 */
+                /**
+                Indicates if this file can be loaded in parallel to other files.
+                This is usually only used files are using the tag loaders and not XHR.
+        
+                @property _loadInParallel
+                @type boolean
+                @default false
+                @since 1.2.0
+                @protected
+                **/
                 this._loadInParallel = false;
                 /**
-                * If this file is using tag loading instead of the XHR method.
-                * Only used by extended classes
-                *
-                * @property useTagLoader
-                * @type Boolean
-                * @since 1.2.0
-                * @protected
-                */
+                If this file is using tag loading instead of the XHR method.
+                Only used by extended classes.
+        
+                @property useTagLoader
+                @type boolean
+                @since 1.2.0
+                @protected
+                **/
                 this.useTagLoader = false;
                 /**
-                * The size of the file that was/is being loaded.
-                * Only has a value when the file was loaded by the XHR method OR you request the file information beforehand using 'loadDetails'.
-                *
-                * @property size
-                * @type Number
-                * @default 0
-                * @since 1.2.0
-                * @public
-                */
+                Size of the file that was/is being loaded.
+                Only has a value when the file was loaded by the XHR method
+                OR you request the file information beforehand using `loadDetails`.
+        
+                @property size
+                @type number
+                @default 0
+                @since 1.2.0
+                @public
+                **/
                 this.size = 0;
                 /**
-                * The number of milliseconds that the XHR should wait before timing out.
-                * Set this to NULL if you want it to not timeout.
-                *
-                * Default changed in v1.3.1 to null
-                *
-                * @property timeOutDelay
-                * @type Number
-                * @default null
-                * @public
-                */
+                Number of milliseconds that the XHR should wait before timing out.
+                Set this to `null` if you want it to not timeout.
+        
+                Default changed in v1.3.1 to `null`.
+        
+                @property timeOutDelay
+                @type number
+                @default null
+                @public
+                **/
                 this.timeOutDelay = Kiwi.Files.File.TIMEOUT_DELAY;
                 /**
-                * The number of attempts at loading there have currently been at loading the file.
-                * This is only used with XHR methods of loading.
-                * @property attemptCounter
-                * @type Number
-                * @protected
-                */
+                Current number of attempts at loading the file.
+                This is only used with XHR methods of loading.
+        
+                @property attemptCounter
+                @type number
+                @protected
+                **/
                 this.attemptCounter = 0;
                 /**
-                * The maximum attempts at loading the file that there is allowed.
-                * @property maxLoadAttempts
-                * @type Number
-                * @default 2
-                * @public
-                */
-                this.maxLoadAttempts = Kiwi.Files.File.MAX_LOAD_ATTEMPTS;
-                /**
-                * -----------------
-                * Loading Status
-                * -----------------
+                Maximum attempts at loading the file allowed
+        
+                @property maxLoadAttempts
+                @type number
+                @default 2
+                @public
                 **/
-                /**
-                * The time at which the loading started.
-                * @property timeStarted
-                * @type Number
-                * @default 0
-                * @public
+                this.maxLoadAttempts = Kiwi.Files.File.MAX_LOAD_ATTEMPTS;
+                /*
+                -----------------
+                Loading Status
+                -----------------
                 */
+                /**
+                Time at which loading started
+        
+                @property timeStarted
+                @type number
+                @default 0
+                @public
+                **/
                 this.timeStarted = 0;
                 /**
-                * The time at which progress in loading the file was last occurred.
-                * Only contains a value when using XHR methods of loading.
-                * @property lastProgress
-                * @type Number
-                * @public
-                */
+                Time at which progress in loading the file was last occurred.
+                Only contains a value when using XHR methods of loading.
+        
+                @property lastProgress
+                @type number
+                @public
+                **/
                 this.lastProgress = 0;
                 /**
-                * The time at which the load finished.
-                * @property timeFinished
-                * @type Number
-                * @default 0
-                * @public
-                */
+                Time at which the load finished
+        
+                @property timeFinished
+                @type number
+                @default 0
+                @public
+                **/
                 this.timeFinished = 0;
                 /**
-                * The duration or how long it took to load the file. In milliseconds.
-                * @property duration
-                * @type Number
-                * @default 0
-                * @public
-                */
+                Duration or how long it took to load the file in milliseconds
+        
+                @property duration
+                @type number
+                @default 0
+                @public
+                **/
                 this.duration = 0;
                 /**
-                * If file loading failed or encountered an error and so was not laoded
-                * @property hasError
-                * @type boolean
-                * @default false
-                * @public
-                */
+                Whether file loading failed or encountered an error so was not loaded
+        
+                @property hasError
+                @type boolean
+                @default false
+                @public
+                **/
                 this.hasError = false;
                 /**
-                * If loading was successful or not.
-                * @property success
-                * @type boolean
-                * @public
-                */
+                Whether loading was successful or not
+        
+                @property success
+                @type boolean
+                @public
+                **/
                 this.success = false;
                 /**
-                * Indication if the file is currently being loaded or not.
-                * @property loading
-                * @type boolean
-                * @public
-                */
+                Whether the file is currently being loaded or not
+        
+                @property loading
+                @type boolean
+                @public
+                **/
                 this.loading = false;
                 /**
-                * Indicates if the file has attempted to load.
-                * This is regardless of whether it was a success or not.
-                * @property complete
-                * @type boolean
-                * @default false
-                * @public
-                */
+                Whether the file has attempted to load,
+                regardless of whether it was a success or not
+        
+                @property complete
+                @type boolean
+                @default false
+                @public
+                **/
                 this.complete = false;
                 /**
-                * The amount of percent loaded the file is. This is out of 100.
-                * @property percentLoaded
-                * @type Number
-                * @public
-                */
+                Percentage of file loaded
+        
+                @property percentLoaded
+                @type number
+                @public
+                **/
                 this.percentLoaded = 0;
                 /**
-                * The number of bytes that have currently been loaded.
-                * Useful when wanting to know exactly how much data has been transferred.
-                * Only has a value when using the XHR method of loading.
-                *
-                * @property bytesLoaded
-                * @type Number
-                * @default 0
-                * @public
-                */
+                Number of bytes that have currently been loaded.
+                Useful when wanting to know exactly how much data has been transferred.
+                Only has a value when using the XHR method of loading.
+        
+                @property bytesLoaded
+                @type number
+                @default 0
+                @public
+                **/
                 this.bytesLoaded = 0;
                 /**
-                * The total number of bytes that the file consists off.
-                * Only has a value when using the XHR method of loading
-                * or you are getting the file details before hand.
-                *
-                * @property bytesTotal
-                * @type Number
-                * @default 0
-                * @public
-                */
+                Total number of bytes that the file consists of.
+                Only has a value when using the XHR method of loading
+                or you are getting the file details beforehand.
+        
+                @property bytesTotal
+                @type number
+                @default 0
+                @public
+                **/
                 this.bytesTotal = 0;
                 /**
-                * An indication of whether this files information has been retrieved or not.
-                * @property detailsReceived
-                * @type boolean
-                * @default false
-                * @since 1.2.0
-                * @public
-                */
-                this.detailsReceived = false;
-                /**
-                * --------------------
-                * MISC
-                * --------------------
+                Whether this file's information has been retrieved or not
+        
+                @property detailsReceived
+                @type boolean
+                @default false
+                @since 1.2.0
+                @public
                 **/
-                /**
-                * The Entity Tag that is assigned to the file. O
-                * Only has a value when either using the XHR loader OR when requesting the file details.
-                * @property ETag
-                * @type String
-                * @public
+                this.detailsReceived = false;
+                /*
+                --------------------
+                MISC
+                --------------------
                 */
-                this.ETag = '';
                 /**
-                * The last date/time that this file was last modified.
-                * Only has a value when using the XHR method of loading OR when requesting the file details.
-                * @property lastModified
-                * @type String
-                * @default ''
-                * @public
-                */
-                this.lastModified = '';
+                Entity Tag that is assigned to the file.
+                Only has a value when either using the XHR loader
+                OR when requesting the file details.
+        
+                @property ETag
+                @type string
+                @public
+                **/
+                this.ETag = "";
                 /**
-                * A method that is to be executed when this file has finished loading.
-                * @property onCompleteCallback
-                * @type Any
-                * @default null
-                * @deprecated Use `onComplete`. Deprecated as of 1.2.0
-                * @public
-                */
-                //public onCompleteCallback: any = null;
+                Date/time that this file was last modified.
+                Only has a value when using the XHR method of loading
+                OR when requesting the file details.
+        
+                @property lastModified
+                @type string
+                @default ""
+                @public
+                **/
+                this.lastModified = "";
                 /**
-                * A method that is to be executed while this file is loading.
-                * @property onProgressCallback
-                * @type Any
-                * @default null
-                * @deprecated Use `onProgress`. Deprecated as of 1.2.0
-                * @public
-                */
-                //public onProgressCallback: any = null;
+                Any tags that are on this file. This can be used to grab files/objects
+                on the whole game that have these particular tag.
+        
+                @property _tags
+                @type string[]
+                @default []
+                @private
+                **/
+                this._tags = [];
                 /**
-                * The status of this file that is being loaded.
-                * Only used/has a value when the file was/is being loaded by the XHR method.
-                * @property status
-                * @type Number
-                * @default 0
-                * @deprecated Deprecated as of 1.2.0
-                * @public
-                */
+                Method to be executed when this file has finished loading,
+                but actually does nothing.
+        
+                @property onCompleteCallback
+                @type Any
+                @default null
+                @deprecated Use `onComplete`. Deprecated as of 1.2.0
+                @public
+                **/
+                this.onCompleteCallback = null;
+                /**
+                Method that is to be executed while this file is loading,
+                but actually does nothing.
+        
+                @property onProgressCallback
+                @type Any
+                @default null
+                @deprecated Use `onProgress`. Deprecated as of 1.2.0
+                @public
+                **/
+                this.onProgressCallback = null;
+                /**
+                Status of this file that is being loaded.
+                Only used/has a value when the file was/is being loaded
+                by the XHR method.
+        
+                @property status
+                @type number
+                @default 0
+                @deprecated Deprecated as of 1.2.0
+                @public
+                **/
                 this.status = 0;
                 /**
-                * The status piece of text that the XHR returns.
-                * @property statusText
-                * @type String
-                * @default ''
-                * @deprecated Deprecated as of 1.2.0
-                * @public
-                */
-                this.statusText = '';
+                Status message that the XHR returns
+        
+                @property statusText
+                @type string
+                @default ""
+                @deprecated Deprecated as of 1.2.0
+                @public
+                **/
+                this.statusText = "";
                 /**
-                * The ready state of the XHR loader whilst loading.
-                * @property readyState
-                * @type Number
-                * @default 0
-                * @deprecated Deprecated as of 1.2.0
-                * @public
-                */
+                Ready state of the XHR loader while loading
+        
+                @property readyState
+                @type number
+                @default 0
+                @deprecated Deprecated as of 1.2.0
+                @public
+                **/
                 this.readyState = 0;
                 /**
-                * If this file has timeout when it was loading.
-                * @property hasTimedOut
-                * @type boolean
-                * @default false
-                * @deprecated Deprecated as of 1.2.0
-                * @public
-                */
+                Whether this file has timed out when it was loading
+        
+                @property hasTimedOut
+                @type boolean
+                @default false
+                @deprecated Deprecated as of 1.2.0
+                @public
+                **/
                 this.hasTimedOut = false;
                 /**
-                * If the file timed out or not.
-                * @property timedOut
-                * @type Number
-                * @default 0
-                * @deprecated Deprecated as of 1.2.0
-                * @public
-                */
+                Whether the file timed out or not
+        
+                @property timedOut
+                @type number
+                @default 0
+                @deprecated Deprecated as of 1.2.0
+                @public
+                **/
                 this.timedOut = 0;
                 this.game = game;
                 this.onComplete = new Kiwi.Signal;
                 this.onProgress = new Kiwi.Signal;
                 if (Kiwi.Utils.Common.isNumeric(params)) {
-                    //Deprecate
+                    // Deprecate
                     this._parseParamsOld(params, arguments[2], arguments[3], arguments[4], arguments[5]);
                 }
                 else {
@@ -11570,20 +12797,27 @@ var Kiwi;
                     this.parseParams(params);
                 }
             }
-            /**
-            * Assigns properties and variables for the constructor as in pre 1.2 Kiwi versions.
-            *
-            * @method _parseParamsOld
-            * @since 1.2.0
-            * @param dataType {Number} The type of file that is being loaded. For this you can use the STATIC properties that are located on this class for quick code completion.
-            * @param path {String} The location of the file that is to be loaded.
-            * @param [name=''] {String} A name for the file. If no name is specified then the files name will be used.
-            * @param [saveToFileStore=true] {Boolean} If the file should be saved on the file store or not.
-            * @param [storeAsGlobal=true] {Boolean} If this file should be stored as a global file, or if it should be destroyed when this state gets switched out.
-            * @private
-            */
             File.prototype._parseParamsOld = function (dataType, url, name, saveToFileStore, storeAsGlobal) {
-                if (name === void 0) { name = ''; }
+                /**
+                Assign properties and variables for the constructor
+                as in pre 1.2 Kiwi versions.
+    
+                @method _parseParamsOld
+                @since 1.2.0
+                @param dataType {number} Type of file that is being loaded.
+                    For this you can use the STATIC properties that are
+                    located on this class for quick code completion.
+                @param path {string} Location of the file that is to be loaded
+                @param [name=""] {string} A name for the file.
+                    If no name is specified then the file's name will be used.
+                @param [saveToFileStore=true] {boolean} If the file should be
+                    saved on the file store or not.
+                @param [storeAsGlobal=true] {boolean} If this file should be
+                    stored as a global file, or if it should be destroyed
+                    when this state gets switched out.
+                @private
+                **/
+                if (name === void 0) { name = ""; }
                 if (saveToFileStore === void 0) { saveToFileStore = true; }
                 if (storeAsGlobal === void 0) { storeAsGlobal = true; }
                 this.dataType = dataType;
@@ -11595,21 +12829,28 @@ var Kiwi;
                     this.ownerState = this.game.states.current;
                 }
             };
-            /**
-            * Sets properties for this instance based on an object literal passed. Used when the class is being created.
-            *
-            * @method parseParams
-            * @since 1.2.0
-            * @param [params] {Object}
-            *   @param [params.metadata={}] {Object} Any metadata to be associated with the file.
-            *   @param [params.state=null] {Kiwi.State} The state that this file belongs to. Used for defining global assets vs local assets.
-            *   @param [params.fileStore=null] {Kiwi.Files.FileStore} The filestore that this file should be save in automatically when loaded.
-            *   @param [params.type=UNKNOWN] {Number} The type of file this is.
-            *   @param [params.tags] {Array} Any tags to be associated with this file.
-            *   @param [params.timeout=TIMEOUT_DELAY] {Number} Sets the timeout delay when loading via ajax.
-            * @protected
-            */
             File.prototype.parseParams = function (params) {
+                /**
+                Set properties for this instance based on an object literal passed.
+                Used when the class is being created.
+    
+                @method parseParams
+                @since 1.2.0
+                @param [params] {object}
+                    @param [params.metadata={}] {object} Any metadata
+                        to be associated with the file.
+                    @param [params.state=null] {Kiwi.State} State this file
+                        belongs to.
+                        Used for defining global assets vs local assets.
+                    @param [params.fileStore=null] {Kiwi.Files.FileStore} Filestore
+                        that this file should be save in automatically when loaded.
+                    @param [params.type=UNKNOWN] {number} Type of file this is
+                    @param [params.tags] {array} Any tags to be associated
+                        with this file.
+                    @param [params.timeout=TIMEOUT_DELAY] {number} Sets the
+                        timeout delay when loading via ajax.
+                @protected
+                **/
                 this.fileStore = params.fileStore || null;
                 this.ownerState = params.state || null;
                 this.metadata = params.metadata || {};
@@ -11631,112 +12872,127 @@ var Kiwi;
                     }
                 }
             };
-            /**
-            * Gets the file details from the URL passed. Name, extension, and path are extracted.
-            *
-            * @method _assignFileDetails
-            * @param url {String}
-            * @private
-            * @since 1.2.0
-            */
             File.prototype._assignFileDetails = function (url) {
+                /**
+                Gets the file details from the URL passed.
+                Name, extension, and path are extracted.
+    
+                @method _assignFileDetails
+                @param url {string} Path to resource
+                @private
+                @since 1.2.0
+                **/
                 this.URL = url;
-                if (url.lastIndexOf('/') > -1) {
-                    this.name = url.substr(url.lastIndexOf('/') + 1);
-                    this.path = url.substr(0, url.lastIndexOf('/') + 1);
+                if (url.lastIndexOf("/") > -1) {
+                    this.name = url.substr(url.lastIndexOf("/") + 1);
+                    this.path = url.substr(0, url.lastIndexOf("/") + 1);
                 }
                 else {
-                    this.path = '';
+                    this.path = "";
                     this.name = url;
                 }
-                //  Not safe if there is a query string after the file extension
-                this.extension = url.substr(url.lastIndexOf('.') + 1).toLowerCase();
+                // Not safe if there is a query string after the file extension
+                this.extension = url.substr(url.lastIndexOf(".") + 1).toLowerCase();
             };
             /**
-            * Returns the type of this object
-            * @method objType
-            * @return {String} "File"
-            * @public
-            */
+            Returns the type of this object
+    
+            @method objType
+            @return {string} "File"
+            @public
+            **/
             File.prototype.objType = function () {
                 return "File";
             };
             Object.defineProperty(File.prototype, "loadInParallel", {
                 /**
-                * READ ONLY: Indicates if this file can be loaded in parallel to other files.
-                * This is usually only used files are using the tag loaders and not XHR.
-                *
-                * @property loadInParallel
-                * @type Boolean
-                * @default false
-                * @readOnly
-                * @since 1.2.0
-                * @private
-                */
+                READ ONLY: Indicates if this file can be loaded
+                in parallel to other files.
+                This is usually only used files are using the tag loaders and not XHR.
+        
+                @property loadInParallel
+                @type boolean
+                @default false
+                @readOnly
+                @since 1.2.0
+                @public
+                **/
                 get: function () {
                     return this._loadInParallel;
                 },
                 enumerable: true,
                 configurable: true
             });
-            /**
-            * Starts the loading process for this file.
-            * Passing parameters to this method has been deprecated and only exists for backwards compatibility.
-            *
-            * @method load
-            * @public
-            */
             File.prototype.load = function (onCompleteCallback, onProgressCallback, customFileStore, maxLoadAttempts, timeout) {
-                //Not currently loading?
+                /**
+                Start the loading process for this file.
+                Passing parameters to this method has been deprecated
+                and only exists for backwards compatibility.
+    
+                @method load
+                @public
+                **/
+                // Not currently loading?
                 if (this.loading) {
-                    Kiwi.Log.error('Kiwi.Files.File: File loading is in progress. Cannot be told to load again.', '#loading');
+                    Kiwi.Log.error("Kiwi.Files.File: File loading is in progress. " + "Cannot be told to load again.", "#loading");
                     return;
                 }
-                Kiwi.Log.log("Kiwi.Files.File: Starting to load '" + this.name + "'", '#file', '#loading');
-                //Set the variables based on the parameters passed
-                //To be deprecated
-                if (onCompleteCallback)
+                Kiwi.Log.log("Kiwi.Files.File: Starting to load \"" + this.name + "\"", "#file", "#loading");
+                // Set the variables based on the parameters passed
+                // To be deprecated
+                if (onCompleteCallback) {
                     this.onComplete.add(onCompleteCallback);
-                if (onProgressCallback)
+                }
+                if (onProgressCallback) {
                     this.onProgress.add(onProgressCallback);
-                if (customFileStore)
+                }
+                if (customFileStore) {
                     this.fileStore = customFileStore;
-                if (typeof maxLoadAttempts !== "undefined")
+                }
+                if (typeof maxLoadAttempts !== "undefined") {
                     this.maxLoadAttempts = maxLoadAttempts;
-                if (typeof timeout !== "undefined")
+                }
+                if (typeof timeout !== "undefined") {
                     this.timeOutDelay = timeout;
-                //Start Loading!!!
+                }
+                // Start Loading!!!
                 this._start();
                 this._load();
             };
-            /**
-            * Increments the counter, and calls the approprate loading method.
-            * @method _load
-            * @since 1.2.0
-            * @protected
-            */
             File.prototype._load = function () {
+                /**
+                Increment the counter, and call the approprate loading method.
+    
+                @method _load
+                @since 1.2.0
+                @protected
+                **/
                 this.attemptCounter++;
-                this.xhrLoader('GET', 'text');
+                this.xhrLoader("GET", "text");
             };
-            /**
-            * Should be called by the loading method. Dispatches the 'onProgress' callback.
-            * @method loadProgress
-            * @since 1.2.0
-            * @protected
-            */
             File.prototype.loadProgress = function () {
+                /**
+                Dispatch the `onProgress` callback.
+                Should be called by the loading method.
+    
+                @method loadProgress
+                @since 1.2.0
+                @protected
+                **/
                 this.onProgress.dispatch(this);
             };
-            /**
-            * Called by the loading methods when the file has been loaded and successfully processed.
-            * Dispatches the 'onComplete' callback and sets the appropriate properties.
-            * @method loadSuccess
-            * @since 1.2.0
-            * @protected
-            */
             File.prototype.loadSuccess = function () {
-                //If already completed skip
+                /**
+                Dispatch the `onComplete` callback
+                and sets the appropriate properties.
+                Called by the loading methods when the file has been loaded
+                and successfully processed.
+    
+                @method loadSuccess
+                @since 1.2.0
+                @protected
+                **/
+                // If already completed skip
                 if (this.complete) {
                     return;
                 }
@@ -11748,20 +13004,21 @@ var Kiwi;
                 }
                 this.onComplete.dispatch(this);
             };
-            /**
-            * Executed when the loading process fails.
-            * This could be for any reason
-            *
-            * @method loadError
-            * @param error {Any} The event / reason for the file to not be loaded.
-            * @since 1.2.0
-            * @protected
-            */
             File.prototype.loadError = function (error) {
-                //Try again?
+                /**
+                Report loading failure.
+                Executed when the loading process fails.
+                This could be for any reason.
+    
+                @method loadError
+                @param error {Any} Event or reason for the file to not be loaded
+                @since 1.2.0
+                @protected
+                **/
+                // Try again?
                 if (this.attemptCounter >= this.maxLoadAttempts) {
-                    //Failed
-                    Kiwi.Log.log("Kiwi.Files.File: Failed to load file '" + this.name + "'. Trying Again", '#loading');
+                    // Failed
+                    Kiwi.Log.log("Kiwi.Files.File: Failed to load file \"" + this.name + "\"", "#loading");
                     this.hasError = true;
                     this.success = false;
                     this.error = error;
@@ -11769,29 +13026,30 @@ var Kiwi;
                     this.onComplete.dispatch(this);
                 }
                 else {
-                    Kiwi.Log.log("Kiwi.Files.File: Failed to load file '" + this.name + "'", '#loading');
-                    //Try Again
+                    Kiwi.Log.log("Kiwi.Files.File: Failed to load file \"" + this.name + "\". Trying again", "#loading");
+                    // Try Again
                     this._load();
                 }
             };
-            /**
-            * ---------------
-            * XHR Loading
-            * ---------------
-            **/
-            /**
-            * Sets up a XHR loader based on the properties of this file and parameters passed.
-            *
-            * @method xhrLoader
-            * @param [method="GET"] {String} The method this request should be made in.
-            * @param [responseType="text"] {String} The type of response we are expecting.
-            * @param [timeoutDelay] {Number}
-            * @protected
+            /*
+            ---------------
+            XHR Loading
+            ---------------
             */
             File.prototype.xhrLoader = function (method, responseType, timeoutDelay) {
+                /**
+                Set up a XHR loader based on the properties of this file
+                and parameters passed.
+    
+                @method xhrLoader
+                @param [method="GET"] {string} Method this request should be made in
+                @param [responseType="text"] {string} Type of response we are expecting
+                @param [timeoutDelay] {number}
+                @protected
+                **/
                 var _this = this;
-                if (method === void 0) { method = 'GET'; }
-                if (responseType === void 0) { responseType = 'text'; }
+                if (method === void 0) { method = "GET"; }
+                if (responseType === void 0) { responseType = "text"; }
                 if (timeoutDelay === void 0) { timeoutDelay = this.timeOutDelay; }
                 this._xhr = new XMLHttpRequest();
                 this._xhr.open(method, this.URL, true);
@@ -11818,159 +13076,174 @@ var Kiwi;
                 };
                 this._xhr.send();
             };
-            /**
-            * Progress event fired whilst the file is loading via XHR.
-            * @method xhrOnProgress
-            * @param event {Any}
-            * @protected
-            */
             File.prototype.xhrOnProgress = function (event) {
+                /**
+                Fire progress event file file is loading via XHR.
+    
+                @method xhrOnProgress
+                @param event {Any}
+                @protected
+                **/
                 this.bytesLoaded = parseInt(event.loaded);
                 this.bytesTotal = parseInt(event.total);
                 this.percentLoaded = Math.round((this.bytesLoaded / this.bytesTotal) * 100);
                 this.onProgress.dispatch(this);
             };
-            /**
-            * Fired when the file has been loaded.
-            * Checks that the response contains information before marking it as a success.
-            *
-            * @method xhrOnLoad
-            * @param event {Any}
-            * @protected
-            */
             File.prototype.xhrOnLoad = function (event) {
-                //Deprecate
+                /**
+                Run when the file has been loaded.
+                Checks that the response contains information
+                before marking it as a success.
+    
+                @method xhrOnLoad
+                @param event {Any}
+                @protected
+                **/
+                // Deprecate
                 this.status = this._xhr.status;
                 this.statusText = this._xhr.statusText;
-                // If there is a status, then use that for our check. Otherwise we will base it on the response
+                // If there is a status, then use that for our check.
+                // Otherwise we will base it on the response
                 if (this.status && this.status === 200 || !this.status && this._xhr.response) {
                     this._getXhrHeaderInfo();
-                    this.buffer = this._xhr.response; //Deprecate
+                    this.buffer = this._xhr.response; // Deprecate
                     this.processXhr(this._xhr.response);
                 }
                 else {
                     this.loadError(event);
                 }
             };
-            /**
-            * Contains the logic for processing the information retrieved via XHR.
-            * Assigns the data property.
-            * This method is also in charge of calling 'loadSuccess' (or 'loadError') when processing is complete.
-            *
-            * @method processXhr
-            * @param response
-            * @protected
-            */
             File.prototype.processXhr = function (response) {
+                /**
+                Assign the data property retrieved via XHR.
+                This method is also in charge of calling `loadSuccess` or `loadError`
+                when processing is complete.
+    
+                @method processXhr
+                @param response
+                @protected
+                **/
                 this.data = response;
                 this.loadSuccess();
             };
-            /**
-            * Is executed when this file starts loading.
-            * Gets the time and resets properties used in file loading.
-            * @method _start
-            * @private
-            */
             File.prototype._start = function () {
+                /**
+                Get the time and reset properties used in file loading.
+                Is executed when this file starts loading.
+    
+                @method _start
+                @private
+                **/
                 this.attemptCounter = 0;
                 this.loading = true;
                 this.timeStarted = Date.now();
                 this.percentLoaded = 0;
             };
-            /**
-            * Is executed when this file stops loading.
-            * @method _stop
-            * @private
-            */
             File.prototype._stop = function () {
+                /**
+                Set properties upon load stop.
+                Is executed when this file stops loading.
+    
+                @method _stop
+                @private
+                **/
                 this.loading = false;
                 this.complete = true;
                 this.percentLoaded = 100;
                 this.timeFinished = Date.now();
                 this.duration = this.timeFinished - this.timeStarted;
             };
-            /**
-            * Makes a XHR HEAD request to get information about the file that is going to be downloaded.
-            * This is particularly useful when you are wanting to check how large a file is before loading all of the content.
-            *
-            * @method loadDetails
-            * @param [callback] {Any}
-            * @param [context] {Any}
-            * @return {Boolean} If the request was made
-            * @since 1.2.0
-            * @public
-            */
             File.prototype.loadDetails = function (callback, context) {
+                /**
+                Make a XHR `HEAD` request to get information about the file
+                that is going to be downloaded.
+                This is particularly useful when you are wanting to check
+                how large a file is before loading all of the content.
+    
+                @method loadDetails
+                @param [callback] {Any}
+                @param [context] {Any}
+                @return {boolean} If the request was made
+                @since 1.2.0
+                @public
+                **/
                 if (callback === void 0) { callback = null; }
                 if (context === void 0) { context = null; }
-                //Can't continue if regular loading is progressing.
+                // Can't continue if regular loading is progressing.
                 if (this.loading) {
-                    Kiwi.Log.error('Kiwi.Files.File: Cannot get the file details whilst the file is already loading');
+                    Kiwi.Log.error("Kiwi.Files.File: Cannot get the file details whilst the file is already loading");
                     return false;
                 }
-                if (callback)
+                if (callback) {
                     this.headCompleteCallback = callback;
-                if (context)
+                }
+                if (context) {
                     this.headCompleteContext = context;
+                }
                 this.xhrHeadRequest();
                 return true;
             };
-            /**
-            * Retrieves the HEAD information from the XHR.
-            * This method is used for both 'load' and 'loadDetails' methods.
-            *
-            * @method _getXhrHeaderInfo
-            * @since 1.2.0
-            * @private
-            */
             File.prototype._getXhrHeaderInfo = function () {
+                /**
+                Retrieve the `HEAD` information from the XHR.
+                This method is used for both `load` and `loadDetails` methods.
+    
+                @method _getXhrHeaderInfo
+                @since 1.2.0
+                @private
+                **/
                 if (!this._xhr) {
                     return;
                 }
                 this.status = this._xhr.status;
                 this.statusText = this._xhr.statusText;
-                //Get the file information...
-                this.type = this._xhr.getResponseHeader('Content-Type');
-                this.size = parseInt(this._xhr.getResponseHeader('Content-Length'));
-                this.lastModified = this._xhr.getResponseHeader('Last-Modified');
-                this.ETag = this._xhr.getResponseHeader('ETag');
+                // Get the file information...
+                this.type = this._xhr.getResponseHeader("Content-Type");
+                this.size = parseInt(this._xhr.getResponseHeader("Content-Length"));
+                this.lastModified = this._xhr.getResponseHeader("Last-Modified");
+                this.ETag = this._xhr.getResponseHeader("ETag");
                 this.detailsReceived = true;
             };
-            /**
-            * Sets up a XMLHttpRequest object and sends a HEAD request.
-            * @method xhrHeadRequest
-            * @since 1.2.0
-            * @private
-            */
             File.prototype.xhrHeadRequest = function () {
+                /**
+                Set up a `XMLHttpRequest` object and sends a `HEAD` request.
+    
+                @method xhrHeadRequest
+                @since 1.2.0
+                @private
+                **/
                 var _this = this;
                 this._xhr = new XMLHttpRequest();
-                this._xhr.open('HEAD', this.fileURL, true);
-                if (this.timeOutDelay !== null)
+                this._xhr.open("HEAD", this.fileURL, true);
+                if (this.timeOutDelay !== null) {
                     this._xhr.timeout = this.timeOutDelay;
+                }
                 this._xhr.onload = function (event) { return _this.xhrHeadOnLoad(event); };
                 this._xhr.onerror = function (event) { return _this.xhrHeadOnError(event); };
                 this._xhr.send();
             };
-            /**
-            * Executed when a xhr head request fails
-            * @method xhrHeadOnError
-            * @param event {Any}
-            * @private
-            */
             File.prototype.xhrHeadOnError = function (event) {
+                /**
+                Execute when a XHR `HEAD` request fails
+    
+                @method xhrHeadOnError
+                @param event {Any}
+                @private
+                **/
                 if (this.headCompleteCallback) {
                     this.headCompleteCallback.call(this.headCompleteContext, false);
                 }
             };
-            /**
-            * Executed when a XHR head request has loaded.
-            * Checks that the status of the request is 200 before classifying it as a success.
-            * @method xhrHeadOnLoad
-            * @param event {Any}
-            * @private
-            */
             File.prototype.xhrHeadOnLoad = function (event) {
+                /**
+                Execute when a XHR `HEAD` request has loaded.
+                Checks that the status of the request is `200`
+                before classifying it as a success.
+    
+                @method xhrHeadOnLoad
+                @param event {Any}
+                @private
+                **/
                 if (this._xhr.status === 200) {
                     this._getXhrHeaderInfo();
                     if (this.headCompleteCallback) {
@@ -11981,99 +13254,104 @@ var Kiwi;
                     this.xhrHeadOnError(null);
                 }
             };
-            /**
-            * Adds a new tag to this file.
-            * @method addTag
-            * @param tag {String} The tag that you would like to add
-            * @public
-            */
             File.prototype.addTag = function (tag) {
+                /**
+                Add a new tag to this file.
+    
+                @method addTag
+                @param tag {string} Tag to add
+                @public
+                **/
                 if (this._tags.indexOf(tag) == -1) {
                     this._tags.push(tag);
                 }
             };
-            /**
-            * Removes a tag from this file.
-            * @method removeTag
-            * @param tag {String} The tag that is to be removed.
-            * @public
-            */
             File.prototype.removeTag = function (tag) {
+                /**
+                Remove a tag from this file.
+    
+                @method removeTag
+                @param tag {string} Tag to remove
+                @public
+                **/
                 var index = this._tags.indexOf(tag);
                 if (index != -1) {
                     this._tags.splice(index, 1);
                 }
             };
-            /**
-            * Checks to see if a tag that is passed exists on this file.
-            * Returns a boolean that is used as a indication of the results.
-            * True means that the tag exists on this file.
-            *
-            * @method hasTag
-            * @param tag {String} The tag you are checking to see exists.
-            * @return {Boolean} If the tag does exist on this file or not.
-            * @public
-            */
             File.prototype.hasTag = function (tag) {
-                if (this._tags.indexOf(tag) == -1) {
+                /**
+                Checks to see if a tag that is passed exists on this file.
+                Returns whether the tag exists on this file.
+    
+                @method hasTag
+                @param tag {string} Tag to check
+                @return {boolean} Whether the tag exists on this file
+                @public
+                **/
+                if (this._tags.indexOf(tag) === -1) {
                     return false;
                 }
                 return true;
             };
             Object.defineProperty(File.prototype, "isTexture", {
                 /**
-                * An indication of if this file is texture. This is READ ONLY.
-                * @property isTexture
-                * @type boolean
-                * @readOnly
-                * @public
-                */
+                Whether this file is texture. This is READ ONLY.
+        
+                @property isTexture
+                @type boolean
+                @readOnly
+                @public
+                **/
                 get: function () {
-                    return (Kiwi.Files.TextureFile.prototype.objType.call(this) === this.objType());
+                    return Kiwi.Files.TextureFile.prototype.objType.call(this) === this.objType();
                 },
                 enumerable: true,
                 configurable: true
             });
             Object.defineProperty(File.prototype, "isAudio", {
                 /**
-                * An indication of if this file is a piece of audio. This is READ ONLY.
-                * @property isAudio
-                * @type boolean
-                * @readOnly
-                * @public
-                */
+                Whether this file is a piece of audio. This is READ ONLY.
+        
+                @property isAudio
+                @type boolean
+                @readOnly
+                @public
+                **/
                 get: function () {
-                    return (Kiwi.Files.AudioFile.prototype.objType.call(this) === this.objType());
+                    return Kiwi.Files.AudioFile.prototype.objType.call(this) === this.objType();
                 },
                 enumerable: true,
                 configurable: true
             });
             Object.defineProperty(File.prototype, "isData", {
                 /**
-                * An indication of if this file is data. This is READ ONLY.
-                * @property isData
-                * @type boolean
-                * @readOnly
-                * @public
-                */
+                Whether this file is data. This is READ ONLY.
+        
+                @property isData
+                @type boolean
+                @readOnly
+                @public
+                **/
                 get: function () {
-                    return (Kiwi.Files.DataFile.prototype.objType.call(this) === this.objType());
+                    return Kiwi.Files.DataFile.prototype.objType.call(this) === this.objType();
                 },
                 enumerable: true,
                 configurable: true
             });
-            /**
-            * ------------------
-            * Clean Up
-            * ------------------
-            **/
-            /**
-            * Destroys all external object references on this object.
-            * @method destroy
-            * @since 1.2.0
-            * @public
+            /*
+            ------------------
+            Clean Up
+            ------------------
             */
             File.prototype.destroy = function () {
+                /**
+                Destroy all external object references on this object
+    
+                @method destroy
+                @since 1.2.0
+                @public
+                **/
                 if (this.fileStore) {
                     this.fileStore.removeFile(this.key);
                 }
@@ -12092,18 +13370,19 @@ var Kiwi;
                 delete this.ownerState;
             };
             Object.defineProperty(File.prototype, "fileName", {
-                /**
-                * ------------------
-                * Deprecated
-                * ------------------
-                **/
-                /**
-                * The name of the file being loaded.
-                * @property fileName
-                * @type String
-                * @deprecated Use `name`. Deprecated as of 1.2.0
-                * @public
+                /*
+                ------------------
+                Deprecated
+                ------------------
                 */
+                /**
+                Name of the file being loaded
+        
+                @property fileName
+                @type string
+                @deprecated Use `name`. Deprecated as of 1.2.0
+                @public
+                **/
                 get: function () {
                     return this.name;
                 },
@@ -12115,13 +13394,16 @@ var Kiwi;
             });
             Object.defineProperty(File.prototype, "filePath", {
                 /**
-                * The location of where the file is placed without the file itself (So without the files name).
-                * Example: If the file you are load is located at 'images/awesomeImage.png' then the filepath will be 'images/'
-                * @property filePath
-                * @type String
-                * @deprecated Use `path`. Deprecated as of 1.2.0
-                * @public
-                */
+                Location of where the file is placed without the file itself
+                (so without the file's name).
+                Example: If the file you are load is located at
+                `images/awesomeImage.png` then the filepath will be `images/`.
+        
+                @property filePath
+                @type string
+                @deprecated Use `path`. Deprecated as of 1.2.0
+                @public
+                **/
                 get: function () {
                     return this.path;
                 },
@@ -12133,13 +13415,15 @@ var Kiwi;
             });
             Object.defineProperty(File.prototype, "fileExtension", {
                 /**
-                * The location of where the file is placed without the file itself (So without the files name).
-                * Example: If the file you are load is located at 'images/awesomeImage.png' then the filepath will be 'images/'
-                * @property filePath
-                * @type String
-                * @deprecated Use `extension`. Deprecated as of 1.2.0
-                * @public
-                */
+                Extension of the filename.
+                Example: If the file you are load is located at
+                `images/awesomeImage.png` then the extension will be `png`.
+        
+                @property filePath
+                @type string
+                @deprecated Use `extension`. Deprecated as of 1.2.0
+                @public
+                **/
                 get: function () {
                     return this.extension;
                 },
@@ -12151,12 +13435,13 @@ var Kiwi;
             });
             Object.defineProperty(File.prototype, "fileURL", {
                 /**
-                * The full filepath including the file itself.
-                * @property fileURL
-                * @type String
-                * @deprecated Use `URL`. Deprecated as of 1.2.0
-                * @public
-                */
+                Full filepath including the file itself
+        
+                @property fileURL
+                @type string
+                @deprecated Use `URL`. Deprecated as of 1.2.0
+                @public
+                **/
                 get: function () {
                     return this.URL;
                 },
@@ -12168,14 +13453,17 @@ var Kiwi;
             });
             Object.defineProperty(File.prototype, "fileType", {
                 /**
-                * The type of file that is being loaded.
-                * Is only ever given a value when used with the XHR method of loading OR if you use 'getFileDetails' before hand.
-                * The value is based off of the 'Content-Type' of the XHR's response header returns.
-                * @property fileType
-                * @type String
-                * @deprecated Use `type`. Deprecated as of 1.2.0
-                * @public
-                */
+                Type of file that is being loaded.
+                Is only ever given a value when used with the XHR method of loading
+                OR if you use `getFileDetails` beforehand.
+                The value is based off of the `Content-Type` of the XHR's
+                response header returns.
+        
+                @property fileType
+                @type string
+                @deprecated Use `type`. Deprecated as of 1.2.0
+                @public
+                **/
                 get: function () {
                     return this.type;
                 },
@@ -12187,13 +13475,15 @@ var Kiwi;
             });
             Object.defineProperty(File.prototype, "fileSize", {
                 /**
-                * The size of the file that was/is being loaded.
-                * Only has a value when the file was loaded by the XHR method OR you request the file information before hand using 'getFileDetails'.
-                * @property fileSize
-                * @type Number
-                * @deprecated Use `size`. Deprecated as of 1.2.0
-                * @public
-                */
+                Size of the file that was/is being loaded.
+                Only has a value when the file was loaded by the XHR method
+                OR you request the file information beforehand using `getFileDetails`.
+        
+                @property fileSize
+                @type number
+                @deprecated Use `size`. Deprecated as of 1.2.0
+                @public
+                **/
                 get: function () {
                     return this.size;
                 },
@@ -12203,141 +13493,159 @@ var Kiwi;
                 enumerable: true,
                 configurable: true
             });
-            /**
-            * Attempts to make the file send a XHR HEAD request to get information about the file that is going to be downloaded.
-            * This is particularly useful when you are wanting to check how large a file is before loading all of the content.
-            * @method getFileDetails
-            * @param [callback=null] {Any} The callback to send this FileInfo object to.
-            * @param [maxLoadAttempts=1] {number} The maximum amount of load attempts. Only set this if it is different from the default.
-            * @param [timeout=this.timeOutDelay] {number} The timeout delay. By default this is the same as the timeout delay property set on this file.
-            * @deprecated Use 'loadDetails' instead. Deprecated as of 1.2.0
-            * @private
-            */
             File.prototype.getFileDetails = function (callback, maxLoadAttempts, timeout) {
+                /**
+                Attempt to make the file send a XHR `HEAD` request
+                to get information about the file that is going to be downloaded.
+                This is particularly useful when you are wanting to check
+                how large a file is before loading all of the content.
+    
+                @method getFileDetails
+                @param [callback=null] {Any} Callback to send this `FileInfo`
+                    object to
+                @param [maxLoadAttempts=1] {number} Maximum amount of load attempts
+                    Only set this if it is different from the default.
+                @param [timeout=this.timeOutDelay] {number} Timeout delay.
+                    By default this is the same as the
+                    timeout delay property set on this file.
+                @deprecated Use `loadDetails` instead. Deprecated as of 1.2.0
+                @private
+                **/
                 if (callback === void 0) { callback = null; }
                 if (timeout === void 0) { timeout = null; }
-                if (timeout)
+                if (timeout) {
                     this.timeOutDelay = timeout;
+                }
                 this.loadDetails(callback, null);
             };
             /**
-            * The default number of milliseconds that the XHR should wait before timing out.
-            * By default this is set to NULL, and so requests will not timeout.
-            *
-            * Default changed in v1.3.1 to null
-            *
-            * @property TIMEOUT_DELAY
-            * @type Number
-            * @static
-            * @since 1.2.0
-            * @default null
-            * @public
-            */
+            Default number of milliseconds that the XHR should wait
+            before timing out.
+            By default this is set to `null`, and so requests will not timeout.
+    
+            Default changed in v1.3.1 to `null`.
+    
+            @property TIMEOUT_DELAY
+            @type number
+            @static
+            @since 1.2.0
+            @default null
+            @public
+            **/
             File.TIMEOUT_DELAY = null;
             /**
-            * The default maximum attempts at loading the file that there is allowed.
-            * @property MAX_LOAD_ATTEMPTS
-            * @type Number
-            * @default 2
-            * @static
-            * @since 1.2.0
-            * @public
-            */
-            File.MAX_LOAD_ATTEMPTS = 2;
-            /**
-            * -------------------
-            * File Type
-            * -------------------
+            Default maximum attempts at loading the file allowed
+    
+            @property MAX_LOAD_ATTEMPTS
+            @type number
+            @default 2
+            @static
+            @since 1.2.0
+            @public
             **/
-            /**
-            * A STATIC property that has the number associated with the IMAGE Datatype.
-            * @property IMAGE
-            * @type number
-            * @static
-            * @final
-            * @default 0
-            * @public
+            File.MAX_LOAD_ATTEMPTS = 2;
+            /*
+            -------------------
+            File Type
+            -------------------
             */
+            /**
+            Static property defining the IMAGE Datatype
+    
+            @property IMAGE
+            @type number
+            @static
+            @final
+            @default 0
+            @public
+            **/
             File.IMAGE = 0;
             /**
-            * A STATIC property that has the number associated with the SPRITE_SHEET Datatype.
-            * @property SPRITE_SHEET
-            * @type number
-            * @static
-            * @final
-            * @default 1
-            * @public
-            */
+            Static property defining the SPRITE_SHEET Datatype
+    
+            @property SPRITE_SHEET
+            @type number
+            @static
+            @final
+            @default 1
+            @public
+            **/
             File.SPRITE_SHEET = 1;
             /**
-            * A STATIC property that has the number associated with the TEXTURE_ATLAS Datatype.
-            * @property TEXTUREATLAS
-            * @type number
-            * @static
-            * @final
-            * @default 2
-            * @public
-            */
+            Static property defining the TEXTURE_ATLAS Datatype
+    
+            @property TEXTUREATLAS
+            @type number
+            @static
+            @final
+            @default 2
+            @public
+            **/
             File.TEXTURE_ATLAS = 2;
             /**
-            * A STATIC property that has the number associated with the AUDIO Datatype.
-            * @property AUDIO
-            * @type number
-            * @static
-            * @final
-            * @default 3
-            * @public
-            */
+            Static property defining the AUDIO Datatype
+    
+            @property AUDIO
+            @type number
+            @static
+            @final
+            @default 3
+            @public
+            **/
             File.AUDIO = 3;
             /**
-            * A STATIC property that has the number associated with the JSON Datatype.
-            * @property JSON
-            * @type number
-            * @static
-            * @final
-            * @default 4
-            * @public
-            */
+            Static property defining the JSON Datatype
+    
+            @property JSON
+            @type number
+            @static
+            @final
+            @default 4
+            @public
+            **/
             File.JSON = 4;
             /**
-            * A STATIC property that has the number associated with the XML Datatype.
-            * @property XML
-            * @type number
-            * @static
-            * @final
-            * @default 5
-            * @public
-            */
+            Static property defining the XML Datatype
+    
+            @property XML
+            @type number
+            @static
+            @final
+            @default 5
+            @public
+            **/
             File.XML = 5;
             /**
-            * A STATIC property that has the number associated with the BINARY_DATA Datatype.
-            * @property BINARY_DATA
-            * @type number
-            * @static
-            * @final
-            * @default 6
-            * @public
-            */
+            Static property defining the BINARY_DATA Datatype
+    
+            @property BINARY_DATA
+            @type number
+            @static
+            @final
+            @default 6
+            @public
+            **/
             File.BINARY_DATA = 6;
             /**
-            * A STATIC property that has the number associated with the TEXT_DATA Datatype.
-            * @property TEXT_DATA
-            * @type number
-            * @static
-            * @final
-            * @default 7
-            * @public
-            */
+            Static property defining the TEXT_DATA Datatype
+    
+            @property TEXT_DATA
+            @type number
+            @static
+            @final
+            @default 7
+            @public
+            **/
             File.TEXT_DATA = 7;
             /**
-            *
-            * @property UNKNOWN
-            * @type number
-            * @static
-            * @final
-            * @default 8
-            * @public
-            */
+    
+            @property UNKNOWN
+            @type number
+            @static
+            @final
+            @default 8
+            @public
+            **/
             File.UNKNOWN = 8;
             return File;
         })();
@@ -13303,6 +14611,21 @@ var Kiwi;
                 textureManager.registerTextureWrapper(gl, this.glTextureWrapper);
             };
             /**
+            * Disposes of the GLTextureWrapper.
+            * @method removeGLTextureWrapper
+            * @param gl {WebGLRenderingContext} The rendering context.
+            * @param textureManager {Kiwi.Renderers.GLTextureManager} The texture manager.
+            * @public
+            * @since 1.4.1
+            */
+            TextureAtlas.prototype.removeGLTextureWrapper = function (gl, textureManager) {
+                if (this.glTextureWrapper) {
+                    textureManager.deregisterTextureWrapper(gl, this.glTextureWrapper);
+                    this.glTextureWrapper.dispose();
+                    delete this.glTextureWrapper;
+                }
+            };
+            /**
             * Sends the texture to the video card.
             * @method enableGL
             * @param gl {WebGLRenderingContext}
@@ -13399,75 +14722,100 @@ var Kiwi;
         Textures.TextureAtlas = TextureAtlas;
     })(Textures = Kiwi.Textures || (Kiwi.Textures = {}));
 })(Kiwi || (Kiwi = {}));
-/**
-* Contains Objects that are used when dealing specifically with Textures/Images. Majority of these classes are for Internal Kiwi use.
-*
-* @module Kiwi
-* @submodule Textures
-* @main Textures
-*
-*/
 var Kiwi;
 (function (Kiwi) {
     var Textures;
     (function (Textures) {
         /**
-        * Holds a reference to all of the image files (jpg, png, e.t.c) that are accessible on the State this TextureLibrary is on.
-        *
-        * @class TextureLibrary
-        * @namespace Kiwi.Textures
-        * @constructor
-        * @param game {Game} The game that this texture library belongs to.
-        * @return {Kiwi.TextureLibrary}
-        *
-        */
+        Contains Objects that are used when dealing specifically
+        with Textures/Images. Majority of these classes are for Internal Kiwi use.
+    
+        @module Kiwi
+        @submodule Textures
+        @main Textures
+        **/
         var TextureLibrary = (function () {
+            /**
+            Holds a reference to all of the image files (jpg, png, etc)
+            that are accessible on the State this TextureLibrary is on.
+    
+            @class TextureLibrary
+            @namespace Kiwi.Textures
+            @constructor
+            @param game {Kiwi.Game} Game that this texture library belongs to
+            **/
             function TextureLibrary(game) {
                 this._game = game;
                 this.textures = new Object();
             }
-            /**
-            * The type of object that this is.
-            * @method objType
-            * @return {string}
-            * @public
-            */
             TextureLibrary.prototype.objType = function () {
+                /**
+                Type of object that this is.
+    
+                @method objType
+                @return {string} "TextureLibrary"
+                @public
+                **/
                 return "TextureLibrary";
             };
-            /**
-            * Resets the texture library.
-            * @method clear
-            * @public
-            */
             TextureLibrary.prototype.clear = function () {
+                /**
+                Reset the texture library. Clear the `textures` object.
+    
+                @method clear
+                @public
+                **/
                 for (var prop in this.textures) {
                     delete this.textures[prop];
                 }
             };
-            /**
-            * Adds a texture atlas to the library.
-            * @method add
-            * @param atlas {Kiwi.Textures.TextureAtlas}
-            * @public
-            */
             TextureLibrary.prototype.add = function (atlas) {
+                /**
+                Add a texture atlas to the library.
+    
+                @method add
+                @param atlas {Kiwi.Textures.TextureAtlas} Texture atlas to add
+                @public
+                **/
                 this.textures[atlas.name] = atlas;
                 if (this._game.renderOption === Kiwi.RENDERER_WEBGL) {
-                    if (Kiwi.Utils.Common.base2Sizes.indexOf(atlas.image.width) == -1 || Kiwi.Utils.Common.base2Sizes.indexOf(atlas.image.height) == -1) {
-                        Kiwi.Log.log("Kiwi.TextureLibrary: Warning:Image is not of base2 size and may not render correctly.", '#texture', '#base2');
+                    if (Kiwi.Utils.Common.base2Sizes.indexOf(atlas.image.width) === -1 || Kiwi.Utils.Common.base2Sizes.indexOf(atlas.image.height) === -1) {
+                        Kiwi.Log.log("Kiwi.TextureLibrary: Warning: " + "Image is not of base2 size " + "and may not render correctly.", "#texture", "#base2");
                     }
                     var renderManager = this._game.renderer;
                     renderManager.addTexture(this._game.stage.gl, atlas);
                 }
             };
-            /**
-            * Adds a new image file to the texture library.
-            * @method addFromFile
-            * @param imageFile {Kiwi.File}
-            * @public
-            */
+            TextureLibrary.prototype.remove = function (atlas) {
+                /**
+                Remove a texture atlas from the library.
+    
+                @method remove
+                @param atlas {Kiwi.Textures.TextureAtlas} Texture atlas to remove
+                @public
+                @since 1.4.1
+                **/
+                if (this.textures[atlas.name]) {
+                    delete this.textures[atlas.name];
+                    if (this._game.renderOption === Kiwi.RENDERER_WEBGL) {
+                        var renderManager = this._game.renderer;
+                        renderManager.removeTexture(this._game.stage.gl, atlas);
+                    }
+                }
+            };
             TextureLibrary.prototype.addFromFile = function (imageFile) {
+                /**
+                Add a new image file to the texture library.
+    
+                @method addFromFile
+                @param imageFile {Kiwi.File.TextureFile} File to base a texture on
+                @public
+                **/
+                // Use cached textures if they exist
+                if (imageFile.texture) {
+                    this.textures[imageFile.key] = imageFile.texture;
+                    return;
+                }
                 if (this._game.renderOption === Kiwi.RENDERER_WEBGL && this._game.deviceTargetOption != Kiwi.TARGET_COCOON) {
                     imageFile = this._rebuildImage(imageFile);
                 }
@@ -13484,47 +14832,60 @@ var Kiwi;
                     default:
                         break;
                 }
+                // Cache texture so other states can use it
+                if (!imageFile.ownerState) {
+                    imageFile.texture = this.textures[imageFile.key];
+                }
             };
-            /**
-            * Used to rebuild a Texture from the FileStore into a base2 size if it doesn't have it already.
-            * @method _rebuildImage
-            * @param imageFile {Kiwi.File} The image file that is to be rebuilt.
-            * @return {Kiwi.File} The new image file.
-            * @private
-            */
             TextureLibrary.prototype._rebuildImage = function (imageFile) {
-                //Check to see if it is base 2
+                /**
+                Rebuild a texture from the FileStore into a base2 size
+                if it doesn't have it already.
+    
+                @method _rebuildImage
+                @param imageFile {Kiwi.File.TextureFile} Image file to rebuild
+                @return {Kiwi.File.TextureFile} New image file
+                @private
+                **/
+                // Check to see if it is base 2
                 var newImg = Kiwi.Utils.Common.convertToBase2(imageFile.data);
-                //Was it resized? We can check to see if the width/height has changed.
+                // Was it resized?
+                // We can check to see if the width/height has changed.
                 if (imageFile.data.width !== newImg.width || imageFile.data.height !== newImg.height) {
                     if (imageFile.dataType === Kiwi.Files.File.SPRITE_SHEET) {
-                        //If no rows were passed then calculate them now.
-                        if (!imageFile.metadata.rows)
+                        // If no rows were passed then calculate them now.
+                        if (!imageFile.metadata.rows) {
                             imageFile.metadata.rows = imageFile.data.height / imageFile.metadata.frameHeight;
-                        //If no columns were passed then calculate them again.
-                        if (!imageFile.metadata.cols)
+                        }
+                        // If no columns were passed then calculate them again.
+                        if (!imageFile.metadata.cols) {
                             imageFile.metadata.cols = imageFile.data.width / imageFile.metadata.frameWidth;
+                        }
                     }
                     else if (imageFile.dataType === Kiwi.Files.File.IMAGE) {
-                        if (!imageFile.metadata.width)
+                        if (!imageFile.metadata.width) {
                             imageFile.metadata.width = imageFile.data.width;
-                        if (!imageFile.metadata.height)
+                        }
+                        if (!imageFile.metadata.height) {
                             imageFile.metadata.height = imageFile.data.height;
+                        }
                     }
-                    Kiwi.Log.log('Kiwi.TextureLibrary: ' + imageFile.name + ' has been rebuilt to be base2.', '#texture', '#base2');
-                    //Assign the new image to the data
+                    Kiwi.Log.log("Kiwi.TextureLibrary: " + imageFile.name + " has been rebuilt to be base2.", "#texture", "#base2");
+                    // Assign the new image to the data
                     imageFile.data = newImg;
                 }
                 return imageFile;
             };
-            /**
-            * Used to build a new texture atlas based on the image file provided. Internal use only.
-            * @method _buildTextureAtlas
-            * @param imageFile {Kiwi.File} The image file that is to be used.
-            * @return {Kiwi.Textures.TextureAtlas} The new texture atlas that is created.
-            * @private
-            */
             TextureLibrary.prototype._buildTextureAtlas = function (imageFile) {
+                /**
+                Build a new texture atlas based on the image file.
+                Internal use only.
+    
+                @method _buildTextureAtlas
+                @param imageFile {Kiwi.File} Image file to use
+                @return {Kiwi.Textures.TextureAtlas} `TextureAtlas` that is created
+                @private
+                **/
                 var atlas = new Kiwi.Textures.TextureAtlas(imageFile.key, Kiwi.Textures.TextureAtlas.TEXTURE_ATLAS, null, imageFile.data);
                 var m = imageFile.metadata;
                 try {
@@ -13534,49 +14895,53 @@ var Kiwi;
                     return atlas;
                 }
                 catch (e) {
-                    Kiwi.Log.error("  Kiwi.Textures.TextureLibrary: Failed to extract information for '" + imageFile.key + "' from JSON file '" + m.jsonID + "'", '#error', '#texture', 'Message: ' + e.message);
+                    Kiwi.Log.error("  Kiwi.Textures.TextureLibrary: " + "Failed to extract information for \"" + imageFile.key + "\" from JSON file \"" + m.jsonID + "\"", "#error", "#texture", "Message: " + e.message);
                 }
                 return null;
             };
-            /**
-            * Builds a spritesheet atlas from the an image file that is provided.
-            * @method _buildSpriteSheet
-            * @param imageFile {Kiwi.File} The image file that is to be used.
-            * @return {Kiwi.Textures.SpriteSheet} The SpriteSheet that was just created.
-            * @private
-            */
             TextureLibrary.prototype._buildSpriteSheet = function (imageFile) {
+                /**
+                Build a spritesheet atlas from an image file.
+    
+                @method _buildSpriteSheet
+                @param imageFile {Kiwi.File} Image file to use
+                @return {Kiwi.Textures.SpriteSheet} `SpriteSheet` that was created
+                @private
+                **/
                 var m = imageFile.metadata;
-                //BEWARE THE SWITCH TO CELLWIDTH AND FRAMEWIDTH
+                // BEWARE THE SWITCH TO CELLWIDTH AND FRAMEWIDTH
                 var spriteSheet = new Kiwi.Textures.SpriteSheet(imageFile.key, imageFile.data, m.frameWidth, m.frameHeight, m.numCells, m.rows, m.cols, m.sheetOffsetX, m.sheetOffsetY, m.cellOffsetX, m.cellOffsetY);
                 return spriteSheet;
             };
-            /**
-            * Builds a single image atlas from a image file that is provided.
-            * @method _buildImage
-            * @param imageFile {File} The image file that is to be used.
-            * @return {Kiwi.Textures.SingleImage} The SingleImage that was created.
-            * @private
-            */
             TextureLibrary.prototype._buildImage = function (imageFile) {
+                /**
+                Build a single image atlas from an image file.
+    
+                @method _buildImage
+                @param imageFile {Kiwi.File.File} Image file to use
+                @return {Kiwi.Textures.SingleImage} `SingleImage` that was created
+                @private
+                **/
                 var m = imageFile.metadata;
                 return new Kiwi.Textures.SingleImage(imageFile.key, imageFile.data, m.width, m.height, m.offsetX, m.offsetY);
             };
-            /**
-             * Rebuild the library from a fileStore. Clears the library and repopulates it.
-             * @method rebuild
-             * @param {Kiwi.Files.FileStore} fileStore
-             * @param {Kiwi.State} state
-             * @public
-             */
             TextureLibrary.prototype.rebuild = function (fileStore, state) {
+                /**
+                Rebuild the library from a fileStore.
+                Clears the library and repopulates it.
+    
+                @method rebuild
+                @param fileStore {Kiwi.Files.FileStore} Game filestore
+                @param state {Kiwi.State} State to which the library belongs
+                @public
+                **/
                 this.clear();
-                Kiwi.Log.log("Kiwi.TextureLibrary: Rebuilding Texture Library", '#texture', '#rebuild');
+                Kiwi.Log.log("Kiwi.TextureLibrary: Rebuilding Texture Library", "#texture", "#rebuild");
                 var fileStoreKeys = fileStore.keys;
                 for (var i = 0; i < fileStoreKeys.length; i++) {
                     var file = this._game.fileStore.getFile(fileStoreKeys[i]);
                     if (file.isTexture) {
-                        Kiwi.Log.log("  Kiwi.TextureLibrary: Adding Texture: " + file.name, '#texture', '#added');
+                        Kiwi.Log.log("  Kiwi.TextureLibrary: Adding Texture: " + file.name, "#texture", "#added");
                         state.textureLibrary.addFromFile(file);
                     }
                 }
@@ -14722,17 +16087,16 @@ var Kiwi;
                 * @public
                 */
                 TweenManager.prototype.update = function () {
-                    var i = 0, numTweens = this._tweens.length;
+                    var i = 0;
                     if (this._tweens.length === 0) {
                         return false;
                     }
-                    while (i < numTweens) {
+                    while (i < this._tweens.length) {
                         if (this._tweens[i].update(this.clock.elapsed() * 1000)) {
                             i++;
                         }
                         else {
                             this._tweens.splice(i, 1);
-                            numTweens--;
                         }
                     }
                     return true;
@@ -15245,28 +16609,32 @@ var Kiwi;
     var Renderers;
     (function (Renderers) {
         /**
+        * Manager for rendering in Canvas mode.
         *
         * @class CanvasRenderer
         * @constructor
         * @namespace Kiwi.Renderers
         * @param game {Kiwi.Game} The game that this canvas renderer belongs to.
-        * @return {Kiwi.Renderes.CanvasRenderer}
-        *
+        * @return {Kiwi.Renderers.CanvasRenderer}
         */
         var CanvasRenderer = (function () {
             function CanvasRenderer(game) {
                 this.numDrawCalls = 0;
                 this._game = game;
+                this._camMatrix = new Kiwi.Geom.Matrix();
             }
             /**
-            * The boot method is executed when all of the DOM elements that are needed to play the game are ready.
+            * Boot method is executed when all of the DOM elements
+            * that are needed to play the game are ready
+            *
             * @method boot
             * @public
             */
             CanvasRenderer.prototype.boot = function () {
             };
             /**
-            * Returns the type of object that this is.
+            * Return the type of object that this is.
+            *
             * @method objType
             * @return {String} "CanvasRenderer"
             * @public
@@ -15275,19 +16643,22 @@ var Kiwi;
                 return "CanvasRenderer";
             };
             /**
-            * This method recursively goes through a State's members and runs the render method of each member that is a Entity.
-            * If it is a Group then this method recursively goes through that Groups members the process that happened to the State's members happens to the Group's members.
+            * Recursively go through a `State`'s members and
+            * run the `render` method of each member that is a `Entity`.
+            * If it is a `Group`, then this method recursively goes through
+            * that `Group`'s members in the same way.
             *
             * @method _recurse
-            * @param child {object} The child that is being checked.
+            * @param child {object} Child being checked
             * @private
             */
             CanvasRenderer.prototype._recurse = function (child) {
+                var i;
                 // Do not render non-visible objects or their children
                 if (!child.visible)
                     return;
                 if (child.childType() === Kiwi.GROUP) {
-                    for (var i = 0; i < child.members.length; i++) {
+                    for (i = 0; i < child.members.length; i++) {
                         this._recurse(child.members[i]);
                     }
                 }
@@ -15296,7 +16667,7 @@ var Kiwi;
                     child.render(this._currentCamera);
                 }
             };
-            //for gl compatibility - refactor me
+            // TODO for gl compatibility - refactor me
             CanvasRenderer.prototype.requestRendererInstance = function (rendererID, params) {
                 if (params === void 0) { params = null; }
                 return null;
@@ -15310,15 +16681,15 @@ var Kiwi;
             CanvasRenderer.prototype.endState = function (state) {
             };
             /**
-            * Renders all of the Elements that are on a particular camera.
+            * Render all of the Elements that are on a particular camera.
+            *
             * @method render
             * @param camera {Kiwi.Camera}
             * @public
             */
             CanvasRenderer.prototype.render = function (camera) {
-                var root = this._game.states.current.members;
-                //clear 
-                var fillCol = this._game.stage.rgbaColor;
+                var ct, i, fillCol = this._game.stage.rgbaColor, root = this._game.states.current.members;
+                // Clear stage
                 // If there is an alpha, clear the canvas before fill
                 if (fillCol.a < 255) {
                     this._game.stage.ctx.clearRect(0, 0, this._game.stage.canvas.width, this._game.stage.canvas.height);
@@ -15331,13 +16702,13 @@ var Kiwi;
                 }
                 this.numDrawCalls = 0;
                 this._currentCamera = camera;
-                //apply camera transform, accounting for rotPoint offsets
-                var cm = camera.transform.getConcatenatedMatrix();
-                var ct = camera.transform;
+                // Apply camera transform
                 this._game.stage.ctx.save();
-                this._game.stage.ctx.setTransform(cm.a, cm.b, cm.c, cm.d, cm.tx, cm.ty);
-                this._game.stage.ctx.transform(1, 0, 0, 1, -ct.rotPointX, -ct.rotPointY);
-                for (var i = 0; i < root.length; i++) {
+                ct = camera.transform;
+                this._camMatrix.setFromOffsetTransform(0, 0, ct.scaleX, ct.scaleY, ct.rotation, ct.anchorPointX, ct.anchorPointY);
+                this._game.stage.ctx.setTransform(this._camMatrix.a, this._camMatrix.b, this._camMatrix.c, this._camMatrix.d, this._camMatrix.tx, this._camMatrix.ty);
+                this._game.stage.ctx.transform(1, 0, 0, 1, ct.x - ct.anchorPointX, ct.y - ct.anchorPointY);
+                for (i = 0; i < root.length; i++) {
                     this._recurse(root[i]);
                 }
                 this._game.stage.ctx.restore();
@@ -15348,264 +16719,277 @@ var Kiwi;
     })(Renderers = Kiwi.Renderers || (Kiwi.Renderers = {}));
 })(Kiwi || (Kiwi = {}));
 /**
-* @module Kiwi
-* @submodule Renderers
-* @main Renderers
-* @namespace Kiwi.Renderers
-*/
+@module Kiwi
+@submodule Renderers
+@main Renderers
+@namespace Kiwi.Renderers
+**/
 var Kiwi;
 (function (Kiwi) {
     var Renderers;
     (function (Renderers) {
         /**
-        * Manages all rendering using WebGL.
-        * Directly manages renderer objects, including factory methods
-        * for their creation.
-        * Creates manager objects for shaders and textures.
-        * Manages gl state at game initialisation, at state start and end,
-        * and per frame.
-        * Runs the recursive scene graph rendering sequence every frame.
-        * @class GLRenderManager
-        * @extends IRenderer
-        * @constructor
-        * @param game {Kiwi.Game} The game that this renderer belongs to.
-        * @return {Kiwi.Renderers.GLRenderManager}
-        */
+        Manages all rendering using WebGL.
+    
+        - Directly manages renderer objects, including factory methods
+            for their creation.
+        - Creates manager objects for shaders and textures.
+        - Manages gl state at game initialisation, at state start and end,
+            and per frame.
+        - Runs the recursive scene graph rendering sequence every frame.
+    
+        @class GLRenderManager
+        @extends IRenderer
+        @constructor
+        @param game {Kiwi.Game} Game that this renderer belongs to.
+        **/
         var GLRenderManager = (function () {
             function GLRenderManager(game) {
                 /**
-                * The renderer object that is in use during a rendering batch.
-                * @property _currentRenderer
-                * @type Kiwi.Renderers.Renderer
-                * @private
-                */
-                this._currentRenderer = null;
+                Renderer object currently in use during a rendering batch
+        
+                @property currentRenderer
+                @type Kiwi.Renderers.Renderer
+                **/
+                this.currentRenderer = null;
                 /**
-                * Tally of number of entities rendered per frame
-                * @property _entityCount
-                * @type number
-                * @default 0
-                * @private
-                */
+                Tally of number of entities rendered per frame
+        
+                @property _entityCount
+                @type number
+                @default 0
+                @private
+                **/
                 this._entityCount = 0;
                 /**
-                * Tally of number of draw calls per frame
-                * @property numDrawCalls
-                * @type number
-                * @default 0
-                * @public
-                */
+                Tally of number of draw calls per frame
+        
+                @property numDrawCalls
+                @type number
+                @default 0
+                @public
+                **/
                 this.numDrawCalls = 0;
                 /**
-                * Maximum allowable sprites to render per frame.
-                * Note: Not currently used  - candidate for deletion
-                * @property _maxItems
-                * @type number
-                * @default 1000
-                * @private
-                */
+                Maximum allowable sprites to render per frame.
+                Note: Not currently used - candidate for deletion
+        
+                @property _maxItems
+                @type number
+                @default 1000
+                @private
+                **/
                 this._maxItems = 1000;
                 /**
-                * The most recently bound texture atlas.
-                * @property _currentTextureAtlas
-                * @type TextureAtlas
-                * @private
-                */
-                this._currentTextureAtlas = null;
+                Most recently bound texture atlas
+        
+                @property currentTextureAtlas
+                @type TextureAtlas
+                **/
+                this.currentTextureAtlas = null;
                 /**
-                * An array of renderers.
-                *
-                * Shared renderers are used for batch rendering.
-                * Multiple gameobjects can use the same renderer instance and add
-                * rendering info to a batch rather than rendering individually.
-                * This means only one draw call is necessary to render a number of
-                * objects. The most common use of this is standard 2d sprite rendering,
-                * and the TextureAtlasRenderer is added by default as a shared
-                * renderer. Sprites, StaticImages and Tilemaps (core gameobjects)
-                * can all use the same renderer/shader combination and be drawn as
-                * part of the same batch.
-                *
-                * Custom gameobjects can also choose to use a shared renderer, fo example in the case that a custom gameobject's rendering requirements matched the TextureAtlasRenderer
-                * capabilities.
-                *
-                * @property _sharedRenderers
-                * @type Array
-                * @private
-                */
-                this._sharedRenderers = {};
+                Array of renderers.
+        
+                Shared renderers are used for batch rendering.
+                Multiple gameobjects can use the same renderer instance and add
+                rendering info to a batch rather than rendering individually.
+                This means only one draw call is necessary to render a number of
+                objects. The most common use of this is standard 2d sprite rendering,
+                and the TextureAtlasRenderer is added by default as a shared
+                renderer. Sprites, StaticImages and Tilemaps (core gameobjects)
+                can all use the same renderer/shader combination and be drawn as
+                part of the same batch.
+        
+                Custom gameobjects can also choose to use a shared renderer,
+                for example in the case that a custom gameobject's
+                rendering requirements matched the `TextureAtlasRenderer`
+                capabilities.
+        
+                @property sharedRenderers
+                @type Array
+                **/
+                this.sharedRenderers = {};
                 this._game = game;
-                this._currentBlendMode = new Kiwi.Renderers.GLBlendMode(this._game.stage.gl, { mode: "DEFAULT" });
+                this.currentBlendMode = new Kiwi.Renderers.GLBlendMode(this._game.stage.gl, { mode: "DEFAULT" });
             }
-            /**
-            * Initialises all WebGL rendering services
-            * @method boot
-            * @public
-            */
             GLRenderManager.prototype.boot = function () {
-                this._textureManager = new Renderers.GLTextureManager();
-                this._shaderManager = new Kiwi.Shaders.ShaderManager();
-                //this.filters = new Kiwi.Filters.GLFilterManager(this._game, this._shaderManager);
+                /**
+                Initialise all WebGL rendering services.
+    
+                @method boot
+                @public
+                **/
+                this.textureManager = new Renderers.GLTextureManager();
+                this.shaderManager = new Kiwi.Shaders.ShaderManager();
                 this._init();
             };
-            /**
-            * The type of object that this is.
-            * @method objType
-            * @return {string} "GLRenderManager"
-            * @public
-            */
             GLRenderManager.prototype.objType = function () {
+                /**
+                Return the type of object that this is.
+    
+                @method objType
+                @return {string} "GLRenderManager"
+                @public
+                **/
                 return "GLRenderManager";
             };
             /**
-            * Adds a texture to the Texture Manager.
-            * @method addTexture
-            * @param {WebGLRenderingContext} gl
-            * @param {Kiwi.Textures.TextureAtlas} atlas
-            * @public
-            */
+            Add a texture to the Texture Manager.
+    
+            @method addTexture
+            @param gl {WebGLRenderingContext} Canvas rendering context
+            @param atlas {Kiwi.Textures.TextureAtlas} Texture reference
+            @public
+            **/
             GLRenderManager.prototype.addTexture = function (gl, atlas) {
-                this._textureManager.uploadTexture(gl, atlas);
+                this.textureManager.uploadTexture(gl, atlas);
             };
             /**
-            * Adds a renderer to the sharedRenderer array.
-            *
-            * The rendererID is a string that must match a renderer property
-            * of the Kiwi.Renderers object. If a match is found and an instance
-            * does not already exist, then a renderer is instantiated and added
-            * to the array.
-            * @method addSharedRenderer
-            * @param {string} rendererID
-            * @param {object} params
-            * @return {boolean} success
-            * @public
-            */
+            Remove a texture from the Texture Manager.
+    
+            @method removeTexture
+            @param {WebGLRenderingContext} gl
+            @param {Kiwi.Textures.TextureAtlas} atlas
+            @since 1.4.1
+            @Public
+            **/
+            GLRenderManager.prototype.removeTexture = function (gl, atlas) {
+                this.textureManager.removeTexture(gl, atlas);
+            };
             GLRenderManager.prototype.addSharedRenderer = function (rendererID, params) {
+                /**
+                Add a renderer to the sharedRenderer array.
+    
+                The rendererID is a string that must match a renderer property
+                of the Kiwi.Renderers object. If a match is found and an instance
+                does not already exist, then a renderer is instantiated and added
+                to the array.
+    
+                @method addSharedRenderer
+                @param {string} rendererID
+                @param {object} params
+                @return {boolean} success
+                @public
+                **/
                 if (params === void 0) { params = null; }
-                //does renderer exist?
+                // Does renderer exist?
                 if (Kiwi.Renderers[rendererID]) {
-                    //already added?
-                    if (!(rendererID in this._sharedRenderers)) {
-                        this._sharedRenderers[rendererID] = new Kiwi.Renderers[rendererID](this._game.stage.gl, this._shaderManager, params);
+                    // Already added?
+                    if (!(rendererID in this.sharedRenderers)) {
+                        this.sharedRenderers[rendererID] = new Kiwi.Renderers[rendererID](this._game.stage.gl, this.shaderManager, params);
                         return true;
                     }
                 }
                 return false;
             };
-            /**
-            * Adds a cloned renderer to the sharedRenderer array.
-            * The rendererID is a string that must match a renderer property of
-            * the Kiwi.Renderers object. The cloneID is the name for the
-            * cloned renderer.
-            *
-            * If a match is found and an instance does not already exist,
-            * then a renderer is instantiated and added to the array.
-            *
-            * Cloned shared renderers are useful if some items in your scene
-            * will use a special shader or blend mode, but others will not.
-            * You can subsequently access the clones with a normal
-            * `requestSharedRenderer()` call. You should use this instead of
-            * `requestRendererInstance()` whenever possible, because shared
-            * renderers are more efficient than instances.
-            *
-            * @method addSharedRendererClone
-            * @param {string} rendererID
-            * @param {string} cloneID
-            * @param {object} params
-            * @return {boolean} success
-            * @public
-            * @since 1.1.0
-            */
             GLRenderManager.prototype.addSharedRendererClone = function (rendererID, cloneID, params) {
+                /**
+                Add a cloned renderer to the sharedRenderer array.
+                The rendererID is a string that must match a renderer property of
+                the Kiwi.Renderers object. The cloneID is the name for the
+                cloned renderer.
+    
+                If a match is found and an instance does not already exist,
+                then a renderer is instantiated and added to the array.
+    
+                Cloned shared renderers are useful if some items in your scene
+                will use a special shader or blend mode, but others will not.
+                You can subsequently access the clones with a normal
+                `requestSharedRenderer()` call. You should use this instead of
+                `requestRendererInstance()` whenever possible, because shared
+                renderers are more efficient than instances.
+    
+                @method addSharedRendererClone
+                @param {string} rendererID
+                @param {string} cloneID
+                @param {object} params
+                @return {boolean} success
+                @public
+                @since 1.1.0
+                **/
                 if (params === void 0) { params = null; }
                 if (typeof params === "undefined") {
                     params = null;
                 }
-                //does renderer exist?
+                // Does renderer exist?
                 if (Kiwi.Renderers[rendererID]) {
-                    //already added?
-                    if (!(cloneID in this._sharedRenderers)) {
-                        this._sharedRenderers[cloneID] = new Kiwi.Renderers[rendererID](this._game.stage.gl, this._shaderManager, params);
+                    // Already added?
+                    if (!(cloneID in this.sharedRenderers)) {
+                        this.sharedRenderers[cloneID] = new Kiwi.Renderers[rendererID](this._game.stage.gl, this.shaderManager, params);
                         return true;
                     }
                 }
                 return false;
             };
-            /**
-            * Requests a shared renderer. A game object that wants to use a shared
-            * renderer uses this method to obtain a reference to the shared
-            * renderer instance.
-            * @method requestSharedRenderer
-            * @param {string} rendererID
-            * @param {object} params
-            * @return {Kiwi.Renderers.Renderer} A shared renderer
-            *	or null if none found.
-            * @public
-            */
             GLRenderManager.prototype.requestSharedRenderer = function (rendererID, params) {
+                /**
+                Request a shared renderer. A game object that wants to use a shared
+                renderer uses this method to obtain a reference to the shared
+                renderer instance.
+    
+                @method requestSharedRenderer
+                @param {string} rendererID
+                @param {object} params
+                @return {Kiwi.Renderers.Renderer} A shared renderer
+                    or null if none found.
+                @public
+                **/
                 if (params === void 0) { params = null; }
-                var renderer = this._sharedRenderers[rendererID];
+                var renderer = this.sharedRenderers[rendererID];
                 if (renderer) {
                     return renderer;
                 }
                 else {
                     if (this.addSharedRenderer(rendererID, params)) {
-                        return this._sharedRenderers[rendererID];
+                        return this.sharedRenderers[rendererID];
                     }
                     else {
-                        Kiwi.Log.log("No renderer called " + rendererID, '#renderer', '#webgl');
+                        Kiwi.Log.log("No renderer called " + rendererID, "#renderer", "#webgl");
                     }
                 }
-                //failed request
+                // Failed request
                 return null;
             };
-            /**
-            * Requests a new renderer instance. This factory method is the only
-            * way gameobjects should instantiate their own renderer.
-            *
-            * The rendererID is a string that must match a renderer property
-            * of the Kiwi.Renderers object. If a match is found then a renderer
-            * is instantiated and returned. Gameobjects which have rendering
-            * requirements that do not suit batch rendering use this technique.
-            * @method requestRendererInstance
-            * @param {string} rendererID The name of the requested renderer
-            * @param {object} params
-            * @return {Kiwi.Renderers.Renderer} A renderer or null if none found.
-            * @public
-            */
             GLRenderManager.prototype.requestRendererInstance = function (rendererID, params) {
+                /**
+                Request a new renderer instance. This factory method is the only
+                way gameobjects should instantiate their own renderer.
+    
+                The rendererID is a string that must match a renderer property
+                of the Kiwi.Renderers object. If a match is found then a renderer
+                is instantiated and returned. Gameobjects which have rendering
+                requirements that do not suit batch rendering use this technique.
+    
+                @method requestRendererInstance
+                @param {string} rendererID The name of the requested renderer
+                @param {object} params
+                @return {Kiwi.Renderers.Renderer} A renderer or null if none found.
+                @public
+                **/
                 if (params === void 0) { params = null; }
                 if (rendererID in Kiwi.Renderers) {
-                    var renderer = new Kiwi.Renderers[rendererID](this._game.stage.gl, this._shaderManager, params);
+                    var renderer = new Kiwi.Renderers[rendererID](this._game.stage.gl, this.shaderManager, params);
                     return renderer;
                 }
                 else {
-                    Kiwi.Log.log("No renderer with id " + rendererID + " exists", '#renderer', '#webgl');
+                    Kiwi.Log.log("No renderer with id " + rendererID + " exists", "#renderer", "#webgl");
                 }
-                return null; //fail
+                // Fail
+                return null;
             };
-            /*
-            public get filtersEnabled(): boolean {
-                return this._filtersEnabled;
-            }
-    
-            public set filtersEnabled(val: boolean) {
-                this._filtersEnabled = val;
-            }
-    
-            private _filtersEnabled: boolean = false;
-            
-            /**
-            * Performs initialisation required for single game instance -
-            * happens once, at bootup. Sets global GL state.
-            * Initialises managers for shaders and textures.
-            * Instantiates the default shared renderer (`TextureAtlasRenderer`)
-            * @method _init
-            * @private
-            */
             GLRenderManager.prototype._init = function () {
-                Kiwi.Log.log("Initialising WebGL", '#renderer', '#webgl');
+                /**
+                Perform initialisation required for single game instance.
+                Happens once, at bootup. Sets global GL state.
+                Initialises managers for shaders and textures.
+                Instantiates the default shared renderer (`TextureAtlasRenderer`).
+    
+                @method _init
+                @private
+                **/
+                Kiwi.Log.log("Initialising WebGL", "#renderer", "#webgl");
                 var gl = this._game.stage.gl;
-                //init stage and viewport
+                // Init stage and viewport
                 this._stageResolution = new Float32Array([this._game.stage.width, this._game.stage.height]);
                 // Manually override scaling under CocoonJS
                 if (this._game.deviceTargetOption === Kiwi.TARGET_COCOON) {
@@ -15614,20 +16998,19 @@ var Kiwi;
                 else {
                     this.scaleViewport(gl, Kiwi.Stage.SCALE_NONE, this._game.stage.width, this._game.stage.height);
                 }
-                //set default gl state
+                // Set default gl state
                 gl.enable(gl.BLEND);
-                this._switchBlendMode(gl, this._currentBlendMode);
-                //shader manager
-                this._shaderManager.init(gl, "TextureAtlasShader");
-                //camera matrix
+                this.switchBlendMode(gl, this.currentBlendMode);
+                this.shaderManager.init(gl, "TextureAtlasShader");
+                // Camera matrix
                 this.camMatrix = new Float32Array([1, 0, 0, 0, 1, 0, 0, 0, 1]);
-                this._camMatrixOffset = new Kiwi.Geom.Matrix();
-                //stage res needs update on stage resize
+                this._camMatrix = new Kiwi.Geom.Matrix();
+                // Stage res needs update on stage resize
                 this._game.stage.onResize.add(function (width, height) {
                     this._stageResolution = new Float32Array([width, height]);
-                    if (this.currentRenderer)
-                        this._currentRenderer.updateStageResolution(gl, this._stageResolution);
-                    //this.filters.updateFilterResolution(gl,width, height);
+                    if (this.currentRenderer) {
+                        this.currentRenderer.updateStageResolution(gl, this._stageResolution);
+                    }
                     // Manually override scaling under CocoonJS
                     if (this._game.deviceTargetOption === Kiwi.TARGET_COCOON) {
                         this.scaleViewport(gl, this._game.stage.scaleType, window.innerWidth, window.innerHeight);
@@ -15636,25 +17019,24 @@ var Kiwi;
                         this.scaleViewport(gl, Kiwi.Stage.SCALE_NONE, width, height);
                     }
                 }, this);
-                /* if (this.filtersEnabled && !this.filters.isEmpty) {
-                    this.filters.enableFrameBuffers(gl);
-                }*/
             };
-            /**
-            * Scales the viewport according to a scale mode and space dimensions.
-            *
-            * This is used internally for compatibility with CocoonJS and should not be called.
-            * @method scaleViewport
-            * @param gl {WebGLRenderingContext}
-            * @param mode {number} Scale mode; should be either
-            *	Kiwi.Stage.SCALE_FIT, Kiwi.Stage.SCALE_STRETCH, or
-            *	Kiwi.Stage.SCALE_NONE. Defaults to Kiwi.Stage.SCALE_NONE
-            * @param width {number} Width of the target space
-            * @param height {number} Height of the target space
-            * @public
-            * @since 1.1.1
-            */
             GLRenderManager.prototype.scaleViewport = function (gl, mode, width, height) {
+                /**
+                Scales the viewport according to a scale mode and space dimensions.
+    
+                This is used internally for compatibility with CocoonJS
+                and should not be called.
+    
+                @method scaleViewport
+                @param gl {WebGLRenderingContext} Canvas rendering context
+                @param mode {number} Scale mode; should be either
+                    Kiwi.Stage.SCALE_FIT, Kiwi.Stage.SCALE_STRETCH, or
+                    Kiwi.Stage.SCALE_NONE. Defaults to Kiwi.Stage.SCALE_NONE
+                @param width {number} Width of the target space
+                @param height {number} Height of the target space
+                @public
+                @since 1.1.1
+                **/
                 var offset = new Kiwi.Geom.Point(0, 0);
                 switch (mode) {
                     case Kiwi.Stage.SCALE_FIT:
@@ -15687,119 +17069,118 @@ var Kiwi;
                 }
                 gl.viewport(offset.x, offset.y, width, height);
             };
-            /**
-            * Performs initialisation required when switching to a different state.
-            * Called when a state has been switched to.
-            * The textureManager is told to clear its contents from video memory,
-            * then rebuild its cache of textures from the state's texture library.
-            * @method initState
-            * @public
-            */
             GLRenderManager.prototype.initState = function (state) {
-                this._textureManager.clearTextures(this._game.stage.gl);
-                this._textureManager.uploadTextureLibrary(this._game.stage.gl, state.textureLibrary);
+                /**
+                Perform initialisation required when switching state.
+                Called when a state has been switched to.
+                The textureManager clears its contents from video memory, then
+                rebuilds its cache of textures from the state's texture library.
+    
+                @method initState
+                @public
+                **/
+                this.textureManager.clearTexturesLocal(this._game.stage.gl);
+                this.textureManager.uploadTextureLibrary(this._game.stage.gl, state.textureLibrary);
             };
-            /**
-            * Performs cleanup required before switching to a different state.
-            * Called whwn a state is about to be switched from.
-            * The textureManager is told to empty its cache.
-            * @method endState
-            * @param state {Kiwi.State}
-            * @public
-            */
             GLRenderManager.prototype.endState = function (state) {
-                this._textureManager.clearTextures(this._game.stage.gl);
-                Kiwi.Log.log("Ending WebGL on State", '#renderer', '#webgl');
+                /**
+                Perform cleanup required before switching to a different state.
+                Called whwn a state is about to be switched from.
+                The textureManager is told to empty its cache.
+    
+                @method endState
+                @param state {Kiwi.State}
+                @public
+                **/
+                this.textureManager.clearTextures(this._game.stage.gl);
+                Kiwi.Log.log("Ending WebGL on State", "#renderer", "#webgl");
             };
-            /**
-            * Manages rendering of the scene graph - called once per frame.
-            * Sets up per frame gl uniforms such as the view matrix and
-            * camera offset. Clears the current renderer ready for a new batch.
-            * Initiates recursive render of scene graph starting at the root.
-            * @method render
-            * @param camera {Camera}
-            * @public
-            */
             GLRenderManager.prototype.render = function (camera) {
+                /**
+                Manage rendering of the scene graph - called once per frame.
+                Set up per frame gl uniforms such as the view matrix and
+                camera offset. Clear the current renderer ready for a new batch.
+                Initiate recursive render of scene graph starting at the root.
+    
+                @method render
+                @param camera {Camera}
+                @public
+                **/
                 var gl = this._game.stage.gl;
-                //clear stage every frame
+                // Clear stage every frame
                 var col = this._game.stage.normalizedColor;
                 // Colour must be multiplied by alpha to create consistent results.
                 // This is probably due to browsers implementing an inferior
                 // blendfunc: ONE, ONE_MINUS_SRC_ALPHA is most common, and gives
                 // bad results with alphas. When this is used on a partially
                 // transparent game canvas, it does not blend correctly.
-                // Without being able to override the browser's own object renderer,
+                // Without being able to override the browser's own renderer,
                 // this is a necessary kludge. The "clean" solution is as follows:
-                // gl.clearColor(col.r, col.g, col.b, col.a);
+                // `gl.clearColor( col.r, col.g, col.b, col.a );`
                 gl.clearColor(col.r * col.a, col.g * col.a, col.b * col.a, col.a);
                 gl.clear(gl.COLOR_BUFFER_BIT);
                 // Reset current renderer.
                 // This prevents runtime created shaders from being uploaded
                 // and the render manager failing to notice, causing crashes.
-                this._currentRenderer = null;
+                this.currentRenderer = null;
                 // Stop drawing if there is nothing to draw
                 if (this._game.states.current.members.length == 0) {
                     return;
                 }
                 // Reset stats
                 this.numDrawCalls = 0;
-                this._textureManager.numTextureWrites = 0;
+                this.textureManager.numTextureWrites = 0;
                 this._entityCount = 0;
-                // Set cam matrix uniform
-                var cm = camera.transform.getConcatenatedMatrix();
+                // Set cam matrix data.
                 var ct = camera.transform;
-                this._camMatrixOffset.identity();
-                this._camMatrixOffset.translate(-ct.anchorPointX, -ct.anchorPointY);
-                this._camMatrixOffset.prependMatrix(cm);
+                this._camMatrix.setFromOffsetTransform(0, 0, ct.scaleX, ct.scaleY, ct.rotation, ct.anchorPointX, ct.anchorPointY);
+                this._camMatrix.append(1, 0, 0, 1, ct.x - ct.anchorPointX, ct.y - ct.anchorPointY);
                 // Overwrite cam matrix properties rather than recreating matrix.
                 // This is necessary to keep the cam matrix synchronised
                 // with other renderers: if there is only one render batch,
                 // then `enable` will only pass the cam matrix on the first frame,
-                // and subsequent camera movements will not be passed to the shader.
-                this.camMatrix[0] = this._camMatrixOffset.a;
-                this.camMatrix[1] = this._camMatrixOffset.b;
-                this.camMatrix[3] = this._camMatrixOffset.c;
-                this.camMatrix[4] = this._camMatrixOffset.d;
-                this.camMatrix[6] = this._camMatrixOffset.tx;
-                this.camMatrix[7] = this._camMatrixOffset.ty;
+                // so subsequent camera movements will not be passed to the shader.
+                this.camMatrix[0] = this._camMatrix.a;
+                this.camMatrix[1] = this._camMatrix.b;
+                this.camMatrix[3] = this._camMatrix.c;
+                this.camMatrix[4] = this._camMatrix.d;
+                this.camMatrix[6] = this._camMatrix.tx;
+                this.camMatrix[7] = this._camMatrix.ty;
                 // Mandate blend mode in CocoonJS
                 // This must be called per-frame, because CocoonJS seems to
                 // interfere with blend modes on a per-frame basis.
                 if (this._game.deviceTargetOption == Kiwi.TARGET_COCOON) {
-                    this._switchBlendMode(gl, this._currentBlendMode);
+                    this.switchBlendMode(gl, this.currentBlendMode);
                 }
                 this.collateRenderSequence();
                 this.collateBatches();
                 this.renderBatches(gl, camera);
-                /*if (this._filtersEnabled && !this.filters.isEmpty) {
-                    this.filters.applyFilters(gl);
-                    gl.useProgram(this._shaderManager.currentShader.shaderProgram);
-                    gl.bindTexture(gl.TEXTURE_2D, this._currentTextureAtlas.glTextureWrapper.texture);
-                }*/
             };
-            /**
-            * Creates a new render sequence
-            * @method collateRenderSequence
-            * @public
-            */
             GLRenderManager.prototype.collateRenderSequence = function () {
+                /**
+                Create a new render sequence.
+    
+                @method collateRenderSequence
+                @public
+                **/
                 this._sequence = [];
                 var root = this._game.states.current;
                 this.collateChild(root);
             };
-            /**
-            * Adds a child to the render sequence
-            * (may be a group with children of its own).
-            * @method collateChild
-            * @public
-            */
             GLRenderManager.prototype.collateChild = function (child) {
+                /**
+                Add a child to the render sequence
+                (may be a group with children of its own).
+    
+                @method collateChild
+                @public
+                **/
+                var i;
                 // Do not render non-visible objects or their children
                 if (!child.visible)
                     return;
                 if (child.childType() === Kiwi.GROUP) {
-                    for (var i = 0; i < child.members.length; i++) {
+                    for (i = 0; i < child.members.length; i++) {
                         this.collateChild(child.members[i]);
                     }
                 }
@@ -15814,13 +17195,14 @@ var Kiwi;
                     });
                 }
             };
-            /**
-            * Sorts the render sequence into batches.
-            * Each batch requires the same renderer/shader/texture combination.
-            * @method collateBatches
-            * @public
-            */
             GLRenderManager.prototype.collateBatches = function () {
+                /**
+                Sort the render sequence into batches.
+                Each batch requires the same renderer/shader/texture combination.
+    
+                @method collateBatches
+                @public
+                **/
                 var currentRenderer = null;
                 var currentShader = null;
                 var currentTexture = null;
@@ -15828,8 +17210,8 @@ var Kiwi;
                 var batchIndex;
                 for (var i = 0; i < this._sequence.length; i++) {
                     if (!this._sequence[i].isBatchRenderer || this._sequence[i].renderer !== currentRenderer || this._sequence[i].shader !== currentShader || this._sequence[i].texture !== currentTexture) {
-                        //create a new batch
-                        var batchIndex = this._batches.push(new Array()) - 1;
+                        // Create a new batch
+                        batchIndex = this._batches.push(new Array()) - 1;
                         currentRenderer = this._sequence[i].renderer;
                         currentShader = this._sequence[i].shader;
                         currentTexture = this._sequence[i].texture;
@@ -15837,106 +17219,132 @@ var Kiwi;
                     this._batches[batchIndex].push(this._sequence[i]);
                 }
             };
-            /**
-            * Renders all the batches
-            * @method renderBatches
-            * @param {WebGLRenderingContext} gl
-            * @param {Kiwi.Camera} camera
-            * @public
-            */
             GLRenderManager.prototype.renderBatches = function (gl, camera) {
-                for (var i = 0; i < this._batches.length; i++)
+                /**
+                Render all the batches.
+    
+                @method renderBatches
+                @param gl {WebGLRenderingContext} Canvas rendering context
+                @param camera {Kiwi.Camera} Currently rendering camera
+                @public
+                **/
+                for (var i = 0; i < this._batches.length; i++) {
                     this.renderBatch(gl, this._batches[i], camera);
+                }
             };
-            /**
-            * Renders a single batch
-            * @method renderBatch
-            * @param {WebGLRenderingContext} gl
-            * @param {object} batch
-            * @param {Kiwi.Camera} camera
-            * @public
-            */
             GLRenderManager.prototype.renderBatch = function (gl, batch, camera) {
+                /**
+                Render a single batch.
+    
+                @method renderBatch
+                @param gl {WebGLRenderingContext} Canvas rendering context
+                @param batch {object} Batch to render
+                @param camera {Kiwi.Camera} Currently rendering camera
+                @public
+                **/
                 // Acquire renderer
                 var rendererSwitched = false;
-                if (batch[0].entity.glRenderer !== this._currentRenderer) {
+                if (batch[0].renderer !== this.currentRenderer) {
                     rendererSwitched = true;
                     this._switchRenderer(gl, batch[0].entity);
                 }
                 // Clear renderer for fresh data
-                this._currentRenderer.clear(gl, { camMatrix: this.camMatrix });
-                for (var i = 0; i < batch.length; i++)
+                this.currentRenderer.clear(gl, { camMatrix: this.camMatrix });
+                for (var i = 0; i < batch.length; i++) {
                     batch[i].entity.renderGL(gl, camera);
+                }
                 // Upload textures
-                if (batch[0].entity.atlas !== this._currentTextureAtlas || batch[0].entity.atlas.dirty || (rendererSwitched && batch[0].entity.atlas == this._currentTextureAtlas))
-                    this._switchTexture(gl, batch[0].entity);
+                if (batch[0].texture !== this.currentTextureAtlas || batch[0].texture.dirty || (rendererSwitched && batch[0].texture === this.currentTextureAtlas)) {
+                    batch[0].texture.enableGL(gl, this.currentRenderer, this.textureManager);
+                }
                 // Manage blend mode
-                // We must always apply BlendMode under CocoonJS, because some (but not all) operations on other canvases may silently change the blend mode and not change it back.
-                if (!this._currentBlendMode.isIdentical(batch[0].entity.glRenderer.blendMode) || this._currentBlendMode.dirty || this._game.deviceTargetOption === Kiwi.TARGET_COCOON)
-                    this._switchBlendMode(gl, batch[0].entity.glRenderer.blendMode);
+                // We must always apply BlendMode under CocoonJS, because some
+                // (but not all) operations on other canvases may
+                // silently change the blend mode and not change it back.
+                if (!this.currentBlendMode.isIdentical(batch[0].renderer.blendMode) || this.currentBlendMode.dirty || this._game.deviceTargetOption === Kiwi.TARGET_COCOON) {
+                    this.switchBlendMode(gl, batch[0].renderer.blendMode);
+                }
                 // Render
-                this._currentRenderer.draw(gl);
+                this.currentRenderer.draw(gl);
             };
-            /**
-            * Calls the render function on a single entity
-            * @method renderEntity
-            * @param {WebGLRenderingContext} gl
-            * @param {Kiwi.Entity} entity
-            * @param {Kiwi.Camera} camera
-            * @public
-            * @deprecated Used internally; should not be called from external functions
-            */
             GLRenderManager.prototype.renderEntity = function (gl, entity, camera) {
-                this.renderBatch(gl, [entity], camera);
+                /**
+                Call the render function on a single entity.
+    
+                @method renderEntity
+                @param {WebGLRenderingContext} gl
+                @param {Kiwi.Entity} entity
+                @param {Kiwi.Camera} camera
+                @public
+                @deprecated Used internally;
+                    should not be called from external functions
+                **/
+                this.renderBatch(gl, [{
+                    entity: entity,
+                    renderer: entity.glRenderer,
+                    shader: entity.glRenderer.shaderPair,
+                    isBatchRenderer: entity.glRenderer.isBatchRenderer,
+                    texture: entity.atlas
+                }], camera);
             };
-            /**
-            * Ensures the atlas and renderer needed for a batch is setup
-            * @method setupGLState
-            * @param {WebGLRenderingContext} gl
-            * @public
-            * @deprecated Used internally; should not be called from external functions.
-            */
             GLRenderManager.prototype.setupGLState = function (gl, entity) {
-                if (entity.atlas !== this._currentTextureAtlas)
+                /**
+                Ensure the atlas and renderer needed for a batch is setup.
+    
+                @method setupGLState
+                @param {WebGLRenderingContext} gl
+                @public
+                @deprecated Used internally; should not be called from external functions.
+                **/
+                if (entity.atlas !== this.currentTextureAtlas) {
                     this._switchTexture(gl, entity);
-                if (entity.glRenderer !== this._currentRenderer)
+                }
+                if (entity.glRenderer !== this.currentRenderer) {
                     this._switchRenderer(gl, entity);
+                }
             };
-            /**
-            * Switch renderer to the one needed by the entity that needs rendering
-            * @method _switchRenderer
-            * @param gl {WebGLRenderingContext}
-            * @param entity {Kiwi.Entity}
-            * @private
-            */
             GLRenderManager.prototype._switchRenderer = function (gl, entity) {
-                if (this._currentRenderer)
-                    this._currentRenderer.disable(gl);
-                this._currentRenderer = entity.glRenderer;
-                this._currentRenderer.enable(gl, { camMatrix: this.camMatrix, stageResolution: this._stageResolution });
+                /**
+                Switch renderer to that needed by the entity.
+    
+                @method _switchRenderer
+                @param gl {WebGLRenderingContext} Canvas rendering context
+                @param entity {Kiwi.Entity} Entity demanding the switch
+                @private
+                **/
+                if (this.currentRenderer) {
+                    this.currentRenderer.disable(gl);
+                }
+                this.currentRenderer = entity.glRenderer;
+                this.currentRenderer.enable(gl, {
+                    camMatrix: this.camMatrix,
+                    stageResolution: this._stageResolution
+                });
             };
-            /**
-            * Switch texture to the one needed by the entity that needs rendering
-            * @method _switchTexture
-            * @param gl {WebGLRenderingContext}
-            * @param entity {Kiwi.Entity}
-            * @private
-            */
             GLRenderManager.prototype._switchTexture = function (gl, entity) {
-                this._currentTextureAtlas = entity.atlas;
-                entity.atlas.enableGL(gl, this._currentRenderer, this._textureManager);
+                /**
+                Switch texture to that needed by the entity.
+    
+                @method _switchTexture
+                @param gl {WebGLRenderingContext} Canvas rendering context
+                @param entity {Kiwi.Entity} Entity demanding the switch
+                @private
+                @deprecated As of 1.4.1, we use a better method.
+                    We probably shouldn't be passing an entity to a texture method.
+                **/
+                this.currentTextureAtlas = entity.atlas;
+                entity.atlas.enableGL(gl, this.currentRenderer, this.textureManager);
             };
-            /**
-            * Switch blend mode to a new set of constants
-            * @method _switchBlendMode
-            * @param gl {WebGLRenderingContext}
-            * @param blendMode {Kiwi.Renderers.GLBlendMode}
-            * @private
-            * @since 1.1.0
-            */
-            GLRenderManager.prototype._switchBlendMode = function (gl, blendMode) {
-                this._currentBlendMode = blendMode;
-                this._currentBlendMode.apply(gl);
+            GLRenderManager.prototype.switchBlendMode = function (gl, blendMode) {
+                /**
+                Switch blend mode to a new set of constants.
+                @method switchBlendMode
+                @param gl {WebGLRenderingContext} Canvas rendering context
+                @param blendMode {Kiwi.Renderers.GLBlendMode} New blend mode
+                @since 1.1.0
+                **/
+                this.currentBlendMode = blendMode;
+                this.currentBlendMode.apply(gl);
             };
             return GLRenderManager;
         })();
@@ -16212,7 +17620,7 @@ var Kiwi;
                 }
                 else {
                     gl.bindTexture(gl.TEXTURE_2D, this.texture);
-                    gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 0);
+                    gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 1);
                     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this._image);
                     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
                     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
@@ -16249,37 +17657,49 @@ var Kiwi;
                 this._created = false;
                 return true;
             };
+            /**
+            * Disposes of any links to external objects in an attempt to flag this object for garbage collection.
+            * You need to make sure that the texture has been removed from the GLTextureManager.
+            * @method dispose
+            * @public
+            * @since 1.4.1
+            */
+            GLTextureWrapper.prototype.dispose = function () {
+                delete this._image;
+                delete this.textureAtlas;
+            };
             return GLTextureWrapper;
         })();
         Renderers.GLTextureWrapper = GLTextureWrapper;
     })(Renderers = Kiwi.Renderers || (Kiwi.Renderers = {}));
 })(Kiwi || (Kiwi = {}));
 /**
-*
-*
-* @module Kiwi
-* @submodule Renderers
-* @main Renderers
-* @namespace Kiwi.Renderers
-*/
+@module Kiwi
+@submodule Renderers
+@main Renderers
+@namespace Kiwi.Renderers
+**/
 var Kiwi;
 (function (Kiwi) {
     var Renderers;
     (function (Renderers) {
         /**
-       * Manages GL Texture objects, including creation, uploading, destruction and memory management
-       * @class GLTextureManager
-       * @constructor
-       * @return {GLTextureManager}
-       */
+        Manages GL Texture objects, including creation, uploading, destruction
+        and memory management
+    
+        @class GLTextureManager
+        @constructor
+        @return {GLTextureManager}
+        **/
         var GLTextureManager = (function () {
             function GLTextureManager() {
                 /**
-                * The number of textures uploads in the last frame
-                * @property numTextureWrites
-                * @type number
-                * @public
-                */
+                Number of texture uploads in the last frame
+        
+                @property numTextureWrites
+                @type number
+                @public
+                **/
                 this.numTextureWrites = 0;
                 this._numTexturesUsed = 0;
                 this._usedTextureMem = 0;
@@ -16300,37 +17720,71 @@ var Kiwi;
                 enumerable: true,
                 configurable: true
             });
-            /**
-            * Adds a texture wrapper to the cache
-            * @method _addTextureToCache
-            * @param glTexture {GLTextureWrapper}
-            * @private
-            */
             GLTextureManager.prototype._addTextureToCache = function (glTexture) {
+                /**
+                Add a texture wrapper to the cache.
+    
+                @method _addTextureToCache
+                @param glTexture {GLTextureWrapper}
+                @private
+                **/
                 this._textureWrapperCache.push(glTexture);
             };
-            /**
-            * Deletes a texture from memory and removes the wrapper from the cache
-            * @method _deleteTexture
-            * @param gl {WebGLRenderingContext}
-            * @param idx {number}
-            * @private
-            */
+            GLTextureManager.prototype.addTextureToCache = function (glTexture) {
+                /**
+                Add a texture wrapper to the cache. Wraps a private function.
+                @method addTextureToCache
+                @param glTexture {GLTextureWrapper}
+                @since 1.5.0
+                **/
+                this._addTextureToCache(glTexture);
+            };
+            GLTextureManager.prototype._removeTextureFromCache = function (gl, glTexture) {
+                /**
+                Remove a texture wrapper from the cache.
+    
+                @method _removeTextureFromCache
+                @param glTexture {GLTextureWrapper}
+                @private
+                @since 1.4.1
+                **/
+                var index = this._textureWrapperCache.indexOf(glTexture);
+                if (index > -1) {
+                    if (glTexture.uploaded) {
+                        this._deleteTexture(gl, index);
+                    }
+                    this._textureWrapperCache.splice(index, 1);
+                }
+            };
             GLTextureManager.prototype._deleteTexture = function (gl, idx) {
+                /**
+                Delete a texture from memory and remove the wrapper from the cache.
+    
+                @method _deleteTexture
+                @param gl {WebGLRenderingContext}
+                @param idx {number}
+                @private
+                **/
                 this._textureWrapperCache[idx].deleteTexture(gl);
                 this._usedTextureMem -= this._textureWrapperCache[idx].numBytes;
                 this._numTexturesUsed--;
             };
-            /**
-            * Uploads a texture to video memory
-            * @method _uploadTexture
-            * @param gl {WebGLRenderingContext}
-            * @param glTextureWrapper {GLTextureWrapper}
-            * @return boolean
-            * @private
-            */
             GLTextureManager.prototype._uploadTexture = function (gl, glTextureWrapper) {
-                //only upload it if it fits
+                /**
+                Upload a texture to video memory.
+    
+                @method _uploadTexture
+                @param gl {WebGLRenderingContext}
+                @param glTextureWrapper {GLTextureWrapper}
+                @return boolean
+                @private
+                **/
+                // Check for malformed textures
+                if (isNaN(glTextureWrapper.numBytes)) {
+                    Kiwi.Log.warn("Texture has no size; did you use the right data?", "#texture");
+                    return false;
+                }
+                // Only upload it if it fits
                 if (glTextureWrapper.numBytes + this._usedTextureMem <= this.maxTextureMem) {
                     glTextureWrapper.uploadTexture(gl);
                     this._usedTextureMem += glTextureWrapper.numBytes;
@@ -16339,72 +17793,147 @@ var Kiwi;
                 }
                 return false;
             };
-            /**
-            * Uploads a texture library to video memory
-            * @method uploadTextureLibrary
-            * @param gl {WebGLRenderingContext}
-            * @param textureLibrary {Kiwi.Textures.TextureLibrary}
-            * @public
-            */
             GLTextureManager.prototype.uploadTextureLibrary = function (gl, textureLibrary) {
-                this._textureWrapperCache = new Array();
-                for (var tex in textureLibrary.textures) {
+                /**
+                Upload a texture library to video memory.
+    
+                @method uploadTextureLibrary
+                @param gl {WebGLRenderingContext}
+                @param textureLibrary {Kiwi.Textures.TextureLibrary}
+                @public
+                **/
+                var tex, texture;
+                this._textureWrapperCache = [];
+                for (tex in textureLibrary.textures) {
+                    texture = textureLibrary.textures[tex];
                     // Tell the atlas to prepare its wrappers
-                    textureLibrary.textures[tex].createGLTextureWrapper(gl, this);
+                    if (texture.glTextureWrapper) {
+                        // Texture was already created
+                        // Assume that it is properly formed and uploaded
+                        this._addTextureToCache(texture.glTextureWrapper);
+                    }
+                    else {
+                        // Do full upload
+                        texture.createGLTextureWrapper(gl, this);
+                    }
                 }
             };
-            /**
-            * Uploads a single texture to video memory
-            * @method uploadTexture
-            * @param gl {WebGLRenderingContext}
-            * @param textureAtlas {Kiwi.Textures.TextureAtlas}
-            * @public
-            */
             GLTextureManager.prototype.uploadTexture = function (gl, textureAtlas) {
+                /**
+                Upload a single texture to video memory.
+    
+                @method uploadTexture
+                @param gl {WebGLRenderingContext}
+                @param textureAtlas {Kiwi.Textures.TextureAtlas}
+                @public
+                **/
                 textureAtlas.createGLTextureWrapper(gl, this);
             };
-            /**
-            * Adds a texture wrapper to the manager. This both adds the wrapper to the manager cache, and attempts to upload the attached texture to video memory.
-            * @method registerTextureWrapper
-            * @param gl {WebGLRenderingContext}
-            * @param glTextureWrapper {GLTextureWrapper}
-            * @public
-            * @since 1.1.0
-            */
             GLTextureManager.prototype.registerTextureWrapper = function (gl, glTextureWrapper) {
+                /**
+                Add a texture wrapper to the manager.
+                This both adds the wrapper to the manager cache,
+                and attempts to upload the attached texture to video memory.
+    
+                @method registerTextureWrapper
+                @param gl {WebGLRenderingContext}
+                @param glTextureWrapper {GLTextureWrapper}
+                @public
+                @since 1.1.0
+                **/
                 this._addTextureToCache(glTextureWrapper);
                 // Only upload it if it fits
                 if (!this._uploadTexture(gl, glTextureWrapper)) {
-                    Kiwi.Log.log("...skipped uploading texture due to allocated texture memory exceeded.", '#renderer', '#webgl');
+                    Kiwi.Log.log("...skipped uploading texture due to " + "allocated texture memory exceeded.", "#renderer", "#webgl");
                 }
             };
-            /**
-            * Removes all textures from video memory and clears the wrapper cache
-            * @method clearTextures
-            * @param gl {WebGLRenderingContext}
-            * @public
-            */
             GLTextureManager.prototype.clearTextures = function (gl) {
+                /**
+                Remove all textures from video memory and clears the wrapper cache.
+    
+                @method clearTextures
+                @param gl {WebGLRenderingContext}
+                @public
+                **/
                 for (var i = 0; i < this._textureWrapperCache.length; i++) {
                     // Delete from graphics memory
                     this._deleteTexture(gl, i);
-                    //kill the reference on the atlas
+                    // Kill the reference on the atlas
                     this._textureWrapperCache[i].textureAtlas.glTextureWrapper = null;
                 }
                 this._textureWrapperCache = new Array();
             };
-            /**
-            * Binds the texture ready for use, uploads it if it isn't already
-            * @method useTexture
-            * @param gl {WebGLRenderingContext}
-            * @param glTextureWrapper {GLTextureWrappery}
-            * @param [textureUnit=0] {number} Optional parameter for multitexturing. You can have up to 32 textures available to a shader at one time, in the range 0-31. If you don't need multiple textures, this is perfectly safe to ignore.
-            * @return boolean
-            * @public
-            */
+            GLTextureManager.prototype.clearTexturesLocal = function (gl) {
+                /**
+                Remove non-global textures from video memory and the wrapper cache.
+                Global assets remain untouched.
+    
+                @method clearTexturesLocal
+                @param gl {WebGLRenderingContext}
+                @public
+                @since 1.5.0
+                **/
+                var i, wrapper, cache = this._textureWrapperCache, cacheLen = cache.length, newCache = [];
+                for (i = 0; i < cacheLen; i++) {
+                    wrapper = cache[i];
+                    if (wrapper.ownerState) {
+                        // Unload texture
+                        this._deleteTexture(gl, i);
+                        wrapper.textureAtlas.glTextureWrapper = null;
+                    }
+                    else {
+                        // Preserve texture
+                        newCache.push(wrapper);
+                    }
+                }
+                this._textureWrapperCache = newCache;
+            };
+            GLTextureManager.prototype.removeTexture = function (gl, textureAtlas) {
+                /**
+                Remove a texture atlas from the texture manager.
+    
+                @method removeTexture
+                @param gl {WebGLRenderingContext}
+                @param textureAtlas {Kiwi.Textures.TextureAtlas}
+                @public
+                @since 1.4.1
+                **/
+                textureAtlas.removeGLTextureWrapper(gl, this);
+            };
+            GLTextureManager.prototype.deregisterTextureWrapper = function (gl, glTextureWrapper) {
+                /**
+                Remove a texture wrapper from the manager.
+    
+                @method deregisterTextureWrapper
+                @param gl {WebGLRenderingContext}
+                @param glTextureWrapper {GLTextureWrapper}
+                @public
+                @since 1.4.1
+                **/
+                this._removeTextureFromCache(gl, glTextureWrapper);
+            };
             GLTextureManager.prototype.useTexture = function (gl, glTextureWrapper, textureUnit) {
+                /**
+                Bind the texture ready for use. Upload it if it isn't already.
+    
+                @method useTexture
+                @param gl {WebGLRenderingContext}
+                @param glTextureWrapper {GLTextureWrappery}
+                @param [textureUnit=0] {number} Optional parameter for
+                    multitexturing. You can have up to 32 textures available
+                    to a shader at one time, in the range 0-31.
+                    If you don't need multiple textures,
+                    this is perfectly safe to ignore.
+                @return {boolean} Whether the texture was successfully used
+                @public
+                **/
                 if (textureUnit === void 0) { textureUnit = 0; }
-                textureUnit = Kiwi.Utils.GameMath.clamp(Kiwi.Utils.GameMath.truncate(textureUnit), 31); // Convert to integer in range 0-31.
+                if (isNaN(glTextureWrapper.numBytes)) {
+                    Kiwi.Log.warn("Texture has no size; did you use the right data?", "#texture");
+                    return false;
+                }
+                // Convert to integer in range 0-31.
+                textureUnit = Kiwi.Utils.GameMath.clamp(Kiwi.Utils.GameMath.truncate(textureUnit), 31);
                 if (!glTextureWrapper.created || !glTextureWrapper.uploaded) {
                     if (!this._uploadTexture(gl, glTextureWrapper)) {
                         this._freeSpace(gl, glTextureWrapper.numBytes);
@@ -16412,39 +17941,48 @@ var Kiwi;
                     }
                     this.numTextureWrites++;
                 }
-                //use texture
+                // Use texture
                 if (glTextureWrapper.created && glTextureWrapper.uploaded) {
                     // Determine target texture unit
                     // This could be determined as:
                     //   var targetTextureUnit = "TEXTURE" + textureUnit;
                     //   gl.activeTexture(gl[targetTextureUnit]);
-                    // But because the Khronos WebGL spec defines 
+                    // But because the Khronos WebGL spec defines
                     // the glenums of TEXTURE0-31 to be consecutive,
                     // this should be safe and fast:
                     var targetTextureUnit = gl.TEXTURE0 + textureUnit;
                     gl.activeTexture(targetTextureUnit);
                     // Bind texture to unit
                     gl.bindTexture(gl.TEXTURE_2D, glTextureWrapper.texture);
-                    //gl.uniform2fv(textureSizeUniform, new Float32Array([glTextureWrapper.image.width, glTextureWrapper.image.height]));
                     return true;
                 }
                 return false;
             };
-            /**
-            * Attempts to free space in video memory.
-            *
-            * This removes textures sequentially, starting from the first cached texture. This may remove textures that are in use. These should automatically re-upload into the last position. After a few frames, this will push in-use textures to the safe end of the queue.
-            *
-            * If there are too many textures in use to fit in memory, they will all be cycled every frame, even if it would be more efficient to swap out one or two very large textures and preserve several smaller ones. This is an issue with this implementation and should be fixed.
-            *
-            * This behaviour was changed in v1.1.0. Previous versions used a different memory freeing algorithm.
-            * @method _freeSpace
-            * @param gl {WebGLRenderingContext}
-            * @param numBytesToRemove {number}
-            * @return boolean
-            * @private
-            */
             GLTextureManager.prototype._freeSpace = function (gl, numBytesToRemove) {
+                /**
+                Attempt to free space in video memory.
+    
+                This removes textures sequentially, starting from the first
+                cached texture. This may remove textures that are in use.
+                These should automatically re-upload into the last position.
+                After a few frames, this will push in-use textures to the
+                safe end of the queue.
+    
+                If there are too many textures in use to fit in memory,
+                they will all be cycled every frame,
+                even if it would be more efficient to swap out one or two
+                very large textures and preserve several smaller ones.
+                This is an issue with this implementation and should be fixed.
+    
+                This behaviour was changed in v1.1.0.
+                Previous versions used a different memory freeing algorithm.
+    
+                @method _freeSpace
+                @param gl {WebGLRenderingContext}
+                @param numBytesToRemove {number}
+                @return boolean
+                @private
+                **/
                 // Sequential remover
                 var bytesRemoved = 0;
                 for (var i = 0; i < this._textureWrapperCache.length; i++) {
@@ -16460,12 +17998,15 @@ var Kiwi;
                 return false;
             };
             /**
-            * The default maximum amount of texture memory to use before swapping textures
-            * @property DEFAULT_MAX_TEX_MEM_MB
-            * @type number
-            * @public
-            * @static
-            */
+            Default maximum amount of texture memory to use
+            before swapping textures
+    
+            @property DEFAULT_MAX_TEX_MEM_MB
+            @type number
+            @default 1024
+            @public
+            @static
+            **/
             GLTextureManager.DEFAULT_MAX_TEX_MEM_MB = 1024;
             return GLTextureManager;
         })();
@@ -16666,18 +18207,14 @@ var Kiwi;
                 this.gl = gl;
                 this.dirty = true;
                 // Set default parameters
-                this._srcRGB = gl.SRC_ALPHA;
-                this._dstRGB = gl.ONE_MINUS_SRC_ALPHA;
-                this._srcAlpha = gl.ONE;
-                this._dstAlpha = gl.ONE;
-                this._modeRGB = gl.FUNC_ADD;
-                this._modeAlpha = gl.FUNC_ADD;
+                this.setMode("NORMAL");
                 // Process params
                 if (typeof params === "undefined") {
                     params = null;
                 }
-                if (params)
+                if (params) {
                     this.readConfig(params);
+                }
             }
             /**
             * Set a blend mode from a param object.
@@ -16864,7 +18401,7 @@ var Kiwi;
                         break;
                     case "NORMAL":
                     default:
-                        this._srcRGB = this.gl.SRC_ALPHA;
+                        this._srcRGB = this.gl.ONE;
                         this._dstRGB = this.gl.ONE_MINUS_SRC_ALPHA;
                         this._srcAlpha = this.gl.ONE;
                         this._dstAlpha = this.gl.ONE;
@@ -16990,6 +18527,162 @@ var Kiwi;
             return GLElementArrayBuffer;
         })();
         Renderers.GLElementArrayBuffer = GLElementArrayBuffer;
+    })(Renderers = Kiwi.Renderers || (Kiwi.Renderers = {}));
+})(Kiwi || (Kiwi = {}));
+/**
+@module Kiwi
+@submodule Renderers
+**/
+var Kiwi;
+(function (Kiwi) {
+    var Renderers;
+    (function (Renderers) {
+        var RenderTask = (function () {
+            function RenderTask(params) {
+                /**
+                Information about a rendering pass for an entity.
+    
+                Render tasks apply new visuals to the same underlying entity.
+                They can be used by a buffered rendering system to provide multiple
+                information types to a deferred renderer.
+    
+                A render task may override one or more of the following:
+                - Alpha
+                - Texture atlas (including animation and cell information)
+                - WebGL renderer (including shader and blend mode information)
+                - Canvas render method
+    
+                Note that the WebGL renderer and
+                the canvas render method are mutually exclusive.
+                If you wish to use one as a fallback for the other,
+                be aware that the available solutions may be very different.
+    
+                A render task cannot override animations.
+                It must mirror the base entity in behavior.
+                Accordingly, its atlas must provide
+                at least as many cells as the base entity.
+                These cells will be displayed using
+                the same animation and anchor point data as the base entity.
+    
+                When it is created, a `RenderTask` will attempt to add itself
+                to a property on the target entity called `renderTasks`.
+                This is an auto-created object literal that may contain many tasks.
+    
+                @class RenderTask
+                @namespace Kiwi.Renderers
+                @constructor
+                @param params {object} Composite parameter object
+                    @param params.name {string} Name or key of render pass
+                    @param params.entity {Kiwi.Entity} Entity to which the task will
+                        attach
+                    @param [params.alpha] {number} Override alpha
+                    @param [params.atlas] {Kiwi.Textures.TextureAtlas} Override
+                        texture
+                    @param [params.renderer] {Kiwi.Renderers.Renderer} Override
+                        renderer for WebGL only
+                    @param [params.renderCanvas] {function} Override render
+                        function for Canvas only. This should scope to `entity`.
+                **/
+                this.name = params.name;
+                this.entity = params.entity;
+                // Append to target entity
+                this.entity.renderTasks[this.name] = this;
+                this._alpha = params.alpha;
+                this._atlas = params.atlas;
+                this._renderer = params.renderer;
+                this._renderCanvas = params.renderCanvas;
+            }
+            Object.defineProperty(RenderTask.prototype, "alpha", {
+                /**
+                Alpha override
+                @property alpha
+                @type number
+                **/
+                get: function () {
+                    return this._alpha || this.entity.alpha;
+                },
+                set: function (value) {
+                    this._alpha = value;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(RenderTask.prototype, "atlas", {
+                /**
+                Texture override.
+                Must have cells corresponding to the base entity's atlas' cells.
+                (They may be the same cell.)
+        
+                @property atlas
+                @type Kiwi.Textures.TextureAtlas
+                **/
+                get: function () {
+                    return this._atlas || this.entity.atlas;
+                },
+                set: function (value) {
+                    this._atlas = value;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(RenderTask.prototype, "renderer", {
+                /**
+                WebGL renderer override. This object may contain
+                variant shader and blend mode data.
+        
+                @property renderer
+                @type Kiwi.Renderers.Renderer
+                **/
+                get: function () {
+                    return this._renderer || this.entity.glRenderer;
+                },
+                set: function (value) {
+                    this._renderer = value;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(RenderTask.prototype, "renderCanvas", {
+                /**
+                Canvas render method override.
+                @method renderCanvas
+                @type function
+                **/
+                get: function () {
+                    return this._renderCanvas || this.entity.render;
+                },
+                set: function (value) {
+                    this._renderCanvas = value;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            RenderTask.getCanvasCompositingFunction = function (entity, mode) {
+                /**
+                Return a function which sets the `globalCompositeOperation` before
+                rendering an entity. Executes in the scope of `entity`.
+    
+                Use this to create `RenderTask` objects for canvas compositing.
+    
+                Note that compositing occurs only within a buffer.
+                These operations will not blend with objects outside the buffer.
+    
+                @method getCanvasCompositingFunction
+                @static
+                @param entity {Kiwi.Entity} Entity that will render
+                @param mode {string} Valid
+                    `CanvasRenderingContext2D.globalCompositeOperation` mode
+                **/
+                return (function (camera) {
+                    this.game.stage.ctx.save();
+                    this.game.stage.ctx.globalCompositeOperation = mode;
+                    this.render(camera);
+                    this.game.stage.ctx.restore();
+                }).bind(entity);
+            };
+            return RenderTask;
+        })();
+        Renderers.RenderTask = RenderTask;
     })(Renderers = Kiwi.Renderers || (Kiwi.Renderers = {}));
 })(Kiwi || (Kiwi = {}));
 /**
@@ -17532,8 +19225,7 @@ var Kiwi;
                     "varying float vAlpha;",
                     "uniform sampler2D uSampler;",
                     "void main(void) {",
-                    "gl_FragColor = texture2D(uSampler, vec2(vTextureCoord.x, vTextureCoord.y));",
-                    "gl_FragColor.a *= vAlpha;",
+                    "gl_FragColor = texture2D(uSampler, vec2(vTextureCoord.x, vTextureCoord.y)) * vAlpha;",
                     "}"
                 ];
                 /**
@@ -21004,84 +22696,99 @@ var Kiwi;
     })(Input = Kiwi.Input || (Kiwi.Input = {}));
 })(Kiwi || (Kiwi = {}));
 /**
-*
-* @module Kiwi
-* @submodule Input
-*
-*/
+
+@module Kiwi
+@submodule Input
+
+**/
 var Kiwi;
 (function (Kiwi) {
     var Input;
     (function (Input) {
         /**
-        * Holds the information about a Mouse Cursor, such as the position of the
-        * cursor, the mouse wheel's delta, the button that was used, e.t.c.
-        * Note: A mouse cursor is always active.
-        *
-        * @class MouseCursor
-        * @namespace Kiwi.Input
-        * @extends Pointer
-        */
+        Holds the information about a Mouse Cursor, such as the position of the
+        cursor, the mouse wheel's delta, the button that was used, etc.
+    
+        Note: A mouse cursor is always active.
+    
+        @class MouseCursor
+        @namespace Kiwi.Input
+        @extends Pointer
+        **/
         var MouseCursor = (function (_super) {
             __extends(MouseCursor, _super);
             function MouseCursor() {
                 _super.apply(this, arguments);
                 /**
-                * The offset of the mouse wheel on the X axis.
-                * @property wheelDeltaX
-                * @type number
-                * @default 0
-                * @public
-                */
+                Horizontal offset of the mouse wheel
+        
+                @property wheelDeltaX
+                @type number
+                @default 0
+                @public
+                **/
                 this.wheelDeltaX = 0;
                 /**
-                * The offset of the mouse wheel on the Y axis.
-                * @property wheelDeltaY
-                * @type number
-                * @default 0
-                * @public
-                */
+                Vertical offset of the mouse wheel
+        
+                @property wheelDeltaY
+                @type number
+                @default 0
+                @public
+                **/
                 this.wheelDeltaY = 0;
                 /**
-                * Indicates if the "preventDefault" method should be executed whenever a 'down' mouse event occurs.
-                * @property preventDown
-                * @type boolean
-                * @public
-                */
+                Indicates if the `preventDefault` method should be executed
+                whenever a "down" mouse event occurs
+        
+                @property preventDown
+                @type boolean
+                @default true
+                @public
+                **/
                 this.preventDown = true;
                 /**
-                * Indicates if the "preventDefault" method should be executed whenever a 'up' mouse event occurs.
-                * @property preventUp
-                * @type boolean
-                * @public
-                */
+                Indicates if the `preventDefault` method should be executed
+                whenever an "up" mouse event occurs
+        
+                @property preventUp
+                @type boolean
+                @default true
+                @public
+                **/
                 this.preventUp = true;
                 /**
-                * Indicates if the "preventDefault" method should be executed whenever a 'wheel' mouse event occurs.
-                * @property preventWheel
-                * @type boolean
-                * @public
-                */
+                Indicates if the `preventDefault` method should be executed
+                whenever a "wheel" mouse event occurs
+        
+                @property preventWheel
+                @type boolean
+                @default true
+                @public
+                **/
                 this.preventWheel = true;
             }
             /**
-            * The type of object this class is.
-            * @method objType
-            * @return {string} "MouseCursor"
-            * @public
-            */
+            Type of object this class is
+    
+            @method objType
+            @return {string} "MouseCursor"
+            @public
+            **/
             MouseCursor.prototype.objType = function () {
                 return "MouseCursor";
             };
             /**
-            * Gets executed when the mouse cursor gets initally pressed.
-            * @method start
-            * @param {event} event
-            * @public
-            */
+            Execute when the mouse cursor gets initially pressed.
+    
+            @method start
+            @param {Event} System mouse event
+            @public
+            **/
             MouseCursor.prototype.start = function (event) {
-                if (this.preventDown)
+                if (this.preventDown) {
                     event.preventDefault();
+                }
                 this.ctrlKey = event.ctrlKey;
                 this.shiftKey = event.shiftKey;
                 this.altKey = event.altKey;
@@ -21089,34 +22796,54 @@ var Kiwi;
                 _super.prototype.start.call(this, event);
             };
             /**
-            * Gets executed when the mouse cursor gets initally released.
-            * @method stop
-            * @param {event} event
-            * @public
-            */
+            Execute when the mouse cursor gets released.
+    
+            @method stop
+            @param {Event} System mouse event
+            @public
+            **/
             MouseCursor.prototype.stop = function (event) {
-                if (this.preventUp)
+                if (this.preventUp) {
                     event.preventDefault();
+                }
+                this.button = event.button;
                 this.move(event);
                 _super.prototype.stop.call(this, event);
             };
             /**
-            * When the mouse wheel event fires and the mouse's delta changes.
-            * @method wheel
-            * @param {event} event
-            * @public
-            */
+            Execute when the mouse cursor gets moved.
+    
+            This ensures that key modifiers are more accurately updated.
+    
+            @method move
+            @param {Event} System mouse event
+            @public
+            **/
+            MouseCursor.prototype.move = function (event) {
+                _super.prototype.move.call(this, event);
+                this.ctrlKey = event.ctrlKey;
+                this.shiftKey = event.shiftKey;
+                this.altKey = event.altKey;
+            };
+            /**
+            When the mouse wheel event fires and the mouse's delta changes.
+    
+            @method wheel
+            @param {Event} System mouse event
+            @public
+            **/
             MouseCursor.prototype.wheel = function (event) {
-                if (this.preventWheel)
+                if (this.preventWheel) {
                     event.preventDefault();
-                if (event['wheelDeltaX']) {
-                    this.wheelDeltaX = event['wheelDeltaX'];
+                }
+                if (event["wheelDeltaX"]) {
+                    this.wheelDeltaX = event["wheelDeltaX"];
                 }
                 else {
                     this.wheelDeltaX = event.deltaX;
                 }
-                if (event['wheelDeltaY']) {
-                    this.wheelDeltaY = event['wheelDeltaY'];
+                if (event["wheelDeltaY"]) {
+                    this.wheelDeltaY = event["wheelDeltaY"];
                 }
                 else {
                     this.wheelDeltaY = event.deltaY;
@@ -22908,46 +24635,43 @@ var Kiwi;
     })(Geom = Kiwi.Geom || (Kiwi.Geom = {}));
 })(Kiwi || (Kiwi = {}));
 /**
-*
-* @module Kiwi
-* @submodule Geom
-*/
+@module Kiwi
+@submodule Geom
+**/
 var Kiwi;
 (function (Kiwi) {
     var Geom;
     (function (Geom) {
         /**
-        * Represents a 2d transformation matrix. This can be used to map points
-        * between different coordinate spaces. Matrices are used by Transform
-        * objects to represent translation, scale and rotation transformations,
-        * and to determine where objects are in world space or camera space.
-        * Objects such as entities and groups may be nested, and their associated
-        * transforms may represent how they are scaled, translated and rotated
-        * relative to a parent transform. By concatenating an object's
-        * transformation matrix with its ancestors matrices, it is possible to
-        * determine the absolute position of the object in world space.
-        * See
-        * http://en.wikipedia.org/wiki/Transformation_matrix#Examples_in_2D_graphics
-        * for an in depth discussion of 2d tranformation matrices.
-        *
-        * @class Matrix
-        * @namespace Kiwi.Geom
-        * @constructor
-        * @param [a=1] {Number}  position 0,0 of the matrix,
-        *	affects scaling and rotation.
-        * @param [b=0] {Number}  position 0,1 of the matrix,
-        *	affects scaling and rotation.
-        * @param [c=0] {Number}  position 1,0 of the matrix,
-        *	affects scaling and rotation.
-        * @param [d=1] {Number}  position 1,1 of the matrix,
-        *	affects scaling and rotation.
-        * @param [tx=0] {Number}  position 2,0 of the matrix,
-        *	affects translation on x axis.
-        * @param [ty=0] {Number}  position 2,1 of the matrix,
-        *	affects translation on y axis.
-        * @return (Object) This object.
-        *
-        */
+        Represents a 2d transformation matrix. This can be used to map points
+        between different coordinate spaces. Matrices are used by Transform
+        objects to represent translation, scale and rotation transformations,
+        and to determine where objects are in world space or camera space.
+        Objects such as entities and groups may be nested, and their associated
+        transforms may represent how they are scaled, translated and rotated
+        relative to a parent transform. By concatenating an object's
+        transformation matrix with its ancestors matrices, it is possible to
+        determine the absolute position of the object in world space.
+        See
+        http://en.wikipedia.org/wiki/Transformation_matrix#Examples_in_2D_graphics
+        for an in depth discussion of 2d transformation matrices.
+    
+        @class Matrix
+        @namespace Kiwi.Geom
+        @constructor
+        @param [a=1] {number} Position 0,0 of the matrix;
+            affects scaling and rotation
+        @param [b=0] {number} Position 0,1 of the matrix;
+            affects scaling and rotation
+        @param [c=0] {number} Position 1,0 of the matrix;
+            affects scaling and rotation
+        @param [d=1] {number} Position 1,1 of the matrix;
+            affects scaling and rotation
+        @param [tx=0] {number} Position 2,0 of the matrix;
+            affects translation on x axis
+        @param [ty=0] {number} Position 2,1 of the matrix;
+            affects translation on y axis
+        **/
         var Matrix = (function () {
             function Matrix(a, b, c, d, tx, ty) {
                 if (a === void 0) { a = 1; }
@@ -22957,77 +24681,91 @@ var Kiwi;
                 if (tx === void 0) { tx = 0; }
                 if (ty === void 0) { ty = 0; }
                 /**
-                * Position 0,0 of the matrix, affects scaling and rotation
-                * @property a
-                * @type Number
-                * @default 1
-                * @public
-                */
+                Position 0,0 of the matrix; affects scaling and rotation
+        
+                @property a
+                @type number
+                @default 1
+                @public
+                **/
                 this.a = 1;
                 /**
-                * Position 0,1 of the matrix, affects scaling and rotation.
-                * @property b
-                * @type Number
-                * @default 0
-                * @public
-                */
+                Position 0,1 of the matrix; affects scaling and rotation
+        
+                @property b
+                @type number
+                @default 0
+                @public
+                **/
                 this.b = 0;
                 /**
-                * Position 1,0 of the matrix, affects scaling and rotation.
-                * @property c
-                * @type Number
-                * @default 0
-                * @public
-                */
+                Position 1,0 of the matrix; affects scaling and rotation
+        
+                @property c
+                @type number
+                @default 0
+                @public
+                **/
                 this.c = 0;
                 /**
-                * Position 1,1 of the matrix, affects scaling and rotation.
-                * @property d
-                * @type Number
-                * @default 1
-                * @public
-                */
+                Position 1,1 of the matrix; affects scaling and rotation
+        
+                @property d
+                @type number
+                @default 1
+                @public
+                **/
                 this.d = 1;
                 /**
-                * Position 2,0 of the matrix, affects translation on x axis.
-                * @property tx
-                * @type Number
-                * @default 0
-                * @public
-                */
+                Position 2,0 of the matrix; affects translation on x axis
+        
+                @property tx
+                @type number
+                @default 0
+                @public
+                **/
                 this.tx = 0;
                 /**
-                * Position 2,1 of the matrix, affects translation on y axis.
-                * @property ty
-                * @type Number
-                * @default 0
-                * @public
-                */
+                Position 2,1 of the matrix; affects translation on y axis
+        
+                @property ty
+                @type number
+                @default 0
+                @public
+                **/
                 this.ty = 0;
                 this.setTo(a, b, c, d, tx, ty);
             }
-            /**
-            * The type of object this is.
-            * @method objType
-            * @return {String} "Matrix"
-            * @public
-            */
             Matrix.prototype.objType = function () {
+                /**
+                Return the type of object this is.
+    
+                @method objType
+                @return {String} "Matrix"
+                @public
+                **/
                 return "Matrix";
             };
-            /**
-            * Set all matrix values
-            * @method setTo
-            * @param [a=1] {Number} position 0,0 of the matrix, affects scaling and rotation.
-            * @param [b=0] {Number} position 0,1 of the matrix, affects scaling and rotation.
-            * @param [c=0] {Number} position 1,0 of the matrix, affects scaling and rotation.
-            * @param [d=1] {Number} position 1,1 of the matrix, affects scaling and rotation.
-            * @param [tx=0] {Number} position 2,0 of the matrix, affects translation on x axis.
-            * @param [ty=0] {Number} position 2,1 of the matrix, affects translation on y axis.
-            * @return {Kiwi.Geom.Matrix} This object.
-            * @public
-            */
             Matrix.prototype.setTo = function (a, b, c, d, tx, ty) {
+                /**
+                Set all matrix values.
+    
+                @method setTo
+                @param [a=1] {number} Position 0,0 of the matrix;
+                    affects scaling and rotation
+                @param [b=0] {number} Position 0,1 of the matrix;
+                    affects scaling and rotation
+                @param [c=0] {number} Position 1,0 of the matrix;
+                    affects scaling and rotation
+                @param [d=1] {number} Position 1,1 of the matrix;
+                    affects scaling and rotation
+                @param [tx=0] {number} Position 2,0 of the matrix;
+                    affects translation on x axis
+                @param [ty=0] {number} Position 2,1 of the matrix;
+                    affects translation on y axis
+                @return {Kiwi.Geom.Matrix} This object
+                @public
+                **/
                 if (a === void 0) { a = 1; }
                 if (b === void 0) { b = 0; }
                 if (c === void 0) { c = 0; }
@@ -23042,58 +24780,76 @@ var Kiwi;
                 this.ty = ty;
                 return this;
             };
-            /**
-            * Set matrix values from transform values
-            * @method setFromTransform
-            * @param tx {Number} Translation on x axis.
-            * @param ty {Number} Translation on y axis.
-            * @param scaleX {Number} scaleX. Scale on x axis.
-            * @param scaleY {Number} scaleY. Scale on y axis.
-            * @param rotation {Number} rotation.
-            * @return {Kiwi.Geom.Matrix} This object.
-            * @public
-            */
             Matrix.prototype.setFromTransform = function (tx, ty, scaleX, scaleY, rotation) {
-                this.identity();
-                var cos = Math.cos(rotation);
-                var sin = Math.sin(rotation);
-                this.append(cos * scaleX, sin * scaleX, -sin * scaleY, cos * scaleY, tx, ty);
+                /**
+                Set matrix values from transform values.
+    
+                @method setFromTransform
+                @param tx {number} Horizontal translation
+                @param ty {number} Vertical translation
+                @param scaleX {number} Horizontal scale
+                @param scaleY {number} Vertical scale
+                @param rotation {number} Rotation
+                @return {Kiwi.Geom.Matrix} This object
+                @public
+                **/
+                var cos = Math.cos(rotation), sin = Math.sin(rotation);
+                // Set to
+                this.a = cos * scaleX;
+                this.b = sin * scaleX;
+                this.c = -sin * scaleY;
+                this.d = cos * scaleY;
+                this.tx = tx;
+                this.ty = ty;
                 return this;
             };
-            /**
-            * Set matrix values from transform values, with rotation point data included
-            * @method setFromOffsetTransform
-            * @param tx {Number} tx. Translation on x axis.
-            * @param ty {Number} ty. Translation on y axis.
-            * @param scaleX {Number} scaleX. Scale on x axis.
-            * @param scaleY {Number} scaleY. Scale on y axis.
-            * @param rotation {Number} rotation.
-            * @param rotPointX {Number} Rotation point offset on x axis.
-            * @param rotPointY {Number} Rotation point offset on y axis.
-            * @return {Kiwi.Geom.Matrix} This object.
-            * @public
-            * @since 1.0.1
-            */
             Matrix.prototype.setFromOffsetTransform = function (tx, ty, scaleX, scaleY, rotation, rotPointX, rotPointY) {
-                this.identity();
-                var cos = Math.cos(rotation);
-                var sin = Math.sin(rotation);
-                this.append(cos * scaleX, sin * scaleX, -sin * scaleY, cos * scaleY, tx + rotPointX, ty + rotPointY);
+                /**
+                Set matrix values from transform values,
+                with rotation point data included.
+    
+                @method setFromOffsetTransform
+                @param tx {number} Horizontal translation
+                @param ty {number} Vertical translation
+                @param scaleX {number} Horizontal scale
+                @param scaleY {number} Vertical scale
+                @param rotation {number} Rotation
+                @param rotPointX {number} Horizontal anchor point
+                @param rotPointY {number} Vertical anchor point
+                @return {Kiwi.Geom.Matrix} This object
+                @public
+                @since 1.0.1
+                **/
+                var cos = Math.cos(rotation), sin = Math.sin(rotation);
+                // Set to
+                this.a = cos * scaleX;
+                this.b = sin * scaleX;
+                this.c = -sin * scaleY;
+                this.d = cos * scaleY;
+                this.tx = tx + rotPointX;
+                this.ty = ty + rotPointY;
                 return this;
             };
-            /**
-            * Prepend values to this matrix, paramters supplied individually.
-            * @method prepend
-            * @param [a=1]{Number} position 0,0 of the matrix, affects scaling and rotation.
-            * @param [b=0]{Number} position 0,1 of the matrix, affects scaling and rotation.
-            * @param [c=0]{Number} position 1,0 of the matrix, affects scaling and rotation.
-            * @param [d=0]{Number} position 1,1 of the matrix, affects scaling and rotation.
-            * @param [tx=0]{Number} position 2,0 of the matrix, affects translation on x axis.
-            * @param [ty=0]{Number} position 2,1 of the matrix, affects translation on y axis.
-            * @return {Kiwi.Geom.Matrix} This object.
-            * @public
-            */
             Matrix.prototype.prepend = function (a, b, c, d, tx, ty) {
+                /**
+                Prepend values to this matrix, paramters supplied individually.
+    
+                @method prepend
+                @param [a=1] {number} Position 0,0 of the matrix;
+                    affects scaling and rotation
+                @param [b=0] {number} Position 0,1 of the matrix;
+                    affects scaling and rotation
+                @param [c=0] {number} Position 1,0 of the matrix;
+                    affects scaling and rotation
+                @param [d=0] {number} Position 1,1 of the matrix;
+                    affects scaling and rotation
+                @param [tx=0] {number} Position 2,0 of the matrix;
+                    affects translation on x axis
+                @param [ty=0] {number} Position 2,1 of the matrix;
+                    affects translation on y axis
+                @return {Kiwi.Geom.Matrix} This object
+                @public
+                **/
                 if (a === void 0) { a = 1; }
                 if (b === void 0) { b = 0; }
                 if (c === void 0) { c = 0; }
@@ -23111,14 +24867,15 @@ var Kiwi;
                 this.ty = tx1 * b + this.ty * d + ty;
                 return this;
             };
-            /**
-            * Prepend a matrix to this matrix.
-            * @method prependMatrix
-            * @param m {Kiwi.Geom.Matrix} The matrix to prepend.
-            * @return {Kiwi.Geom.Matrix} This object.
-            * @public
-            */
             Matrix.prototype.prependMatrix = function (m) {
+                /**
+                Prepend a matrix to this matrix.
+    
+                @method prependMatrix
+                @param m {Kiwi.Geom.Matrix} Matrix to prepend
+                @return {Kiwi.Geom.Matrix} This object
+                @public
+                **/
                 var tx1 = this.tx;
                 var a1 = this.a;
                 var c1 = this.c;
@@ -23130,19 +24887,26 @@ var Kiwi;
                 this.ty = tx1 * m.b + this.ty * m.d + m.ty;
                 return this;
             };
-            /**
-            * Append values to this matrix, parameters supplied individually.
-            * @method append
-            * @param [a=1]{Number} position 0,0 of the matrix, affects scaling and rotation.
-            * @param [b=0]{Number} position 0,1 of the matrix, affects scaling and rotation.
-            * @param [c=0]{Number} position 1,0 of the matrix, affects scaling and rotation.
-            * @param [d=1]{Number} position 1,1 of the matrix, affects scaling and rotation.
-            * @param [tx=0]{Number} position 2,0 of the matrix, affects translation on x axis.
-            * @param [ty=0]{Number} position 2,1 of the matrix, affects translation on y axis.
-            * @return {Kiwi.Geom.Matrix} This object.
-            * @public
-            */
             Matrix.prototype.append = function (a, b, c, d, tx, ty) {
+                /**
+                Append values to this matrix, parameters supplied individually.
+    
+                @method append
+                @param [a=1]{number} Position 0,0 of the matrix;
+                    affects scaling and rotation
+                @param [b=0]{number} Position 0,1 of the matrix;
+                    affects scaling and rotation
+                @param [c=0]{number} Position 1,0 of the matrix;
+                    affects scaling and rotation
+                @param [d=1]{number} Position 1,1 of the matrix;
+                    affects scaling and rotation
+                @param [tx=0]{number} Position 2,0 of the matrix;
+                    affects translation on x axis
+                @param [ty=0]{number} Position 2,1 of the matrix;
+                    affects translation on y axis
+                @return {Kiwi.Geom.Matrix} This object
+                @public
+                **/
                 if (a === void 0) { a = 1; }
                 if (b === void 0) { b = 0; }
                 if (c === void 0) { c = 0; }
@@ -23161,14 +24925,15 @@ var Kiwi;
                 this.ty = tx * b1 + ty * d1 + this.ty;
                 return this;
             };
-            /**
-            * Append a matrix to this matrix.
-            * @method appendMatrix
-            * @param m {Kiwi.Geom.Matrix} The matrix to append.
-            * @return {Kiwi.Geom.Matrix} This object.
-            * @public
-            */
             Matrix.prototype.appendMatrix = function (m) {
+                /**
+                Append a matrix to this matrix.
+    
+                @method appendMatrix
+                @param m {Kiwi.Geom.Matrix} Matrix to append
+                @return {Kiwi.Geom.Matrix} This object
+                @public
+                **/
                 var a1 = this.a;
                 var b1 = this.b;
                 var c1 = this.c;
@@ -23181,48 +24946,59 @@ var Kiwi;
                 this.ty = m.tx * b1 + m.ty * d1 + this.ty;
                 return this;
             };
-            /**
-            * Set the tx and ty elements of the matrix.
-            * @method setPosition
-            * @param x {Number} Translation on x axis.
-            * @param y {Number} Translation on y axis.
-            * @return {Kiwi.Geom.Matrix} This object.
-            * @public
-            */
             Matrix.prototype.setPosition = function (x, y) {
+                /**
+                Set the tx and ty elements of the matrix.
+    
+                @method setPosition
+                @param x {number} Horizontal translation
+                @param y {number} Vertical translation
+                @return {Kiwi.Geom.Matrix} This object
+                @public
+                **/
                 this.tx = x;
                 this.ty = y;
                 return this;
             };
-            /**
-            * Set the tx and ty elements of the matrix from an object with x and y properties.
-            * @method setPositionPoint
-            * @param p {Number} The object from which to copy the x and y properties from.
-            * @return {Kiwi.Geom.Matrix} This object.
-            * @public
-            */
             Matrix.prototype.setPositionPoint = function (p) {
+                /**
+                Set the `tx` and `ty` elements of the matrix
+                from an object with `x` and `y` properties.
+    
+                This should probably be of type `Kiwi.Geom.Point`,
+                but that is not strictly necessary.
+    
+                @method setPositionPoint
+                @param p {object} Object from which to copy `x` and `y` properties
+                @return {Kiwi.Geom.Matrix} This object
+                @public
+                **/
                 this.tx = p.x;
                 this.ty = p.y;
                 return this;
             };
-            /**
-            * Get the x and y position of the matrix as an object with x and y properties
-            * @method getPosition
-            * @return {Kiwi.Geom.Point} An object constructed from a literal with x and y properties.
-            * @public
-            */
             Matrix.prototype.getPosition = function (output) {
+                /**
+                Get the x and y position of the matrix as a `Point`.
+    
+                @method getPosition
+                @param [output] {Kiwi.Geom.Point} Point to set to x and y
+                @return {Kiwi.Geom.Point} Point set to x and y
+                @public
+                **/
                 if (output === void 0) { output = new Kiwi.Geom.Point; }
                 return output.setTo(this.tx, this.ty);
             };
-            /**
-            * Set the matrix to the identity matrix - when appending or prepending this matrix to another there will be no change in the resulting matrix
-            * @method identity
-            * @return {Kiwi.Geom.Matrix} This object.
-            * @public
-            */
             Matrix.prototype.identity = function () {
+                /**
+                Set the matrix to the identity matrix.
+                When appending or prepending this matrix to another,
+                there will be no change in the resulting matrix.
+    
+                @method identity
+                @return {Kiwi.Geom.Matrix} This object
+                @public
+                **/
                 this.a = 1;
                 this.b = 0;
                 this.c = 0;
@@ -23231,14 +25007,15 @@ var Kiwi;
                 this.ty = 0;
                 return this;
             };
-            /**
-            * Rotate the matrix by "radians" degrees
-            * @method rotate
-            * @param radians {Number} The angle (in radians) to rotate this matrix by.
-            * @return {Kiwi.Geom.Matrix} This object.
-            * @public
-            */
             Matrix.prototype.rotate = function (radians) {
+                /**
+                Rotate the matrix by the specified number of radians.
+    
+                @method rotate
+                @param radians {number} Angle (in radians) to rotate this matrix
+                @return {Kiwi.Geom.Matrix} This object
+                @public
+                **/
                 var cos = Math.cos(radians);
                 var sin = Math.sin(radians);
                 var a1 = this.a;
@@ -23252,55 +25029,59 @@ var Kiwi;
                 this.ty = tx1 * sin + this.ty * cos;
                 return this;
             };
-            /**
-            * Translate the matrix by the amount passed.
-            *
-            * @method translate
-            * @param tx {Number} The amount to translate on the x axis.
-            * @param ty {Number} The amount to translate on the y axis.
-            * @return {Kiwi.Geom.Matrix} This object.
-            * @public
-            */
             Matrix.prototype.translate = function (tx, ty) {
+                /**
+                Translate the matrix by the amount passed.
+    
+                @method translate
+                @param tx {number} Amount to translate horizontally
+                @param ty {number} Amount to translate vertically
+                @return {Kiwi.Geom.Matrix} This object
+                @public
+                **/
                 this.tx += tx;
                 this.ty += ty;
                 return this;
             };
-            /**
-            * Scales the matrix by the amount passed.
-            *
-            * @method scale
-            * @param scaleX {Number} The amount to scale on the x axis.
-            * @param scaleY {Number} The amount to scale on the y axis.
-            * @return {Kiwi.Geom.Matrix} This object.
-            * @public
-            */
             Matrix.prototype.scale = function (scaleX, scaleY) {
+                /**
+                Scale the matrix by the amount passed.
+    
+                @method scale
+                @param scaleX {number} Amount to scale on the horizontal axis
+                @param scaleY {number} Amount to scale on the vertical axis
+                @return {Kiwi.Geom.Matrix} This object
+                @public
+                **/
                 this.a *= scaleX;
                 this.d *= scaleY;
                 return this;
             };
-            /**
-            * Apply this matrix to a an object with x and y properties representing a point and return the transformed point.
-            * @method transformPoint
-            * @param pt {Object} The point to be translated.
-            * @return {Kiwi.Geom.Matrix} This object.
-            * @public
-            */
             Matrix.prototype.transformPoint = function (pt) {
+                /**
+                Apply this matrix to an object with x and y properties
+                representing a point and return the transformed point.
+    
+                @method transformPoint
+                @param pt {Object} Point to be translated
+                @return {Object} Transformed point
+                @public
+                **/
                 var x = pt.x;
                 var y = pt.y;
                 pt.x = this.a * x + this.c * y + this.tx;
                 pt.y = this.b * x + this.d * y + this.ty;
                 return pt;
             };
-            /**
-            * Invert this matrix so that it represents the opposite of its orginal tranformaation.
-            * @method invert
-            * @return {Kiwi.Geom.Matrix} This object.
-            * @public
-            */
             Matrix.prototype.invert = function () {
+                /**
+                Invert this matrix so that it represents
+                the opposite of its orginal tranformaation.
+    
+                @method invert
+                @return {Kiwi.Geom.Matrix} This object
+                @public
+                **/
                 var a1 = this.a;
                 var b1 = this.b;
                 var c1 = this.c;
@@ -23315,14 +25096,15 @@ var Kiwi;
                 this.ty = -(a1 * this.ty - b1 * tx1) / n;
                 return this;
             };
-            /**
-            * Copy another matrix to this matrix.
-            * @method copyFrom
-            * @param m {Kiwi.Geom.Matrix} The matrixto be copied from.
-            * @return {Kiwi.Geom.Matrix} This object.
-            * @public
-            */
             Matrix.prototype.copyFrom = function (m) {
+                /**
+                Copy another matrix to this matrix.
+    
+                @method copyFrom
+                @param m {Kiwi.Geom.Matrix} Matrix to be copied from
+                @return {Kiwi.Geom.Matrix} This object
+                @public
+                **/
                 this.a = m.a;
                 this.b = m.b;
                 this.c = m.c;
@@ -23331,14 +25113,15 @@ var Kiwi;
                 this.ty = m.ty;
                 return this;
             };
-            /**
-            * Copy this matrix to another matrix.
-            * @method copyTo
-            * @param m {Kiwi.Geom.Matrix} The matrix to copy to.
-            * @return {Kiwi.Geom.Matrix} This object.
-            * @public
-            */
             Matrix.prototype.copyTo = function (m) {
+                /**
+                Copy this matrix to another matrix.
+    
+                @method copyTo
+                @param m {Kiwi.Geom.Matrix} Matrix to copy to
+                @return {Kiwi.Geom.Matrix} This object
+                @public
+                **/
                 m.a = this.a;
                 m.b = this.b;
                 m.c = this.c;
@@ -23347,37 +25130,39 @@ var Kiwi;
                 m.ty = this.ty;
                 return this;
             };
-            /**
-            * Clone this matrix and returns a new Matrix object.
-            * @method clone
-            * @return {Kiwi.Geom.Matrix}
-            * @public
-            */
             Matrix.prototype.clone = function () {
+                /**
+                Clone this matrix and returns a new Matrix object.
+    
+                @method clone
+                @return {Kiwi.Geom.Matrix} New matrix
+                @public
+                **/
                 return new Kiwi.Geom.Matrix(this.a, this.b, this.c, this.d, this.tx, this.ty);
             };
             Object.defineProperty(Matrix.prototype, "toString", {
-                /**
-                * Returns a string representation of this object.
-                * @method toString
-                * @return {string} A string representation of the instance.
-                * @public
-                */
                 get: function () {
+                    /**
+                    Return a string representation of this object.
+        
+                    @method toString
+                    @return {String} String representation of the instance
+                    @public
+                    **/
                     return "[{Matrix (a=" + this.a + " b=" + this.b + " c=" + this.c + " d=" + this.d + " tx=" + this.tx + " ty=" + this.ty + ")}]";
                 },
                 enumerable: true,
                 configurable: true
             });
-            /**
-            * Check whether this matrix equals another matrix.
-            *
-            * @method equals
-            * @param matrix {Kiwi.Geom.Matrix}
-            * @return boolean
-            * @public
-            */
             Matrix.prototype.equals = function (matrix) {
+                /**
+                Check whether this matrix equals another matrix.
+    
+                @method equals
+                @param matrix {Kiwi.Geom.Matrix}
+                @return boolean
+                @public
+                **/
                 return (this.a === matrix.a && this.b === matrix.b && this.c === matrix.c && this.d === matrix.d && this.tx === matrix.tx && this.ty === matrix.ty);
             };
             return Matrix;
@@ -28047,6 +29832,49 @@ var Kiwi;
                     }
                     this.masterGain.gain.value = 1;
                     this.masterGain.connect(this.context.destination);
+                    if (this.context.state === "suspended") {
+                        // Autoplay audio is disabled for this document.
+                        // Audio must be triggered by user interaction.
+                        this._setupAudioContextResume();
+                    }
+                }
+            };
+            AudioManager.prototype._setupAudioContextResume = function () {
+                /**
+                Set up listeners to `resume` the `AudioContext`
+                when the user interacts with the page.
+                This is necessary because some browsers have begun disabling
+                autoplay to ensure better user experience.
+    
+                @method _setupAudioContextResume
+                @private
+                @since 1.5.0
+                **/
+                var e;
+                var self = this;
+                var events = [
+                    "keydown",
+                    "mousedown",
+                    "click",
+                    "auxclick",
+                    "pointerdown"
+                ];
+                function resume() {
+                    var e;
+                    // Primary function: re-enable audio.
+                    if (self.context.state === "suspended") {
+                        self.context.resume();
+                    }
+                    // Secondary function: remove resumption listeners,
+                    // if they are no longer necessary.
+                    if (self.context.state !== "suspended") {
+                        for (e in events) {
+                            document.body.removeEventListener(events[e], resume, false);
+                        }
+                    }
+                }
+                for (e in events) {
+                    document.body.addEventListener(events[e], resume, false);
                 }
             };
             /**
@@ -28332,6 +30160,15 @@ var Kiwi;
         var Audio = (function () {
             function Audio(game, key, volume, loop) {
                 /**
+                * Indicates whether the audio file was found on the filestore and so can be played.
+                *
+                * @property _supported
+                * @type boolean
+                * @private
+                * @since 1.4.1
+                */
+                this._supported = true;
+                /**
                 * A private indicator of whether this audio is currently muted or not.
                 * @property _muted
                 * @type boolean
@@ -28394,6 +30231,7 @@ var Kiwi;
                 //If audio isn't supported OR the file does not exist
                 if (this._game.audio.noAudio || this._game.fileStore.exists(this.key) === false) {
                     Kiwi.Log.log('Could not play Audio. Either the browser doesn\'t support audio or the Audio file was not found on the filestore.', '#audio', '#notfound');
+                    this._supported = false;
                     return;
                 }
                 //Setup the Web AUDIO API Sound
@@ -28437,6 +30275,22 @@ var Kiwi;
                 this.onMute = new Kiwi.Signal();
                 this.onComplete = new Kiwi.Signal();
             }
+            Object.defineProperty(Audio.prototype, "supported", {
+                /**
+                * Indicates whether the audio file was found on the filestore and so can be played.
+                *
+                * @property supported
+                * @type boolean
+                * @public
+                * @readOnly
+                * @since 1.4.1
+                */
+                get: function () {
+                    return this._supported;
+                },
+                enumerable: true,
+                configurable: true
+            });
             Object.defineProperty(Audio.prototype, "playable", {
                 /**
                 * Returns whether or not the sound is 'playable' or not.
@@ -28450,6 +30304,9 @@ var Kiwi;
                     return this._playable;
                 },
                 set: function (val) {
+                    //Can't play if the audio file to play isn't found
+                    if (!this._supported)
+                        return;
                     if (this._playable !== true && val == true) {
                         this._playable = val;
                         this._setAudio();
@@ -28526,7 +30383,8 @@ var Kiwi;
                     return;
                 }
                 var that = this;
-                this.context.decodeAudioData(this._file.data.raw, function (buffer) {
+                // Slice-copy the raw data, because this is a destructive decode.
+                this.context.decodeAudioData(this._file.data.raw.slice(0), function (buffer) {
                     that._buffer = buffer;
                     that._decoded = true;
                 });
@@ -28933,213 +30791,233 @@ var Kiwi;
     })(Sound = Kiwi.Sound || (Kiwi.Sound = {}));
 })(Kiwi || (Kiwi = {}));
 /**
-* @module Kiwi
-* @submodule Time
-*/
+@module Kiwi
+@submodule Time
+**/
 var Kiwi;
 (function (Kiwi) {
     var Time;
     (function (Time) {
         /**
-        * The Clock class offers a way of tracking time within a game.
-        * When creating a new Clock you should NOT directly instantiate this class
-        * but instead use the addClock method on a ClockManager.
-        * - The MasterClock is a property of the Kiwi.Time.Manager class and tracks
-        *   real world time in milliseconds elapsed since the application started.
-        *   This happens automatically and there is no need to do anything to set
-        *   this up.
-        * - An instance of a clock is used to track time in arbitrary units
-        *   (milliseconds by default)
-        * - A clock can be started, paused, unpaused and stopped. Once stopped,
-        *   re-starting the clock again will reset it. It can also have its time
-        *   scale freely transformed.
-        * - Any number of timers can be attached to a clock. See the Kiwi.Time.Timer
-        *   class for timer details.
-        * - If the clock is paused, any timers attached to the clock will take this
-        *   into account and not continue to fire events until the clock is
-        *   unpaused. (Note that this is not the same as pausing timers, which can
-        *   be done manually and needs to be undone manually.)
-        * - Animations and TweenManagers can use any Clock.
-        *
-        * @class Clock
-        * @namespace Kiwi.Time
-        * @constructor
-        * @param manager {ClockManager} ClockManager that this clock belongs to
-        * @param master {Kiwi.Time.MasterClock} MasterClock that this is getting
-        *	the time in relation to
-        * @param name {String} Name of the clock
-        * @param [units=1000] {Number} Units that this clock is to operate in
-        *	per second
-        * @return {Kiwi.Time.Clock} This Clock object
-        */
+        The Clock class offers a way of tracking time within a game.
+        When creating a new Clock you should NOT directly instantiate this class
+        but instead use the addClock method on a ClockManager.
+    
+        - The MasterClock is a property of the Kiwi.Time.Manager class and tracks
+            real world time in milliseconds elapsed since the application started.
+            This happens automatically and there is no need to do anything to set
+            this up.
+        - An instance of a clock is used to track time in arbitrary units
+            (milliseconds by default)
+        - A clock can be started, paused, unpaused and stopped. Once stopped,
+            re-starting the clock again will reset it. It can also have its time
+            scale freely transformed.
+        - Any number of timers can be attached to a clock. See the Kiwi.Time.Timer
+            class for timer details.
+        - If the clock is paused, any timers attached to the clock will take this
+            into account and not continue to fire events until the clock is
+            unpaused. (Note that this is not the same as pausing timers, which can
+            be done manually and needs to be undone manually.)
+        - Animations and TweenManagers can use any Clock.
+        
+        @class Clock
+        @namespace Kiwi.Time
+        @constructor
+        @param manager {ClockManager} ClockManager that this clock belongs to
+        @param master {Kiwi.Time.MasterClock} MasterClock that this is getting
+            the time in relation to
+        @param name {string} Name of the clock
+        @param [units=1000] {number} Units that this clock is to operate in
+            per second
+        @return {Kiwi.Time.Clock} This Clock object
+        **/
         var Clock = (function () {
             function Clock(manager, master, name, units) {
                 if (units === void 0) { units = 1000; }
                 /**
-                * Time the clock was first started relative to the master clock
-                * @property _timeFirstStarted
-                * @type Number
-                * @default null
-                * @private
-                */
+                Time the clock was first started relative to the master clock
+        
+                @property _timeFirstStarted
+                @type Number
+                @default null
+                @private
+                **/
                 this._timeFirstStarted = null;
                 /**
-                * Most recent time the clock was started relative to the master clock
-                * @property _timeLastStarted
-                * @type Number
-                * @default null
-                * @private
-                */
+                Most recent time the clock was started relative to the master clock
+        
+                @property _timeLastStarted
+                @type Number
+                @default null
+                @private
+                **/
                 this._timeLastStarted = null;
                 /**
-                * Rate at which time passes on this clock.
-                * 1 is normal speed. 1.5 is faster. 0 is no speed. -1 is backwards.
-                * This mostly affects timers, animations and tweens.
-                * @property timeScale
-                * @type number
-                * @default 1.0
-                * @public
-                * @since 1.2.0
-                */
+                Rate at which time passes on this clock.
+                1 is normal speed. 1.5 is faster. 0 is no speed. -1 is backwards.
+                This mostly affects timers, animations and tweens.
+        
+                @property timeScale
+                @type number
+                @default 1.0
+                @public
+                @since 1.2.0
+                **/
                 this.timeScale = 1.0;
                 /**
-                * Clock units elapsed since the clock was most recently started,
-                * not including paused time.
-                * @property _elapsed
-                * @type number
-                * @private
-                * @since 1.2.0
-                */
+                Clock units elapsed since the clock was most recently started,
+                not including paused time
+        
+                @property _elapsed
+                @type number
+                @private
+                @since 1.2.0
+                **/
                 this._elapsed = 0;
                 /**
-                * Rate of time passage, as modified by time scale and frame rate.
-                * Under ideal conditions this should be 1.
-                * If the frame rate drops, this will rise. Multiply transformations
-                * by rate to get smooth change over time.
-                * @property rate
-                * @type number
-                * @public
-                * @since 1.2.0
-                */
+                Rate of time passage, as modified by time scale and frame rate.
+                Under ideal conditions this should be 1.
+                If the frame rate drops, this will rise. Multiply transformations
+                by rate to get smooth change over time.
+        
+                @property rate
+                @type number
+                @public
+                @since 1.2.0
+                **/
                 this.rate = 1;
                 /**
-                * Maximum frame duration. If a frame takes longer than this to render,
-                * the clock will only advance this far, in effect slowing down time.
-                * If this value is 0 or less, it will not be checked and frames can
-                * take any amount of time to render.
-                * @property _maxFrameDuration
-                * @type number
-                * @default -1
-                * @private
-                */
+                Maximum frame duration. If a frame takes longer than this to render,
+                the clock will only advance this far, in effect slowing down time.
+                If this value is 0 or less, it will not be checked and frames can
+                take any amount of time to render.
+        
+                @property _maxFrameDuration
+                @type number
+                @default -1
+                @private
+                **/
                 this._maxFrameDuration = -1;
                 /**
-                * Time the clock was most recently stopped relative to the
-                * master clock.
-                * @property _timeLastStopped
-                * @type Number
-                * @default null
-                * @private
-                */
+                Time the clock was most recently stopped relative to the master clock
+        
+                @property _timeLastStopped
+                @type Number
+                @default null
+                @private
+                **/
                 this._timeLastStopped = null;
                 /**
-                * Time the clock was most receently paused relative to the
-                * master clock.
-                * @property _timeLastPaused
-                * @private
-                * @type Number
-                * @default null
-                * @private
-                */
+                Time the clock was most receently paused relative to the
+                master clock
+        
+                @property _timeLastPaused
+                @private
+                @type number
+                @default null
+                @private
+                **/
                 this._timeLastPaused = null;
                 /**
-                * Time the clock was most recently unpaused relative to the
-                * master clock.
-                * @property _timeLastUnpaused
-                * @private
-                * @type Number
-                * @default null
-                * @private
-                */
+                Time the clock was most recently unpaused relative to the
+                master clock
+        
+                @property _timeLastUnpaused
+                @private
+                @type number
+                @default null
+                @private
+                **/
                 this._timeLastUnpaused = null;
                 /**
-                * Total number of milliseconds the clock has been paused
-                * since it was last started
-                * @property _totalPaused
-                * @private
-                * @type Number
-                * @default 0
-                * @private
-                */
+                Total number of milliseconds the clock has been paused
+                since it was last started
+        
+                @property _totalPaused
+                @private
+                @type number
+                @default 0
+                @private
+                **/
                 this._totalPaused = 0;
                 /**
-                * Whether the clock is in a running state
-                * @property _isRunning
-                * @type boolean
-                * @default false
-                * @private
-                */
+                Whether the clock is in a running state
+        
+                @property _isRunning
+                @type boolean
+                @default false
+                @private
+                **/
                 this._isRunning = false;
                 /**
-                * Whether the clock is in a stopped state
-                * @property _isStopped
-                * @type boolean
-                * @default true
-                * @private
-                */
+                Whether the clock is in a stopped state
+        
+                @property _isStopped
+                @type boolean
+                @default true
+                @private
+                **/
                 this._isStopped = true;
                 /**
-                * Whether the clock is in a paused state
-                * @property _isPaused
-                * @type boolean
-                * @default false
-                * @private
-                */
+                Whether the clock is in a paused state
+        
+                @property _isPaused
+                @type boolean
+                @default false
+                @private
+                **/
                 this._isPaused = false;
                 /**
-                * Internal reference to the state of the elapsed timer
-                * @property _elapsedState
-                * @type Number
-                * @private
-                */
+                Internal reference to the state of the elapsed timer
+        
+                @property _elapsedState
+                @type number
+                @private
+                **/
                 this._elapsedState = Kiwi.Time.Clock._RUNNING;
                 /**
-                * Time manager that this clock belongs to
-                * @property manager
-                * @type ClockManager
-                * @public
-                */
+                Time manager that this clock belongs to
+        
+                @property manager
+                @type ClockManager
+                @public
+                **/
                 this.manager = null;
                 /**
-                * Master clock from which time is derived
-                * @property master
-                * @type Kiwi.Time.MasterClock
-                * @public
-                */
+                Master clock from which time is derived
+        
+                @property master
+                @type Kiwi.Time.MasterClock
+                @public
+                **/
                 this.master = null;
                 /**
-                * The time it takes for the time to update. Using this you can calculate the fps.
-                * @property delta
-                * @type number
-                * @since 1.3.0
-                * @readOnly
-                * @public
-                */
+                Time it takes for the time to update.
+                Using this you can calculate the fps.
+        
+                @property delta
+                @type number
+                @since 1.3.0
+                @readOnly
+                @public
+                **/
                 this.delta = 0;
                 /**
-                * Name of the clock
-                * @property name
-                * @type string
-                * @public
-                */
+                Name of the clock
+        
+                @property name
+                @type string
+                @public
+                **/
                 this.name = null;
                 /**
-                * Number of milliseconds counted as one unit of time by the clock
-                * @property units
-                * @type Number
-                * @default 0
-                * @public
-                */
+                Number of milliseconds counted as one unit of time by the clock
+        
+                @property units
+                @type number
+                @default 0
+                @public
+                **/
                 this.units = 0;
                 this.manager = manager;
                 this.master = master;
@@ -29152,44 +31030,48 @@ var Kiwi;
                 this._lastMasterElapsed = this.master.elapsed();
                 this._currentMasterElapsed = this.master.elapsed();
             }
-            /**
-            * The type of object that this is
-            * @method objType
-            * @return {String} "Clock"
-            * @public
-            */
             Clock.prototype.objType = function () {
+                /**
+                Return the type of object that this is.
+    
+                @method objType
+                @return {string} "Clock"
+                @public
+                **/
                 return "Clock";
             };
-            /**
-            * Number of clock units elapsed since the clock was first started
-            * @method elapsedSinceFirstStarted
-            * @return {Number} Number of clock units elapsed
-            * @public
-            */
             Clock.prototype.elapsedSinceFirstStarted = function () {
+                /**
+                Number of clock units elapsed since the clock was first started
+    
+                @method elapsedSinceFirstStarted
+                @return {number} Number of clock units elapsed
+                @public
+                **/
                 return (this._timeLastStarted) ? (this.master.elapsed() - this._timeFirstStarted) / this.units : null;
             };
-            /**
-            * Most recent time the clock was started relative to the master clock
-            * @method started
-            * @return {Number} Milliseconds
-            * @public
-            */
             Clock.prototype.started = function () {
+                /**
+                Most recent time the clock was started relative to the master clock
+    
+                @method started
+                @return {number} Milliseconds
+                @public
+                **/
                 return this._timeLastStarted;
             };
             Object.defineProperty(Clock.prototype, "maxFrameDuration", {
                 /**
-                * Maximum frame duration. If a frame takes longer than this to render,
-                * the clock will only advance this far, in effect slowing down time.
-                * If this value is 0 or less, it will not be checked and frames can
-                * take any amount of time to render.
-                * @property maxFrameDuration
-                * @type number
-                * @default -1
-                * @public
-                */
+                Maximum frame duration. If a frame takes longer than this to render,
+                the clock will only advance this far, in effect slowing down time.
+                If this value is 0 or less, it will not be checked and frames can
+                take any amount of time to render.
+        
+                @property maxFrameDuration
+                @type number
+                @default -1
+                @public
+                **/
                 get: function () {
                     return this._maxFrameDuration;
                 },
@@ -29199,96 +31081,107 @@ var Kiwi;
                 enumerable: true,
                 configurable: true
             });
-            /**
-            * Number of clock units elapsed since the clock was most recently
-            * started (not including time spent paused)
-            * @method elapsed
-            * @return {Number} Number of clock units
-            * @public
-            */
             Clock.prototype.elapsed = function () {
+                /**
+                Number of clock units elapsed since the clock was most recently
+                started (not including time spent paused)
+    
+                @method elapsed
+                @return {number} Number of clock units
+                @public
+                **/
                 return this._elapsed;
             };
-            /**
-            * Number of clock units elapsed since the clock was most recently
-            * stopped.
-            * @method elapsedSinceLastStopped
-            * @return {Number} Number of clock units
-            * @public
-            */
             Clock.prototype.elapsedSinceLastStopped = function () {
+                /**
+                Number of clock units elapsed since the clock was most recently
+                stopped
+    
+                @method elapsedSinceLastStopped
+                @return {number} Number of clock units
+                @public
+                **/
                 return (this._timeLastStarted) ? (this.master.elapsed() - this._timeLastStopped) / this.units : null;
             };
-            /**
-            * Number of clock units elapsed since the clock was most recently paused.
-            * @method elapsedSinceLastPaused
-            * @return {Number} Number of clock units
-            * @public
-            */
             Clock.prototype.elapsedSinceLastPaused = function () {
+                /**
+                Number of clock units elapsed since the clock was most recently
+                paused
+    
+                @method elapsedSinceLastPaused
+                @return {number} Number of clock units
+                @public
+                **/
                 return (this._timeLastStarted) ? (this.master.elapsed() - this._timeLastPaused) / this.units : null;
             };
-            /**
-            * Number of clock units elapsed since the clock was most recently
-            * unpaused.
-            * @method elapsedSinceLastUnpaused
-            * @return {Number} Number of clock units
-            * @public
-            */
             Clock.prototype.elapsedSinceLastUnpaused = function () {
+                /**
+                Number of clock units elapsed since the clock was most recently
+                unpaused
+    
+                @method elapsedSinceLastUnpaused
+                @return {number} Number of clock units
+                @public
+                **/
                 return (this._timeLastStarted) ? (this.master.elapsed() - this._timeLastUnpaused) / this.units : null;
             };
-            /**
-            * Check if the clock is currently running
-            * @method isRunning
-            * @return {boolean} `true` if running
-            * @public
-            */
             Clock.prototype.isRunning = function () {
+                /**
+                Check if the clock is currently running
+    
+                @method isRunning
+                @return {boolean} `true` if running
+                @public
+                **/
                 return this._isRunning;
             };
             /**
-            * Check if the clock is in the stopped state
-            * @method isStopped
-            * @return {boolean} `true` if stopped
-            * @public
-            */
+            Check if the clock is in the stopped state
+    
+            @method isStopped
+            @return {boolean} `true` if stopped
+            @public
+            **/
             Clock.prototype.isStopped = function () {
                 return this._isStopped;
             };
-            /**
-            * Check if the clock is in the paused state
-            * @method isPaused
-            * @return {boolean} `true` if paused
-            * @public
-            */
             Clock.prototype.isPaused = function () {
+                /**
+                Check if the clock is in the paused state
+    
+                @method isPaused
+                @return {boolean} `true` if paused
+                @public
+                **/
                 return this._isPaused;
             };
-            /**
-            * Add an existing Timer to the Clock.
-            * @method addTimer
-            * @param timer {Timer} Timer object instance to be added to this Clock
-            * @return {Kiwi.Time.Clock} This Clock object
-            * @public
-            */
             Clock.prototype.addTimer = function (timer) {
+                /**
+                Add an existing Timer to the Clock.
+    
+                @method addTimer
+                @param timer {Timer} Timer to add
+                @return {Kiwi.Time.Clock} This Clock object
+                @public
+                **/
                 this.timers.push(timer);
                 return this;
             };
-            /**
-            * Create a new Timer and add it to this Clock.
-            * @method createTimer
-            * @param name {string} Name of the Timer (must be unique on this Clock)
-            * @param [delay=1] {Number} Number of clock units to wait between
-            *	firing events
-            * @param [repeatCount=0] {Number} Number of times to repeat the Timer
-            *	(default 0)
-            * @param [start=true] {Boolean} If the timer should start
-            * @return {Kiwi.Time.Timer} The newly created Timer
-            * @public
-            */
             Clock.prototype.createTimer = function (name, delay, repeatCount, start) {
+                /**
+                Create a new Timer and add it to this Clock.
+    
+                @method createTimer
+                @param name {string} Name of the Timer
+                    (must be unique on this Clock)
+                @param [delay=1] {number} Number of clock units to wait between
+                    firing events
+                @param [repeatCount=0] {number} Number of times to
+                    repeat the Timer  (default 0)
+                @param [start=true] {Boolean} If the timer should start
+                @return {Kiwi.Time.Timer} Newly created Timer
+                @public
+                **/
                 if (delay === void 0) { delay = 1; }
                 if (repeatCount === void 0) { repeatCount = 0; }
                 if (start === void 0) { start = true; }
@@ -29298,17 +31191,18 @@ var Kiwi;
                 }
                 return this.timers[this.timers.length - 1];
             };
-            /**
-            * Remove a Timer from this Clock based on either the Timer object
-            * or its name.
-            * @method removeTimer
-            * @param [timer=null] {Timer} Timer object you wish to remove.
-            *	If you wish to delete by Timer Name set this to null.
-            * @param [timerName=''] {string} Name of the Timer object to remove
-            * @return {boolean} `true` if the Timer was successfully removed
-            * @public
-            */
             Clock.prototype.removeTimer = function (timer, timerName) {
+                /**
+                Remove a Timer from this Clock based on either the Timer object
+                or its name.
+    
+                @method removeTimer
+                @param [timer=null] {Timer} Timer object you wish to remove.
+                    If you wish to delete by name, set this to `null`.
+                @param [timerName=""] {string} Name of the Timer object to remove
+                @return {boolean} Whether the Timer was successfully removed
+                @public
+                **/
                 if (timer === void 0) { timer = null; }
                 if (timerName === void 0) { timerName = ""; }
                 var index;
@@ -29330,14 +31224,15 @@ var Kiwi;
                 }
                 return false;
             };
-            /**
-            * Check if the Timer already exists on this Clock.
-            * @method checkExists
-            * @param name {string} Name of the Timer
-            * @return {boolean} `true` if the Timer exists
-            * @public
-            */
             Clock.prototype.checkExists = function (name) {
+                /**
+                Check if the Timer already exists on this Clock.
+    
+                @method checkExists
+                @param name {string} Name of the Timer
+                @return {boolean} Whether the Timer exists
+                @public
+                **/
                 if (this.timers[name]) {
                     return true;
                 }
@@ -29345,34 +31240,37 @@ var Kiwi;
                     return false;
                 }
             };
-            /**
-            * Stop all timers attached to the clock.
-            * @method stopAllTimers
-            * @return {Clock} This Clock object
-            * @public
-            */
             Clock.prototype.stopAllTimers = function () {
+                /**
+                Stop all timers attached to the clock.
+    
+                @method stopAllTimers
+                @return {Clock} This Clock object
+                @public
+                **/
                 for (var i = 0; i < this.timers.length; i++) {
                     this.timers[i].stop();
                 }
                 return this;
             };
-            /**
-            * Convert a number to milliseconds based on clock units.
-            * @method toMilliseconds
-            * @param time {number} Seconds
-            * @return {Number} Milliseconds
-            * @public
-            */
             Clock.prototype.convertToMilliseconds = function (time) {
+                /**
+                Convert a number to milliseconds based on clock units.
+    
+                @method toMilliseconds
+                @param time {number} Seconds
+                @return {number} Milliseconds
+                @public
+                **/
                 return time * this.units;
             };
-            /**
-            * Update all Timers linked to this Clock.
-            * @method update
-            * @public
-            */
             Clock.prototype.update = function () {
+                /**
+                Update all Timers linked to this Clock.
+    
+                @method update
+                @public
+                **/
                 var frameLength = this._currentMasterElapsed - this._lastMasterElapsed;
                 if (this._maxFrameDuration > 0) {
                     frameLength = Math.min(frameLength, this._maxFrameDuration);
@@ -29386,7 +31284,8 @@ var Kiwi;
                 this._currentMasterElapsed = this.master.elapsed();
                 this.delta = 0;
                 if (this._elapsedState === Kiwi.Time.Clock._RUNNING || this._elapsedState === Kiwi.Time.Clock._RESUMED) {
-                    // Scale that difference by timeScale. Set "rate" as per running type
+                    // Scale that difference by timeScale.
+                    // Set "rate" as per running type
                     this.delta = this.timeScale * frameLength / this.units;
                     this._elapsed += this.delta;
                     this.rate = this.timeScale * frameLength / this.master.idealDelta;
@@ -29399,13 +31298,14 @@ var Kiwi;
                     this.rate = 0;
                 }
             };
-            /**
-            * Start the clock. This resets the clock and starts it running.
-            * @method start
-            * @return {Clock} This Clock object
-            * @public
-            */
             Clock.prototype.start = function () {
+                /**
+                Start the clock. This resets the clock and starts it running.
+    
+                @method start
+                @return {Clock} This Clock object
+                @public
+                **/
                 this._timeLastStarted = this.master.elapsed();
                 this._totalPaused = 0;
                 if (!this._timeFirstStarted) {
@@ -29420,13 +31320,14 @@ var Kiwi;
                 this._currentMasterElapsed = this.master.elapsed();
                 return this;
             };
-            /**
-            * Pause the clock. This can only be paused if it is already running.
-            * @method pause
-            * @return {Kiwi.Time.Clock} This Clock object
-            * @public
-            */
             Clock.prototype.pause = function () {
+                /**
+                Pause the clock. This can only be paused if it is already running.
+    
+                @method pause
+                @return {Kiwi.Time.Clock} This Clock object
+                @public
+                **/
                 if (this._isRunning === true) {
                     this._timeLastPaused = this.master.elapsed();
                     this._isRunning = false;
@@ -29436,13 +31337,14 @@ var Kiwi;
                 }
                 return this;
             };
-            /**
-            * Resume the clock. This can only be resumed if it is already paused.
-            * @method resume
-            * @return {Kiwi.Time.Clock} This Clock object
-            * @public
-            */
             Clock.prototype.resume = function () {
+                /**
+                Resume the clock. This can only be resumed if it is already paused.
+    
+                @method resume
+                @return {Kiwi.Time.Clock} This Clock object
+                @public
+                **/
                 if (this._isPaused === true) {
                     this._timeLastUnpaused = this.master.elapsed();
                     this._totalPaused += this._timeLastUnpaused - this._timeLastPaused;
@@ -29453,14 +31355,15 @@ var Kiwi;
                 }
                 return this;
             };
-            /**
-            * Stop the clock. This can only be stopped if it is already running
-            *	or is paused.
-            * @method stop
-            * @return {Kiwi.Time.Clock} This Clock object
-            * @public
-            */
             Clock.prototype.stop = function () {
+                /**
+                Stop the clock. This can only be stopped if it is already running
+                or is paused.
+    
+                @method stop
+                @return {Kiwi.Time.Clock} This Clock object
+                @public
+                **/
                 if (this._isStopped === false) {
                     this._timeLastStopped = this.master.elapsed();
                     if (this._isPaused === true) {
@@ -29473,38 +31376,40 @@ var Kiwi;
                 }
                 return this;
             };
-            /**
-            * Return a string representation of this object.
-            * @method toString
-            * @return {string} String representation of the instance
-            * @public
-            */
             Clock.prototype.toString = function () {
+                /**
+                Return a string representation of this object.
+    
+                @method toString
+                @return {string} String representation of the instance
+                @public
+                **/
                 return "[{Clock (name=" + this.name + " units=" + this.units + " running=" + this._isRunning + ")}]";
             };
-            /**
-            * Set a function to execute after a certain time interval.
-            * Emulates `window.setTimeout`, except attached to a `Kiwi.Time.Clock`.
-            * This allows you to pause and manipulate time, and the timeout will
-            * respect the clock on which it is created.
-            *
-            * No `clearTimeout` is provided; you should use `Kiwi.Time.Timer`
-            * functions to achieve further control.
-            *
-            * Any parameters after `context` will be passed as parameters to the
-            * callback function. Note that you must specify `context` in order for
-            * this to work. You may specify `null`, in which case it will default
-            * to the global scope `window`.
-            *
-            * @method setTimeout
-            * @param callback {function} Function to execute
-            * @param timeout {number} Milliseconds before execution
-            * @param [context] {object} Object to be `this` for the callback
-            * @return {Kiwi.Time.Timer} Kiwi.Time.Timer object which can be used
-            *	to further manipulate the timer
-            * @public
-            */
             Clock.prototype.setTimeout = function (callback, timeout, context) {
+                /**
+                Set a function to execute after a certain time interval.
+                Emulates `window.setTimeout`,
+                except attached to a `Kiwi.Time.Clock`.
+                This allows you to pause and manipulate time, and the timeout will
+                respect the clock on which it is created.
+                
+                No `clearTimeout` is provided; you should use `Kiwi.Time.Timer`
+                functions to achieve further control.
+                
+                Any parameters after `context` will be passed as parameters to the
+                callback function. Note that you must specify `context`
+                in order for this to work. You may specify `null`,
+                in which case it will default to the global scope `window`.
+                
+                @method setTimeout
+                @param callback {function} Function to execute
+                @param timeout {number} Milliseconds before execution
+                @param [context] {object} Object to be `this` for the callback
+                @return {Kiwi.Time.Timer} Kiwi.Time.Timer object which can be used
+                    to further manipulate the timer
+                @public
+                **/
                 var args = [];
                 for (var _i = 3; _i < arguments.length; _i++) {
                     args[_i - 3] = arguments[_i];
@@ -29520,29 +31425,31 @@ var Kiwi;
                 timer.start();
                 return timer;
             };
-            /**
-            * Set a function to repeatedly execute at fixed time intervals.
-            * Emulates `window.setInterval`, except attached to a `Kiwi.Time.Clock`.
-            * This allows you to pause and manipulate time, and the timeout will
-            * respect the clock on which it is created.
-            *
-            * No `clearInterval` is provided; you should use `Kiwi.Time.Timer`
-            * functions to achieve further control.
-            *
-            * Any parameters after `context` will be passed as parameters to the
-            * callback function. Note that you must specify `context` in order for
-            * this to work. You may specify `null`, in which case it will default
-            * to the global scope `window`.
-            *
-            * @method setInterval
-            * @param callback {function} Function to execute
-            * @param timeout {number} Milliseconds between executions
-            * @param [context=window] {object} Object to be `this` for the callback
-            * @return {Kiwi.Time.Timer} Kiwi.Time.Timer object
-            *   which can be used to further manipulate the timer
-            * @public
-            */
             Clock.prototype.setInterval = function (callback, timeout, context) {
+                /**
+                Set a function to repeatedly execute at fixed time intervals.
+                Emulates `window.setInterval`,
+                except attached to a `Kiwi.Time.Clock`.
+                This allows you to pause and manipulate time, and the timeout will
+                respect the clock on which it is created.
+                
+                No `clearInterval` is provided; you should use `Kiwi.Time.Timer`
+                functions to achieve further control.
+                
+                Any parameters after `context` will be passed as parameters
+                to the callback function. Note that you must specify `context`
+                in order for this to work. You may specify `null`,
+                in which case it will default to the global scope `window`.
+                
+                @method setInterval
+                @param callback {function} Function to execute
+                @param timeout {number} Milliseconds between executions
+                @param [context=window] {object} Object to be `this`
+                    for the callback
+                @return {Kiwi.Time.Timer} `Kiwi.Time.Timer` object
+                    which can be used to further manipulate the timer
+                @public
+                **/
                 var args = [];
                 for (var _i = 3; _i < arguments.length; _i++) {
                     args[_i - 3] = arguments[_i];
@@ -29558,42 +31465,46 @@ var Kiwi;
                 return timer;
             };
             /**
-            * Constant indicating that the Clock is running
-            * (and has not yet been paused and resumed)
-            * @property _RUNNING
-            * @static
-            * @type number
-            * @default 0
-            * @private
-            */
+            Constant indicating that the Clock is running
+            (and has not yet been paused and resumed)
+    
+            @property _RUNNING
+            @static
+            @type number
+            @default 0
+            @private
+            **/
             Clock._RUNNING = 0;
             /**
-            * Constant indicating that the Clock is paused
-            * @property _PAUSED
-            * @static
-            * @type number
-            * @default 1
-            * @private
-            */
+            Constant indicating that the Clock is paused
+    
+            @property _PAUSED
+            @static
+            @type number
+            @default 1
+            @private
+            **/
             Clock._PAUSED = 1;
             /**
-            * Constant indicating that the Clock is running
-            * (and has been paused then resumed)
-            * @property _RESUMED
-            * @static
-            * @type number
-            * @default 2
-            * @private
-            */
+            Constant indicating that the Clock is running
+            (and has been paused then resumed)
+    
+            @property _RESUMED
+            @static
+            @type number
+            @default 2
+            @private
+            **/
             Clock._RESUMED = 2;
             /**
-            * Constant indicating that the Clock is stopped
-            * @property _STOPPED
-            * @static
-            * @type number
-            * @default 3
-            * @private
-            */
+            Constant indicating that the Clock is stopped
+    
+            @property _STOPPED
+            @static
+            @type number
+            @default 3
+            @private
+            **/
             Clock._STOPPED = 3;
             return Clock;
         })();
@@ -33590,105 +35501,118 @@ var Kiwi;
     })(Utils = Kiwi.Utils || (Kiwi.Utils = {}));
 })(Kiwi || (Kiwi = {}));
 /**
-*
-* @module Kiwi
-* @submodule Utils
-*/
+@module Kiwi
+@submodule Utils
+**/
 var Kiwi;
 (function (Kiwi) {
     var Utils;
     (function (Utils) {
-        /**
-        * Abstracts away the use of RAF or setTimeout for the core game update loop. The callback can be re-mapped on the fly.
-        *
-        * @class RequestAnimationFrame
-        * @constructor
-        * @namespace Kiwi.Utils
-        * @param callback {Any}
-        * @return {RequestAnimationFrame} This object.
-        *
-        */
         var RequestAnimationFrame = (function () {
+            /**
+            Abstracts away the use of `requestAnimationFrame` or `setTimeout`
+            for the core game update loop. The callback can be remapped on the fly.
+    
+            @class RequestAnimationFrame
+            @constructor
+            @namespace Kiwi.Utils
+            @param callback {function}
+            **/
             function RequestAnimationFrame(callback) {
                 /**
-                * A boolean indicating whether or not we are using setTimeout for the RequestAnimationFrame or not.
-                * @property _isSetTimeOut
-                * @type boolean
-                * @default false
-                * @private
-                */
+                Whether we are using `setTimeout` to schedule updates.
+        
+                @property _isSetTimeOut
+                @type boolean
+                @default false
+                @private
+                **/
                 this._isSetTimeOut = false;
                 /**
-                * The last time at which the RAF was called. This is given a value at the end of the RAF loop.
-                * @property lastTime
-                * @type Number
-                * @public
-                */
+                Last time at which the RAF was called.
+                This is given a value at the end of the RAF loop.
+        
+                @property lastTime
+                @type number
+                @public
+                **/
                 this.lastTime = 0;
                 /**
-                * A timestamp that has the current time. This is updated each time the RAF loop is executed. Is updated before the last time in the loop.
-                * @property currentTime
-                * @type Number
-                * @public
-                */
+                Timestamp that has the current time.
+                This is updated each time the RAF loop is executed.
+                Is updated before `lastTime` in the loop.
+        
+                @property currentTime
+                @type number
+                @public
+                **/
                 this.currentTime = 0;
                 /**
-                * A boolean indicating whether or not the RAF is running.
-                * @property isRunning
-                * @type boolean
-                * @default false
-                * @public
-                */
+                Whether the RAF is running
+        
+                @property isRunning
+                @type boolean
+                @default false
+                @public
+                **/
                 this.isRunning = false;
                 /**
-                * ID of the RAF, used to stop the RAF
-                * @property _rafId
-                * @type ???
-                * @default null
-                * @private
-                */
+                ID of the RAF, used to stop the RAF
+        
+                @property _rafId
+                @type number
+                @default null
+                @private
+                **/
                 this._rafId = null;
                 this._callback = callback;
-                var vendors = ['ms', 'moz', 'webkit', 'o'];
+                var vendors = ["ms", "moz", "webkit", "o"];
                 for (var x = 0; x < vendors.length && !window.requestAnimationFrame; x++) {
-                    window.requestAnimationFrame = window[vendors[x] + 'RequestAnimationFrame'];
-                    window.cancelAnimationFrame = window[vendors[x] + 'CancelAnimationFrame'];
+                    window.requestAnimationFrame = window[vendors[x] + "RequestAnimationFrame"];
+                    window.cancelAnimationFrame = window[vendors[x] + "CancelAnimationFrame"];
                 }
             }
             /**
-            * The type of obect that this is.
-            * @method objType
-            * @return {String} "RequestAnimationFrame"
-            * @public
-            */
+            Return the type of obect that this is.
+    
+            @method objType
+            @return {string} "RequestAnimationFrame"
+            @public
+            **/
             RequestAnimationFrame.prototype.objType = function () {
                 return "RequestAnimationFrame";
             };
-            /**
-            * Sets the callback method that is to be executed each time the RAF is.
-            * @method setCallback
-            * @param {Any} callback
-            * @public
-            */
             RequestAnimationFrame.prototype.setCallback = function (callback) {
+                /**
+                Set the callback method to be executed each time this updates.
+    
+                @method setCallback
+                @param {function} callback
+                @public
+                **/
                 this._callback = callback;
             };
-            /**
-            * Returns a boolean indicating whether or not setTimeout is being used instead of RAF.
-            * @method usingSetTimeOut
-            * @return {boolean}
-            * @public
-            */
             RequestAnimationFrame.prototype.isUsingSetTimeOut = function () {
+                /**
+                Return a boolean indicating whether `setTimeout` is being used
+                instead of `requestAnimationFrame`.
+    
+                @method usingSetTimeOut
+                @return {boolean}
+                @public
+                **/
                 return this._isSetTimeOut;
             };
-            /**
-            * Returns a boolean indicating wheather or not we are using the RAF. If false it means we are using setTimeout for our update loop.
-            * @method usingRAF
-            * @return {boolean}
-            * @public
-            */
             RequestAnimationFrame.prototype.isUsingRAF = function () {
+                /**
+                Return a boolean indicating wheather we are using the browser's
+                `requestAnimationFrame` method to schedule updates.
+                If `false` it means we are using `setTimeout` for our update loop.
+    
+                @method usingRAF
+                @return {boolean}
+                @public
+                **/
                 if (this._isSetTimeOut === true) {
                     return false;
                 }
@@ -33696,13 +35620,15 @@ var Kiwi;
                     return true;
                 }
             };
-            /**
-            * Starts the RequestAnimationFrame (or setTimeout if RAF not supported).
-            * @method start
-            * @param [callback] {Any} A callback to be executed everyframe. Overrides the callback set at instantiation if passed.
-            * @public
-            */
             RequestAnimationFrame.prototype.start = function (callback) {
+                /**
+                Start the animation frame loop.
+    
+                @method start
+                @param [callback] {function} Callback to be executed every frame.
+                    Overrides the callback set at instantiation if passed.
+                @public
+                **/
                 var _this = this;
                 if (callback === void 0) { callback = null; }
                 if (callback) {
@@ -33718,12 +35644,13 @@ var Kiwi;
                 }
                 this.isRunning = true;
             };
-            /**
-            * Stops the RAF from running.
-            * @method stop
-            * @public
-            */
             RequestAnimationFrame.prototype.stop = function () {
+                /**
+                Stop the RAF from running.
+    
+                @method stop
+                @public
+                **/
                 if (this._isSetTimeOut) {
                     clearTimeout(this._timeOutID);
                 }
@@ -33732,28 +35659,39 @@ var Kiwi;
                 }
                 this.isRunning = false;
             };
-            /**
-            * The update loop that the RAF will continuously call.
-            * @method RAFUpdate
-            * @public
-            */
             RequestAnimationFrame.prototype.RAFUpdate = function () {
+                /**
+                Update via `requestAnimationFrame`.
+                This method is called automatically when using
+                `requestAnimationFrame` to control frame updates.
+                This is the default method.
+    
+                @method RAFUpdate
+                @public
+                **/
                 var _this = this;
-                //  Not in IE8 (but neither is RAF) also doesn't use a high performance timer (window.performance.now)
+                // Not in IE8 (but neither is RAF).
+                // Also doesn't use a high performance timer
+                // (`window.performance.now`).
                 this.currentTime = Date.now();
                 if (this._callback) {
                     this._callback();
                 }
                 var timeToCall = Math.max(0, 16 - (this.currentTime - this.lastTime));
-                this._rafId = window.requestAnimationFrame(function () { return _this.RAFUpdate(); });
+                if (this.isRunning) {
+                    this._rafId = window.requestAnimationFrame(function () { return _this.RAFUpdate(); });
+                }
                 this.lastTime = this.currentTime + timeToCall;
             };
-            /**
-            * The update loop that the setTimeout method will continuously call.
-            * @method SetTimeoutUpdate
-            * @public
-            */
             RequestAnimationFrame.prototype.SetTimeoutUpdate = function () {
+                /**
+                Update via the `setTimeout` method.
+                This method is called automatically when using `setTimeout`
+                to control animation frames.
+    
+                @method SetTimeoutUpdate
+                @public
+                **/
                 var _this = this;
                 //  Not in IE8
                 this.currentTime = Date.now();
@@ -33761,7 +35699,9 @@ var Kiwi;
                     this._callback();
                 }
                 var timeToCall = Math.max(0, 16 - (this.currentTime - this.lastTime));
-                this._timeOutID = window.setTimeout(function () { return _this.SetTimeoutUpdate(); }, timeToCall);
+                if (this.isRunning) {
+                    this._timeOutID = window.setTimeout(function () { return _this.SetTimeoutUpdate(); }, timeToCall);
+                }
                 this.lastTime = this.currentTime + timeToCall;
             };
             return RequestAnimationFrame;
@@ -33772,7 +35712,7 @@ var Kiwi;
 /**
 *
 * @module Kiwi
-* @submodule Utils.
+* @submodule Utils
 *
 */
 var Kiwi;
@@ -34370,6 +36310,2639 @@ var Kiwi;
         Utils.Version = Version;
     })(Utils = Kiwi.Utils || (Kiwi.Utils = {}));
 })(Kiwi || (Kiwi = {}));
+/**
+@module Kiwi
+@submodule Buffers
+**/
+var Kiwi;
+(function (Kiwi) {
+    var Buffers;
+    (function (Buffers) {
+        var Buffer = (function (_super) {
+            __extends(Buffer, _super);
+            /**
+            Frame buffer entity. A GameObject that contains a render target.
+    
+            Buffers are created and rendered by a `Bufferer` object.
+            Do not create them as stand-alones.
+    
+            This is the base class for other buffer types.
+            It doesn't do anything by itself.
+    
+            CocoonJS is not capable of using the `baseImage` parameter.
+            All other clients support it. When using CocoonJS,
+            consider using `drawCut` on a temporary game object instead.
+    
+            @class Buffer
+            @namespace Kiwi.Buffers
+            @extends Kiwi.Entity
+            **/
+            function Buffer(params) {
+                /**
+                @constructor
+                @param params {object} Composite parameter object
+                    @param [params.alpha=1] {number} Opacity, 0-1
+                    @param [params.anchorPointX] {number} Horizontal anchor point
+                    @param [params.anchorPointY] {number} Vertical anchor point
+                    @param [params.baseImage] {Image} Initial buffer contents
+                    @param params.bufferer {Bufferer} Buffer manager object
+                    @param [params.clearColor] {Kiwi.Utils.Color} Color to which to clear.
+                        Defaults to rgba( 0, 0, 0, 0 ).
+                    @param [params.clearOnRender=true] {boolean} Whether the Buffer will
+                        clear itself when rendered
+                    @param [params.gl] {WebGLRenderingContext} Context for draw operations.
+                        This should generally be left as default.
+                    @param [params.height] {number} Vertical dimension of buffer;
+                        defaults to stage
+                    @param [params.name] {string} Name for Buffer
+                    @param [params.preserve] {string} Name of texture to export on destroy
+                    @param [params.redraw=true] {boolean} Whether to redraw the buffer
+                        every frame
+                    @param [params.rotation=0] {number} Initial rotation in radians
+                    @param [params.scale=1] {number} Initial scale. Is overridden
+                        by `scaleX` and `scaleY`.
+                    @param [params.scaleX=1] {number} Initial horizontal scale
+                    @param [params.scaleY=1] {number} Initial vertical scale
+                    @param params.state {Kiwi.State} Current game state
+                    @param [params.visible=true] {boolean} Initial visibility status
+                    @param [params.width] {number} Horizontal dimension of buffer;
+                        defaults to stage
+                    @param [params.x=0] {number} Horizontal position
+                    @param [params.y=0] {number} Vertical position
+                **/
+                // Parse params
+                if (isNaN(params.width)) {
+                    params.width = params.state.game.stage.width;
+                }
+                if (isNaN(params.height)) {
+                    params.height = params.state.game.stage.height;
+                }
+                params.width = Math.round(params.width);
+                params.height = Math.round(params.height);
+                if (isNaN(params.x)) {
+                    params.x = 0;
+                }
+                if (isNaN(params.y)) {
+                    params.y = 0;
+                }
+                if (isNaN(params.scale)) {
+                    params.scale = 1;
+                }
+                // Compatible elements of super, part 1
+                _super.call(this, params.state, params.x, params.y);
+                // Buffer specific params
+                this.bufferer = params.bufferer;
+                this.clearColor = params.clearColor || new Kiwi.Utils.Color(0, 0, 0, 0);
+                this.clearOnRender = params.clearOnRender === false ? false : true;
+                this.name = params.name || "UnnamedBuffer";
+                this.preserve = params.preserve;
+                this.redraw = params.redraw === false ? false : true;
+                // Renderer-specific atlas and buffer creation
+                if (this.game.renderOption === Kiwi.RENDERER_WEBGL) {
+                    this._setupGl(params);
+                }
+                else if (this.game.renderOption === Kiwi.RENDERER_CANVAS) {
+                    this._setupCanvas(params);
+                }
+                // Compatible elements of super, part 2 (require an atlas)
+                this.cellIndex = 0;
+                this.width = params.width;
+                this.height = params.height;
+                this.transform.anchorPointX = this.width / 2;
+                this.transform.anchorPointY = this.height / 2;
+                this.box = this.components.add(new Kiwi.Components.Box(this, this.x, this.y, this.width, this.height));
+                // Complete default transform properties
+                this.alpha = isNaN(params.alpha) ? 1 : params.alpha;
+                this.anchorPointX = isNaN(params.anchorPointX) ? this.anchorPointX : params.anchorPointX;
+                this.anchorPointY = isNaN(params.anchorPointY) ? this.anchorPointY : params.anchorPointY;
+                this.rotation = isNaN(params.rotation) ? 0 : params.rotation;
+                this.scale = params.scale;
+                this.scaleX = isNaN(params.scaleX) ? params.scale : params.scaleX;
+                this.scaleY = isNaN(params.scaleY) ? params.scale : params.scaleY;
+                this.visible = params.visible === false ? false : true;
+                this.addTag("Kiwi.Buffers.Buffer");
+            }
+            Buffer.prototype.clear = function (bind) {
+                if (bind === void 0) { bind = true; }
+                /**
+                Clear the contents of this buffer. This function is an automatic
+                alias of either `_clearCanvas` or `_clearGl`.
+    
+                Note that this method assumes it is not being called
+                during a render sequence. Most user interaction will come during
+                the `update()` period instead. As such, the WebGL version
+                automatically binds the buffer before clearing,
+                then binds back to the main screen.
+                To disable this binding and just clear the current buffer,
+                whatever that may be, specify the parameter `false`.
+    
+                @method clear
+                @param [bind=true] {boolean} Whether to bind the WebGL context
+                **/
+            };
+            Buffer.prototype._clearCanvas = function () {
+                /**
+                Clear the contents of this buffer using Canvas methods.
+                @method _clearCanvas
+                @protected
+                **/
+                this._ctx.clearRect(0, 0, this.width, this.height);
+                if (this.clearColor.a > 0) {
+                    this._ctx.save();
+                    this._ctx.fillStyle = "rgba(" + this.clearColor.r255 + "," + this.clearColor.g255 + "," + this.clearColor.b255 + "," + this.clearColor.a + ")";
+                    this._ctx.fillRect(0, 0, this.width, this.height);
+                    this._ctx.restore();
+                }
+            };
+            Buffer.prototype._clearGl = function (bind) {
+                /**
+                Clear the contents of this buffer using WebGL methods.
+                @method _clearGl
+                @param [bind=true] {boolean} Whether to bind the context
+                    during the operation. If this is `true`, the method will bind
+                    the framebuffer to `null` (the main screen) when complete.
+                    If `false`, the method will clear the current framebuffer,
+                    so be sure you know what you're doing.
+                @protected
+                **/
+                if (bind === void 0) { bind = true; }
+                if (bind) {
+                    this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this._framebuffer);
+                }
+                this.gl.clearColor(this.clearColor.r, this.clearColor.g, this.clearColor.b, this.clearColor.a);
+                this.gl.clear(this.gl.COLOR_BUFFER_BIT);
+                if (bind) {
+                    this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
+                }
+            };
+            Buffer.prototype.destroy = function () {
+                /**
+                Destroy this entity and its components.
+                Extends standard `Entity` behavior.
+                Also erases the associated buffer.
+    
+                If the `preserve` property is set,
+                exports the texture to the global filestore.
+    
+                Do not call this method if the buffer is part of the scene graph.
+                Use `exists = false` to ensure the entity is removed
+                at the appropriate point during the game loop.
+    
+                You should only use `destroy`
+                if the buffer is not part of the scene graph,
+                and so will not be destroyed by the game loop.
+    
+                @method destroy
+                **/
+                this.bufferer.removeBuffer(this);
+                if (this.preserve) {
+                    this.exportImage(this.preserve);
+                }
+                if (this.gl) {
+                    this.gl.deleteTexture(this._texture);
+                    this.gl.deleteFramebuffer(this._framebuffer);
+                }
+                Kiwi.Entity.prototype.destroy.call(this, true);
+            };
+            Buffer.prototype.draw = function () {
+                /**
+                Render the targets of this buffer.
+    
+                This method is set to be an alias of the appropriate
+                `_drawCanvas` or `_drawGl` methods during construction.
+    
+                @method draw
+                **/
+            };
+            Buffer.prototype._drawCanvas = function () {
+                /**
+                Render the targets of this buffer using Canvas.
+    
+                Override this method.
+    
+                @method _drawCanvas
+                @protected
+                **/
+            };
+            Buffer.prototype._drawCanvasImmediate = function () {
+                /**
+                Render the targets of this buffer using Canvas.
+    
+                This immediate version is for use with out-of-order rendering;
+                for example, rendering a buffered texture only on rare game events,
+                and not as part of the usual render sequence.
+    
+                You should use `drawImmediate` for better compatibility.
+    
+                @method _drawCanvasImmediate
+                @protected
+                **/
+                this._drawCanvas();
+            };
+            Buffer.prototype._drawGl = function () {
+                /**
+                Render the targets of this buffer using WebGL.
+    
+                Override this method.
+    
+                @method _drawGl
+                @protected
+                **/
+            };
+            Buffer.prototype._drawGlImmediate = function () {
+                /**
+                Render the targets of this buffer using WebGL.
+    
+                This immediate version is for use with out-of-order rendering;
+                for example, rendering a buffered texture only on rare game events,
+                and not as part of the usual render sequence.
+                It will change WebGL state and attempt to clean up after itself.
+    
+                You should use `drawImmediate` for better compatibility.
+    
+                @method _drawGlImmediate
+                @protected
+                **/
+                this._drawGl();
+                this.bufferer.restoreGl();
+            };
+            Buffer.prototype.drawImmediate = function () {
+                /**
+                Render the targets of this buffer immediately.
+    
+                This immediate version is for use with out-of-order rendering;
+                for example, rendering a buffered texture only on rare game events,
+                and not as part of the usual render sequence.
+    
+                This method is set to be an alias of the appropriate
+                `_drawCanvasImmediate` or `_drawGlImmediate` method
+                during construction. This method should be used by preference.
+    
+                Note that this does not redraw member buffers.
+                If your buffer contains other buffers that must redraw,
+                consider using `bufferer.render( this )`.
+    
+                @method drawImmediate
+                **/
+            };
+            Buffer.prototype.exportImage = function (key) {
+                /**
+                Export the current state of the buffer to a global texture file
+                as a `SingleImage` with the supplied key parameter.
+                An associated atlas will be added to the state texture library.
+    
+                The texture file will be stored as a canvas element.
+    
+                WebGL note: This will unbind any currently-bound framebuffer.
+    
+                @method exportImage
+                @param key {string} Key for new texture file
+                **/
+                var atlas, canvas, ctx, data, i, pixels, a, aFactor, file = new Kiwi.Files.TextureFile(this.game, {
+                    key: key,
+                    url: key + " buffer data",
+                    type: Kiwi.Files.File.IMAGE,
+                    filestore: this.game.fileStore,
+                    timeout: null
+                });
+                // Create canvas
+                canvas = document.createElement("canvas");
+                canvas.width = this.width;
+                canvas.height = this.height;
+                ctx = canvas.getContext("2d");
+                if (this.gl) {
+                    // Extract WebGL textures
+                    pixels = new Uint8Array(this.width * this.height * 4);
+                    this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this._framebuffer);
+                    this.gl.readPixels(0, 0, this.width, this.height, this.gl.RGBA, this.gl.UNSIGNED_BYTE, pixels);
+                    this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
+                    // Generate image data
+                    data = ctx.createImageData(this.width, this.height);
+                    for (i = 0; i < data.data.length; i += 4) {
+                        a = pixels[i + 3];
+                        aFactor = a / 255;
+                        data.data[i] = pixels[i] / aFactor;
+                        data.data[i + 1] = pixels[i + 1] / aFactor;
+                        data.data[i + 2] = pixels[i + 2] / aFactor;
+                        data.data[i + 3] = a;
+                    }
+                    // Draw to canvas
+                    ctx.putImageData(data, 0, 0);
+                }
+                else {
+                    // Extract from Canvas
+                    ctx.drawImage(this._canvas, 0, 0, canvas.width, canvas.height);
+                }
+                // Set manual success
+                file.data = canvas;
+                file.success = true;
+                file.hasError = false;
+                this.game.fileStore.addFile(key, file);
+                atlas = new Kiwi.Textures.SingleImage(key, canvas);
+                this.state.textureLibrary.add(atlas);
+            };
+            Buffer.prototype.exportSpritesheet = function (key, model) {
+                /**
+                Export the current state of the buffer to a global texture file
+                as a `SpriteSheet` with the supplied key parameter
+                and the model's sprite properties.
+                An associated atlas will be added to the state texture library.
+    
+                The texture file will be stored as a canvas element.
+    
+                WebGL note: This will unbind any currently-bound framebuffer.
+    
+                @method exportSpritesheet
+                @param key {string} Key for new texture file
+                @param model {Kiwi.Textures.SpriteSheet} Sprite sheet from which
+                    to copy properties
+                **/
+                var atlas, canvas, ctx, data, i, pixels, file = new Kiwi.Files.TextureFile(this.game, {
+                    key: key,
+                    url: key + " buffer data",
+                    type: Kiwi.Files.File.IMAGE,
+                    filestore: this.game.fileStore,
+                    timeout: null
+                });
+                // Create canvas
+                canvas = document.createElement("canvas");
+                canvas.width = this.width;
+                canvas.height = this.height;
+                ctx = canvas.getContext("2d");
+                if (this.gl) {
+                    // Extract WebGL textures
+                    pixels = new Uint8Array(this.width * this.height * 4);
+                    this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this._framebuffer);
+                    this.gl.readPixels(0, 0, this.width, this.height, this.gl.RGBA, this.gl.UNSIGNED_BYTE, pixels);
+                    this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
+                    // Generate image data
+                    data = ctx.createImageData(this.width, this.height);
+                    for (i = 0; i < data.data.length; i++) {
+                        data.data[i] = pixels[i];
+                    }
+                    // Draw to canvas
+                    ctx.putImageData(data, 0, 0);
+                }
+                else {
+                    // Extract from Canvas
+                    ctx.drawImage(this._canvas, 0, 0, canvas.width, canvas.height);
+                }
+                // Set manual success
+                file.data = canvas;
+                file.success = true;
+                file.hasError = false;
+                this.game.fileStore.addFile(key, file);
+                atlas = new Kiwi.Textures.SpriteSheet(key, canvas, model.cellWidth, model.cellHeight, model.numCells, model.rows, model.cols, model.sheetOffsetX, model.sheetOffsetY, model.cellOffsetX, model.cellOffsetY);
+                this.state.textureLibrary.add(atlas);
+            };
+            Buffer.prototype.objType = function () {
+                /**
+                Return the type of object that this is.
+    
+                @method objType
+                @return {string} "Buffer"
+                **/
+                return "Buffer";
+            };
+            Buffer.prototype.render = function (camera) {
+                /**
+                Implements `Kiwi.GameObjects.StaticImage` `render` method.
+                @method render
+                @param camera {Kiwi.Camera}
+                **/
+                Kiwi.GameObjects.StaticImage.prototype.render.call(this, camera);
+            };
+            Buffer.prototype.renderGL = function (gl, camera, params) {
+                /**
+                Implements `Kiwi.GameObjects.StaticImage` `renderGL` method.
+                @method renderGL
+                @param gl {WebGLRenderingContext}
+                @param camera {Kiwi.Gamera}
+                @param [params] {object}
+                **/
+                if (params === void 0) { params = null; }
+                Kiwi.GameObjects.StaticImage.prototype.renderGL.call(this, gl, camera, params);
+            };
+            Buffer.prototype._setupCanvas = function (params) {
+                /**
+                Run setup protocols unique to the Canvas environment.
+                @method _setupCanvas
+                @param params {object} Composite parameter object from constructor
+                @protected
+                **/
+                // Set override functions
+                this.clear = this._clearCanvas;
+                this.draw = this._drawCanvas;
+                this.drawImmediate = this._drawCanvasImmediate;
+                this._setupCanvasBuffer(params);
+                this.atlas = new Kiwi.Textures.SingleImage(this.name + "Atlas", this._canvas, params.width, params.height);
+                this.state.textureLibrary.textures[this.atlas.name] = this.atlas;
+            };
+            Buffer.prototype._setupCanvasBuffer = function (params) {
+                /**
+                Create render buffer.
+    
+                @method _setupCanvasBuffer
+                @param params {object} Composite parameter object from constructor
+                @protected
+                **/
+                this._canvas = document.createElement("canvas");
+                this._canvas.width = params.width;
+                this._canvas.height = params.height;
+                this._ctx = this._canvas.getContext("2d");
+                if (params.baseImage) {
+                    this._ctx.drawImage(params.baseImage, 0, 0);
+                }
+            };
+            Buffer.prototype._setupGl = function (params) {
+                /**
+                Run setup protocols unique to the WebGL environment.
+                @method _setupGl
+                @param params {object} Composite parameter object from constructor
+                @protected
+                **/
+                // Set override functions
+                this.clear = this._clearGl;
+                this.draw = this._drawGl;
+                this.drawImmediate = this._drawGlImmediate;
+                this.glRenderer = this.game.renderer.requestSharedRenderer("TextureAtlasRenderer");
+                // Parse params
+                if (!params.gl || !(params.gl instanceof WebGLRenderingContext)) {
+                    params.gl = params.state.game.stage.gl;
+                }
+                this.gl = params.gl;
+                this._setupGlBuffer(params);
+                this.atlas = new Kiwi.Buffers.BufferAtlas({
+                    name: this.name + "Atlas",
+                    cells: [{ x: 0, y: 0, w: params.width, h: params.height }],
+                    type: Kiwi.Textures.TextureAtlas.SINGLE_IMAGE,
+                    texture: this._texture,
+                    width: params.width,
+                    height: params.height
+                });
+                // Register atlas in the state library.
+                // The basic method tries to resize NPOT images, which won't work.
+                // So we recreate some functionality here.
+                this.state.textureLibrary.textures[this.atlas.name] = this.atlas;
+                this.game.renderer.addTexture(this.game.stage.gl, this.atlas);
+            };
+            Buffer.prototype._setupGlBuffer = function (params) {
+                /**
+                Create framebuffer and associated texture.
+                @method _setupGlBuffer
+                @param params {object} Composite parameter object from constructor
+                @protected
+                **/
+                var ctx, pixels, bufferWidth = params.width, bufferHeight = params.height, gl = this.gl;
+                if (params.baseImage && params.baseImage.getContext) {
+                    ctx = params.baseImage.getContext("2d");
+                    pixels = new Uint8Array(ctx.getImageData(0, 0, bufferWidth, bufferHeight).data);
+                }
+                else {
+                    pixels = new Uint8Array(bufferWidth * bufferHeight * 4);
+                }
+                this._texture = gl.createTexture();
+                gl.bindTexture(gl.TEXTURE_2D, this._texture);
+                gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 1);
+                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, bufferWidth, bufferHeight, 0, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+                // Configure texture
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+                this._framebuffer = gl.createFramebuffer();
+                gl.bindFramebuffer(gl.FRAMEBUFFER, this._framebuffer);
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this._texture, 0);
+                // Set framebuffer back to default
+                gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+            };
+            /**
+            Identifies this as being a buffer.
+            @property isBuffer
+            @type boolean
+            @default true
+            @static
+            **/
+            Buffer.isBuffer = true;
+            return Buffer;
+        })(Kiwi.Entity);
+        Buffers.Buffer = Buffer;
+    })(Buffers = Kiwi.Buffers || (Kiwi.Buffers = {}));
+})(Kiwi || (Kiwi = {}));
+/**
+@module Kiwi
+@submodule Buffers
+**/
+var Kiwi;
+(function (Kiwi) {
+    var Buffers;
+    (function (Buffers) {
+        var BufferAtlas = (function (_super) {
+            __extends(BufferAtlas, _super);
+            /**
+            Specialised texture atlas that allows a Buffer to maintain
+            an atlas without having an image in user memory. WebGL only.
+    
+            @class BufferAtlas
+            @namespace Kiwi.Buffers
+            @extends Kiwi.Textures.TextureAtlas
+            **/
+            function BufferAtlas(params) {
+                /**
+                @constructor
+                @param params {object} Composite parameter object
+                    @param params.name {string} Name of atlas
+                    @param params.cells {array} List of cells in this image
+                    @param params.type {number} Type of texture atlas:
+                        `Kiwi.Textures.TextureAtlas.SINGLE_IMAGE`,
+                        `Kiwi.Textures.TextureAtlas.SPRITE_SHEET`, or
+                        `Kiwi.Textures.TextureAtlas.TEXTURE_ATLAS`.
+                    @param params.texture {WebGLTexture} Texture to use
+                    @param params.width {number} Width of the buffer
+                    @param params.height {number} Height of the buffer
+                    @param [params.sequences] {array} List of cell sequences for animation
+                **/
+                _super.call(this, params.name, params.type, params.cells, null, params.sequences);
+                this.texture = params.texture;
+                this.width = params.width;
+                this.height = params.height;
+                this._dimensions = new Float32Array([this.width, this.height]);
+            }
+            BufferAtlas.prototype.createGLTextureWrapper = function (gl, textureManager) {
+                /**
+                Create a `GLTextureWrapper` to allow the atlas to communicate
+                efficiently with the video card.
+    
+                @method createGLTextureWrapper
+                @param gl {WebGLRenderingContext} Rendering context
+                @param textureManager {Kiwi.Renderers.GLTextureManager} Texture
+                    manager
+                **/
+                this.glTextureWrapper = {
+                    textureAtlas: this,
+                    numBytes: this.width * this.height * 4,
+                    created: true,
+                    uploaded: true,
+                    texture: this.texture,
+                    deleteTexture: Kiwi.Renderers.GLTextureWrapper.prototype.deleteTexture
+                };
+                textureManager.addTextureToCache(this.glTextureWrapper);
+            };
+            BufferAtlas.prototype.enableGL = function (gl, renderer, textureManager) {
+                /**
+                Enable the texture on the video card.
+                @method enableGL
+                @param gl {WebGLRenderingContext} Rendering context
+                @param renderer {Kiwi.Renderers.Renderer} Game renderer
+                @param textureManager {Kiwi.Renderers.GLTextureManager}
+                **/
+                renderer.updateTextureSize(gl, this._dimensions);
+                textureManager.useTexture(gl, this.glTextureWrapper);
+            };
+            return BufferAtlas;
+        })(Kiwi.Textures.TextureAtlas);
+        Buffers.BufferAtlas = BufferAtlas;
+    })(Buffers = Kiwi.Buffers || (Kiwi.Buffers = {}));
+})(Kiwi || (Kiwi = {}));
+/**
+Buffers are a powerful off-screen drawing system.
+
+@module Kiwi
+@submodule Buffers
+@main Buffers
+**/
+var Kiwi;
+(function (Kiwi) {
+    var Buffers;
+    (function (Buffers) {
+        var Bufferer = (function () {
+            /**
+            Master system for rendering frame buffers.
+    
+            You should use a `Bufferer` to create and control
+            all buffers within a `State`, rather than create them singly.
+            This ensures that `GroupBuffer` and `FilterBuffer` objects
+            are properly registered.
+    
+            @class Bufferer
+            @namespace Kiwi.Buffers
+            @since 1.5.0
+            **/
+            function Bufferer(params) {
+                /**
+                @constructor
+                @param params {object} Composite parameter object
+                    @param params.state {Kiwi.State} Current game state
+                **/
+                var renderOption;
+                this.buffers = [];
+                this.component = new Kiwi.Component(params.state, "Bufferer Update");
+                this.component.postUpdate = this.render.bind(this);
+                this.gl = params.state.game.stage.gl;
+                this.state = params.state;
+                // Detect render mode
+                renderOption = this.state.game.renderOption;
+                if (renderOption === Kiwi.RENDERER_WEBGL) {
+                    this._setupGl();
+                }
+                else if (renderOption === Kiwi.RENDERER_CANVAS) {
+                    this._setupCanvas();
+                }
+                else {
+                    Kiwi.Log.error("#Bufferer", "No Canvas or WebGL renderer detected");
+                }
+                // Setup component
+                params.state.components.add(this.component);
+            }
+            Bufferer.prototype.collateBuffers = function (target) {
+                /**
+                Collate all buffers visible in the target group.
+                Buffers not added to the subgraph will not be collated.
+                Buffers with `redraw===false` will not be collated.
+    
+                @method collateBuffers
+                @param target {Kiwi.Group} Target subgraph to collate
+                **/
+                this.bufferCollation = [];
+                this.collateChildren(target, this.bufferCollation, this.testBuffer);
+            };
+            Bufferer.prototype.collateChildren = function (entity, outArray, testFunc) {
+                /**
+                Recursively build a list of children, using a specified function.
+                @method collateChildren
+                @param entity {Kiwi.IChild} Parent of graph section to collate
+                @param outArray {array} Array in which to store results
+                @param [testFunc] {function} Qualification test function
+                **/
+                var i, members;
+                if (!entity.visible) {
+                    return;
+                }
+                if (testFunc) {
+                    if (testFunc(entity)) {
+                        outArray.push(entity);
+                    }
+                }
+                else {
+                    outArray.push(entity);
+                }
+                members = entity.members;
+                if (members) {
+                    for (i = 0; i < members.length; i++) {
+                        this.collateChildren(members[i], outArray, testFunc);
+                    }
+                }
+            };
+            Bufferer.prototype.createBuffer = function (params) {
+                /**
+                Create a `Buffer` using the specified params.
+                The buffer is registered so it may be properly managed.
+    
+                Note: `params.bufferer` is automatically set to `this`.
+    
+                Note: This is a raw buffer. You should probably create
+                a `FilterBuffer` or `GroupBuffer` instead.
+    
+                @method createBuffer
+                @param params {object} Composite parameter object
+                @return Kiwi.Buffers.Buffer
+                **/
+                var buffer;
+                params.bufferer = this;
+                params.state = this.state;
+                buffer = new Kiwi.Buffers.Buffer(params);
+                this.buffers.push(buffer);
+                return buffer;
+            };
+            Bufferer.prototype.createFilterBuffer = function (params) {
+                /**
+                Create a `FilterBuffer` using the specified params.
+                The buffer is registered so it may be properly managed.
+    
+                Note: `params.bufferer` is automatically set to `this`.
+    
+                @method createFilterBuffer
+                @param params {object} Composite parameter object
+                @return Kiwi.GameObjects.FilterBuffer
+                **/
+                var filterBuffer;
+                params.bufferer = this;
+                params.state = this.state;
+                filterBuffer = new Kiwi.GameObjects.FilterBuffer(params);
+                this.buffers.push(filterBuffer);
+                return filterBuffer;
+            };
+            Bufferer.prototype.createGroupBuffer = function (params) {
+                /**
+                Create a `GroupBuffer` using the specified params.
+                The buffer is registered so it may be properly managed.
+    
+                Note: `params.bufferer` is automatically set to `this`.
+    
+                @method createGroupBuffer
+                @param params {object} Composite parameter object
+                @return Kiwi.GameObjects.GroupBuffer
+                **/
+                var groupBuffer;
+                params.bufferer = this;
+                params.state = this.state;
+                groupBuffer = new Kiwi.GameObjects.GroupBuffer(params);
+                this.buffers.push(groupBuffer);
+                return groupBuffer;
+            };
+            Bufferer.prototype.removeBuffer = function (buffer) {
+                /**
+                Remove a `Buffer` from this manager.
+    
+                You should not call this method. It is invoked during deletion.
+                If you remove a buffer from the manager, the buffer may lose
+                functionality.
+    
+                @method removeBuffer
+                @param buffer {Kiwi.Buffers.Buffer} Buffer to remove
+                @return {boolean} Whether the removal succeeded
+                **/
+                var index = this.buffers.indexOf(buffer);
+                if (index > -1) {
+                    this.buffers.splice(index, 1);
+                    return true;
+                }
+                return false;
+            };
+            Bufferer.prototype.renderCanvas = function (target) {
+                /**
+                Render buffers in canvas mode.
+                @method renderCanvas
+                @param target {Kiwi.Group} Target subgraph to render
+                **/
+                var i;
+                this.collateBuffers(target);
+                if (this.bufferCollation.length === 0) {
+                    return;
+                }
+                for (i = this.bufferCollation.length - 1; i >= 0; i--) {
+                    if (this.bufferCollation[i].visible) {
+                        this.bufferCollation[i].draw();
+                    }
+                }
+            };
+            Bufferer.prototype.renderGl = function (target) {
+                /**
+                Render buffers in WebGL mode.
+    
+                Function mirrors `renderCanvas`,
+                except this unbinds the current framebuffer when complete,
+                allowing the system renderer to act as expected.
+    
+                @method renderGl
+                @param target {Kiwi.Group} Target subgraph to render
+                **/
+                this.renderCanvas(target);
+                this.restoreGl();
+            };
+            Bufferer.prototype.render = function (target) {
+                /**
+                Render the subgraph belonging to the target (default: the state).
+    
+                @method render
+                @param [target] {Kiwi.Group} Target subgraph to render
+                **/
+                if (!target) {
+                    target = this.state;
+                }
+                if (this.gl) {
+                    this.renderGl(target);
+                }
+                else {
+                    this.renderCanvas(target);
+                }
+            };
+            Bufferer.prototype.restoreGl = function () {
+                /**
+                Restore the WebGL state to default window.
+                Used after drawing operations.
+    
+                This is called automatically by the rendering system.
+    
+                @method restoreGl
+                **/
+                // Unbind/nullbind framebuffer
+                // That is, return to using the main screen as the render target
+                this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
+                // Restore viewport
+                this.state.game.stage.onResize.dispatch(this.state.game.stage.width, this.state.game.stage.height);
+            };
+            Bufferer.prototype._setupCanvas = function () {
+                /**
+                Set up Canvas rendering systems.
+                @method _setupCanvas
+                @private
+                **/
+            };
+            Bufferer.prototype._setupGl = function () {
+                /**
+                Set up WebGL rendering systems.
+                @method _setupGl
+                @private
+                **/
+                var game = this.state.game;
+                this.filterBufferGlRenderManager = new Kiwi.Buffers.FilterBufferGlRenderManager(game);
+                this.groupBufferGlRenderManager = new Kiwi.Buffers.GroupBufferGlRenderManager(game);
+            };
+            Bufferer.prototype.testBuffer = function (entity) {
+                /**
+                Test whether the entity is a Buffer and should be redrawn.
+                @method testBuffer
+                @param entity {Kiwi.Entity} Entity to test
+                @return boolean
+                **/
+                return entity instanceof Kiwi.Buffers.Buffer;
+            };
+            return Bufferer;
+        })();
+        Buffers.Bufferer = Bufferer;
+    })(Buffers = Kiwi.Buffers || (Kiwi.Buffers = {}));
+})(Kiwi || (Kiwi = {}));
+/**
+@module Kiwi
+@submodule Buffers
+**/
+var Kiwi;
+(function (Kiwi) {
+    var Buffers;
+    (function (Buffers) {
+        var FilterBufferGlRenderManager = (function (_super) {
+            __extends(FilterBufferGlRenderManager, _super);
+            function FilterBufferGlRenderManager(game) {
+                /**
+                Render manager for a `FilterBuffer`.
+                This extends the normal `GLRenderManager`
+                to permit enhanced framebuffer functionality.
+    
+                Render managers are instantiated automatically
+                by a `Bufferer` manager.
+    
+                @class FilterBufferGlRenderManager
+                @namespace Kiwi.Buffers
+                @constructor
+                @extends Kiwi.Renderers.GLRenderManager
+                @param game {Kiwi.Game} Current game
+                **/
+                this.game = game;
+                this.renderer = this.game.renderer;
+                _super.call(this, game);
+                // Share resources with GLRenderManager.
+                // This duplicates some stuff from `boot` and `_init`
+                // which would otherwise not be called.
+                this.textureManager = this.renderer.textureManager;
+                this.shaderManager = this.renderer.shaderManager;
+                this.sharedRenderers = this.renderer.sharedRenderers;
+                this.camMatrix = this.renderer.camMatrix;
+                this.gl = this.game.stage.gl;
+                this._baseRenderer = new Kiwi.Renderers.FilterGl({
+                    gl: this.gl,
+                    shaderManager: this.shaderManager
+                });
+            }
+            Object.defineProperty(FilterBufferGlRenderManager.prototype, "currentBlendMode", {
+                get: function () {
+                    return this.renderer.currentBlendMode;
+                },
+                set: function (value) {
+                    this.renderer.currentBlendMode = value;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(FilterBufferGlRenderManager.prototype, "currentRenderer", {
+                get: function () {
+                    return this.renderer.currentRenderer;
+                },
+                set: function (value) {
+                    this.renderer.currentRenderer = value;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(FilterBufferGlRenderManager.prototype, "currentTextureAtlas", {
+                get: function () {
+                    return this.renderer.currentTextureAtlas;
+                },
+                set: function (value) {
+                    this.renderer.currentTextureAtlas = value;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            FilterBufferGlRenderManager.prototype.renderBuffer = function (filterBuffer) {
+                /**
+                Render to the specified `FilterBuffer`.
+                @method renderBuffer
+                @param filterBuffer {Kiwi.GameObjects.FilterBuffer}
+                    FilterBuffer to render
+                **/
+                var i;
+                // Reset current renderer.
+                // This prevents runtime created shaders from being uploaded
+                // and the render manager failing to notice, causing crashes.
+                this.currentRenderer = null;
+                // Mandate blend mode in CocoonJS.
+                // This must be called per-frame, because CocoonJS seems to
+                // interfere with blend modes on a per-frame basis.
+                if (this.game.deviceTargetOption === Kiwi.TARGET_COCOON) {
+                    this.switchBlendMode(this.gl, this.renderer.currentBlendMode);
+                }
+                // Render base image
+                this.renderBaseImage(filterBuffer);
+                for (i = 0; i < filterBuffer.filters.length; i++) {
+                    if (filterBuffer.filters[i].active) {
+                        filterBuffer.pingpong();
+                        this.renderFilter(filterBuffer, filterBuffer.filters[i]);
+                    }
+                }
+                filterBuffer.updateTextureAtlas();
+            };
+            FilterBufferGlRenderManager.prototype.renderBaseImage = function (filterBuffer) {
+                /**
+                Render the base image of the `FilterBuffer` into buffer 2.
+    
+                This is not pingponged yet, because if there are no filters,
+                the filterBuffer will just display the base image.
+    
+                @method renderBaseImage
+                @param filterBuffer {Kiwi.GameObjects.FilterBuffer}
+                    FilterBuffer to render
+                **/
+                if (filterBuffer.clearOnRender) {
+                    filterBuffer.clear(false);
+                }
+                // Acquire renderer
+                var rendererSwitched = false;
+                if (this._baseRenderer !== this.currentRenderer) {
+                    rendererSwitched = true;
+                    // Substitution for `_switchRenderer`
+                    if (this.currentRenderer) {
+                        this.currentRenderer.disable(this.gl);
+                    }
+                    this.currentRenderer = this._baseRenderer;
+                    this.currentRenderer.enable(this.gl);
+                }
+                // Upload textures
+                if (!this.currentTextureAtlas || filterBuffer.atlasInput.image !== this.currentTextureAtlas.image || filterBuffer.atlasInput.dirty || (rendererSwitched && filterBuffer.atlasInput.image === this.currentTextureAtlas.image)) {
+                    filterBuffer.atlasInput.enableGL(this.gl, this.currentRenderer, this.textureManager);
+                }
+                // Manage blend mode
+                if (!this.currentBlendMode.isIdentical(this._baseRenderer.blendMode) || this.currentBlendMode.dirty || this.game.deviceTargetOption === Kiwi.TARGET_COCOON) {
+                    this.switchBlendMode(this.gl, this._baseRenderer.blendMode);
+                }
+                // Render
+                this._baseRenderer.drawCorners(this.gl, filterBuffer.corners);
+            };
+            FilterBufferGlRenderManager.prototype.renderFilter = function (filterBuffer, filter) {
+                /**
+                Render a filter from buffer 1 to buffer 2.
+                @method renderFilter
+                @param filterBuffer {Kiwi.GameObjects.FilterBuffer}
+                    FilterBuffer to render
+                @param filter {Kiwi.Buffers.Filter} Filter to render
+                **/
+                this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, filterBuffer.bufferOut);
+                this.gl.viewport(0, 0, filterBuffer.width, filterBuffer.height);
+                // Always clear buffer ops after the first
+                filterBuffer.clear(false);
+                // Acquire renderer
+                var rendererSwitched = false;
+                if (filter !== this.currentRenderer) {
+                    rendererSwitched = true;
+                    // Substitution for `_switchRenderer`
+                    if (this.currentRenderer) {
+                        this.currentRenderer.disable(this.gl);
+                    }
+                    this.currentRenderer = filter;
+                    this.currentRenderer.enable(this.gl);
+                }
+                // Upload textures
+                if (!this.currentTextureAtlas || filterBuffer.atlasInput.image !== this.currentTextureAtlas.image || filterBuffer.atlasInput.dirty || (rendererSwitched && filterBuffer.atlasInput.image === this.currentTextureAtlas.image)) {
+                    filterBuffer.atlasSource.enableGL(this.gl, this.currentRenderer, this.textureManager);
+                }
+                // Manage blend mode
+                if (!this.currentBlendMode.isIdentical(filter.blendMode) || this.currentBlendMode.dirty || this.game.deviceTargetOption === Kiwi.TARGET_COCOON) {
+                    this.switchBlendMode(this.gl, filter.blendMode);
+                }
+                // Render
+                filter.drawCorners(this.gl, Kiwi.Buffers.FilterBufferGlRenderManager.corners);
+            };
+            /**
+            Normalized texture reference. This maps the corners of the textures
+            to the corners of the buffer.
+    
+            @property corners
+            @type array
+            @static
+            **/
+            FilterBufferGlRenderManager.corners = [
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                1,
+                0,
+                1,
+                1,
+                1,
+                1,
+                0,
+                1,
+                0,
+                1
+            ];
+            return FilterBufferGlRenderManager;
+        })(Kiwi.Renderers.GLRenderManager);
+        Buffers.FilterBufferGlRenderManager = FilterBufferGlRenderManager;
+    })(Buffers = Kiwi.Buffers || (Kiwi.Buffers = {}));
+})(Kiwi || (Kiwi = {}));
+/**
+@module Kiwi
+@submodule Buffers
+**/
+var Kiwi;
+(function (Kiwi) {
+    var Buffers;
+    (function (Buffers) {
+        var GroupBufferGlRenderManager = (function (_super) {
+            __extends(GroupBufferGlRenderManager, _super);
+            function GroupBufferGlRenderManager(game) {
+                /**
+                Render manager for a `GroupBuffer`.
+                This extends the normal `GLRenderManager`
+                to permit enhanced framebuffer functionality.
+    
+                Render managers are instantiated automatically by a `Bufferer` manager.
+    
+                @class GroupBufferGlRenderManager
+                @namespace Kiwi.Buffers
+                @constructor
+                @extends Kiwi.Renderers.GLRenderManager
+                @param game {Kiwi.Game} Current game
+                **/
+                this.game = game;
+                this.renderer = this.game.renderer;
+                _super.call(this, game);
+                this._stageResolution = new Float32Array([0, 0]);
+                this._m = new Kiwi.Geom.Matrix();
+                // Share resources with GLRenderManager.
+                // This duplicates some stuff from `boot` and `_init`
+                // which would otherwise not be called.
+                this.textureManager = this.renderer.textureManager;
+                this.shaderManager = this.renderer.shaderManager;
+                this.sharedRenderers = this.renderer.sharedRenderers;
+                this.camMatrix = this.renderer.camMatrix;
+                this.gl = this.game.stage.gl;
+            }
+            Object.defineProperty(GroupBufferGlRenderManager.prototype, "currentBlendMode", {
+                get: function () {
+                    return this.renderer.currentBlendMode;
+                },
+                set: function (value) {
+                    this.renderer.currentBlendMode = value;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(GroupBufferGlRenderManager.prototype, "currentRenderer", {
+                get: function () {
+                    return this.renderer.currentRenderer;
+                },
+                set: function (value) {
+                    this.renderer.currentRenderer = value;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(GroupBufferGlRenderManager.prototype, "currentTextureAtlas", {
+                get: function () {
+                    return this.renderer.currentTextureAtlas;
+                },
+                set: function (value) {
+                    this.renderer.currentTextureAtlas = value;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            GroupBufferGlRenderManager.prototype._applyRenderTasks = function (groupBuffer) {
+                /**
+                Modify the render sequence to use a `RenderTask`.
+    
+                This will discard any renderable objects that do not have
+                the specified render task.
+                It will then modify the sequence records of
+                each compatible object to reflect its `RenderTask` settings.
+    
+                @method _applyRenderTasks
+                @param groupBuffer {Kiwi.GameObjects.GroupBuffer} GroupBuffer which
+                    defines task
+                @private
+                **/
+                var eTask, i, task = groupBuffer.renderTask;
+                if (task) {
+                    for (i = this._sequence.length - 1; i >= 0; i--) {
+                        if (this._sequence[i].entity.renderTasks && this._sequence[i].entity.renderTasks[task]) {
+                            eTask = this._sequence[i].entity.renderTasks[task];
+                            this._sequence[i].renderer = eTask.renderer;
+                            this._sequence[i].shader = eTask.renderer.shaderPair;
+                            this._sequence[i].isBatchRenderer = eTask.renderer.isBatchRenderer;
+                            this._sequence[i].texture = eTask.atlas;
+                            // Apply and cache alpha
+                            this._sequence[i].alphaOriginal = this._sequence[i].entity.alpha;
+                            this._sequence[i].entity.alpha = this._sequence[i].entity.renderTasks[task].alpha;
+                        }
+                        else {
+                            this._sequence.splice(i, 1);
+                        }
+                    }
+                }
+            };
+            GroupBufferGlRenderManager.prototype._ceaseRenderTasks = function (groupBuffer) {
+                /**
+                Modify members of a render sequence to remove data
+                specific to a completed render pass.
+                This entails removing some alpha data.
+    
+                @method _ceaseRenderTasks
+                @param groupBuffer {Kiwi.GameObjects.GroupBuffer} GroupBuffer
+                    which defines task
+                @private
+                **/
+                var i;
+                if (groupBuffer.renderTask) {
+                    for (i = 0; i < this._sequence.length; i++) {
+                        this._sequence[i].entity.alpha = this._sequence[i].alphaOriginal;
+                    }
+                }
+            };
+            GroupBufferGlRenderManager.prototype.renderBuffer = function (groupBuffer) {
+                /**
+                Render to the specified `GroupBuffer`.
+                @method renderBuffer
+                @param groupBuffer {Kiwi.GameObjects.GroupBuffer} GroupBuffer
+                    to render
+                **/
+                var i, ignorance, ct = groupBuffer.camera.transform;
+                if (groupBuffer.clearOnRender) {
+                    groupBuffer.clear(false);
+                }
+                // Check whether render should continue.
+                // GroupBuffers are permitted to have children without members.
+                if (!groupBuffer.target || (groupBuffer.target.members && !groupBuffer.target.members.length)) {
+                    return;
+                }
+                // Set stage resolution from target buffer.
+                this._stageResolution[0] = groupBuffer.width;
+                this._stageResolution[1] = groupBuffer.height;
+                // Reset current renderer.
+                // This prevents runtime created shaders from being uploaded
+                // and the render manager failing to notice, causing crashes.
+                this.currentRenderer = null;
+                // Do camera work.
+                // Compose a new scratch matrix configuration.
+                // We need data from a zero-translated matrix,
+                // and if we did it to the concatenated matrix of the camera,
+                // we'd dirty it and never get the efficiency gains
+                // of the cached concat.
+                this._m.setFromOffsetTransform(0, 0, ct.scaleX, -ct.scaleY, -ct.rotation, ct.anchorPointX, ct.anchorPointY);
+                this._m.append(1, 0, 0, 1, ct.x - ct.anchorPointX, ct.y - ct.anchorPointY);
+                // GroupBuffers which render their own children
+                // must apply an inverse transform
+                // to the camera, otherwise children will inherit parent transforms
+                // and slide around as the object transforms
+                if (groupBuffer.target === groupBuffer) {
+                    ignorance = groupBuffer.transform.ignoreChild;
+                    groupBuffer.transform.ignoreChild = true;
+                }
+                // Create camera matrix.
+                this.camMatrix[0] = this._m.a;
+                this.camMatrix[1] = this._m.b;
+                this.camMatrix[3] = this._m.c;
+                this.camMatrix[4] = this._m.d;
+                this.camMatrix[6] = this._m.tx;
+                this.camMatrix[7] = this._m.ty;
+                // Mandate blend mode in CocoonJS.
+                // This must be called per-frame, because CocoonJS seems to
+                // interfere with blend modes on a per-frame basis.
+                if (this.game.deviceTargetOption === Kiwi.TARGET_COCOON) {
+                    this.switchBlendMode(this.gl, this.renderer.currentBlendMode);
+                }
+                // Substitute for `collateRenderSequence`
+                // to collect correct subgraph.
+                this._sequence = [];
+                if (groupBuffer.target === groupBuffer) {
+                    for (i = 0; i < groupBuffer.members.length; i++) {
+                        this.collateChild(groupBuffer.members[i]);
+                    }
+                }
+                else {
+                    // `GroupBuffer` sees other `GroupBuffer` objects as
+                    // `StaticImage` and does not collate their children.
+                    this.collateChild(groupBuffer.target);
+                }
+                // Apply render tasks.
+                this._applyRenderTasks(groupBuffer);
+                // Form render batches.
+                this.collateBatches();
+                // Render buffer.
+                this.renderBatches(this.gl, groupBuffer.camera);
+                // Reset values
+                if (ignorance) {
+                    groupBuffer.transform.ignoreChild = ignorance;
+                }
+                this._ceaseRenderTasks(groupBuffer);
+            };
+            return GroupBufferGlRenderManager;
+        })(Kiwi.Renderers.GLRenderManager);
+        Buffers.GroupBufferGlRenderManager = GroupBufferGlRenderManager;
+    })(Buffers = Kiwi.Buffers || (Kiwi.Buffers = {}));
+})(Kiwi || (Kiwi = {}));
+/**
+@module Kiwi
+@submodule GameObjects
+**/
+var Kiwi;
+(function (Kiwi) {
+    var GameObjects;
+    (function (GameObjects) {
+        var FilterBuffer = (function (_super) {
+            __extends(FilterBuffer, _super);
+            function FilterBuffer(params) {
+                /**
+                Buffer that draws a texture.
+                The `FilterBuffer` takes a single input texture,
+                applies a number of filter effects, and outputs it into the buffer.
+    
+                The `FilterBuffer` functions as a `StaticImage`.
+                It does not have children.
+    
+                All standard Buffer options are available.
+    
+                You should create `FilterBuffer` objects
+                using the `createFilterBuffer` method of a `Bufferer` object.
+    
+                Note: the FilterBuffer is generated to process one specific image.
+                While you may change that image, the dimensions of the buffer
+                will not change.
+    
+                @class FilterBuffer
+                @namespace Kiwi.GameObjects
+                @constructor
+                @extends Kiwi.Buffers.Buffer
+                @param params {object} Composite parameter object
+                    @param params.atlasInput {Kiwi.Textures.TextureAtlas} Texture
+                        to filter
+                    @param params.bufferer {Kiwi.Buffers.Bufferer} Buffer
+                        manager object.
+                        You should not create `FilterBuffer` objects on their own;
+                        use a manager to ensure they are properly registered.
+                        The manager will auto-complete this parameter.
+                    @param params.state {Kiwi.State} Current game state
+                **/
+                _super.call(this, Kiwi.GameObjects.FilterBuffer.processParams(params));
+                this._clearCanvas2 = function () {
+                    /**
+                    Clear the contents of this buffer using Canvas methods.
+        
+                    This modified version targets `_canvas2`, the visible buffer.
+        
+                    @method _clearCanvas
+                    @private
+                    **/
+                    this._ctx2.clearRect(0, 0, this.width, this.height);
+                    if (this.clearColor.a > 0) {
+                        this._ctx2.save();
+                        this._ctx2.fillStyle = "rgba(" + this.clearColor.r255 + "," + this.clearColor.g255 + "," + this.clearColor.b255 + "," + this.clearColor.a + ")";
+                        this._ctx2.fillRect(0, 0, this.width, this.height);
+                        this._ctx2.restore();
+                    }
+                };
+                var x, y;
+                this.atlasInput = params.atlasInput;
+                this._setupSecondBuffer(params);
+                if (this.gl) {
+                    x = 1;
+                    y = 1;
+                    if (this.atlasInput.image) {
+                        if (this.atlasInput.image.width !== this.width) {
+                            x = this.width / this.atlasInput.image.width;
+                        }
+                        if (this.atlasInput.image.height !== this.height) {
+                            y = this.height / this.atlasInput.image.height;
+                        }
+                    }
+                    this.corners = [
+                        0,
+                        0,
+                        0,
+                        0,
+                        1,
+                        0,
+                        x,
+                        0,
+                        1,
+                        1,
+                        x,
+                        y,
+                        0,
+                        1,
+                        0,
+                        y
+                    ];
+                }
+                this.filters = [];
+            }
+            FilterBuffer.processParams = function (params) {
+                /**
+                Process params for `super` invocation.
+                @method processParams
+                @param params {object} Composite parameter object
+                @return {object} Modified parameters
+                @static
+                **/
+                var atlas = params.atlasInput;
+                // Determine width and height
+                if (isNaN(params.width)) {
+                    if (atlas.width) {
+                        params.width = atlas.width;
+                    }
+                    else if (atlas.cellWidth && atlas.cols) {
+                        params.width = atlas.cellWidth * atlas.cols;
+                    }
+                }
+                if (isNaN(params.height)) {
+                    if (atlas.height) {
+                        params.height = atlas.height;
+                    }
+                    else if (atlas.cellHeight && atlas.rows) {
+                        params.height = atlas.cellHeight * atlas.rows;
+                    }
+                }
+                return params;
+            };
+            Object.defineProperty(FilterBuffer.prototype, "bufferOut", {
+                /**
+                Buffer into which the filter is output. Note that this may change
+                to reflect different internal frame buffers as the FilterBuffer
+                processes images. This access is read-only.
+        
+                @property bufferOut
+                @type WebGLFramebuffer
+                **/
+                get: function () {
+                    return this._framebuffer2;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(FilterBuffer.prototype, "canvasInput", {
+                /**
+                Input canvas used for the base image.
+                This is a READ-ONLY property.
+        
+                Note that the FilterBuffer exchanges internal canvas references
+                as it works. This is not a constant address.
+        
+                @property canvasInput
+                @type HTMLCanvasElement
+                **/
+                get: function () {
+                    return this._canvas;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(FilterBuffer.prototype, "canvasOutput", {
+                /**
+                Second canvas, used for redrawing the input image in canvas mode.
+                This is a READ-ONLY property.
+        
+                Note that the FilterBuffer exchanges internal canvas references
+                as it works. This is not a constant address.
+        
+                @property canvasOutput
+                @type HTMLCanvasElement
+                **/
+                get: function () {
+                    return this._canvas2;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(FilterBuffer.prototype, "ctxInput", {
+                /**
+                Input rendering context in canvas mode. READ-ONLY access.
+        
+                This is swapped with `_ctx2` every time a filter pingpongs.
+                It is not a constant address.
+        
+                @property ctxInput
+                @type CanvasRenderingContext2D
+                **/
+                get: function () {
+                    return this._ctx;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(FilterBuffer.prototype, "ctxOutput", {
+                /**
+                Output rendering context in canvas mode. READ-ONLY access.
+        
+                This is swapped with `_ctx` every time a filter pingpongs.
+                It is not a constant address.
+        
+                @property ctxOutput
+                @type CanvasRenderingContext2D
+                **/
+                get: function () {
+                    return this._ctx2;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            Object.defineProperty(FilterBuffer.prototype, "texture", {
+                /**
+                WebGL texture. READ-ONLY.
+                @property texture
+                @type WebGLTexture
+                **/
+                get: function () {
+                    return this._texture;
+                },
+                enumerable: true,
+                configurable: true
+            });
+            FilterBuffer.prototype.addFilter = function (key, params) {
+                /**
+                Add a new filter to the `FilterBuffer`.
+                The new filter will be positioned at
+                the end of the `filters` queue.
+    
+                Filters are identified by key in
+                `Kiwi.Shaders.Filters.FiltersGl` and
+                `Kiwi.Shaders.Filters.FilterShaders`,
+                in order. The key is the `name` property of the filter or shader.
+                If no key can be found,
+                this function issues a warning and returns null.
+    
+                If a filter requires params, they may be specified.
+                Most filters do not.
+                This function will automatically add
+                `gl` and `shaderManager` params.
+    
+                Some filters are defined only as shaders.
+                These will automatically be assigned to a `FilterGl` object,
+                which will be named by the shader.
+                A shader-only filter is assumed to be `FilterGl` compatible,
+                with a single input texture.
+    
+                @method addFilter
+                @param key {string} Name of filter to add
+                @param [params] {object} Composite parameter object for filter
+                @return {Kiwi.Shaders.ShaderPair} Filter created
+                **/
+                var filter = null;
+                if (!params) {
+                    params = {};
+                }
+                params.filterBuffer = this;
+                /*
+                if ( this.gl ) {
+                    params.gl = this.gl;
+                    params.shaderManager =
+                        ( <Kiwi.Renderers.GLRenderManager>this.game.renderer )
+                        .shaderManager;
+                    if ( Kiwi.Shaders.Filters.FiltersGl[ key ] ) {
+                        filter =
+                            new Kiwi.Shaders.Filters.FiltersGl[ key ]( params );
+                        this.filters.push( filter );
+                    } else if ( Kiwi.Shaders.Filters.FilterShaders[ key ] ) {
+                        params.shaderName =
+                            Kiwi.Shaders.Filters.FilterShaders[ key ];
+                        params.name =
+                            Kiwi.Shaders[ params.shaderName ].prototype.name;
+                        filter = new Kiwi.Renderers.FilterGl( params );
+                        this.filters.push( filter );
+                    }
+                } else {
+                    if ( Kiwi.Shaders.Filters.FiltersCanvas[ key ] ) {
+                        filter = new Kiwi.Renderers.FiltersCanvas[ key ]( params );
+                        this.filters.push( filter );
+                    }
+                }
+                */
+                if (this.gl) {
+                    params.gl = this.gl;
+                    params.shaderManager = this.game.renderer.shaderManager;
+                    if (Kiwi.Renderers[key]) {
+                        // This is a renderer/shader pair.
+                        filter = new Kiwi.Renderers[key](params);
+                        this.filters.push(filter);
+                    }
+                    else if (Kiwi.Shaders[key]) {
+                        // This is a solo shader. Assign a default renderer.
+                        params.shaderName = key;
+                        params.name = Kiwi.Shaders[key].prototype.name;
+                        filter = new Kiwi.Renderers.FilterGl(params);
+                        this.filters.push(filter);
+                    }
+                }
+                else {
+                    if (Kiwi.Shaders[key]) {
+                        filter = new Kiwi.Shaders[key](params);
+                        this.filters.push(filter);
+                    }
+                }
+                if (!filter) {
+                    Kiwi.Log.warn("#buffers", "Could not find filter", key);
+                }
+                return filter;
+            };
+            FilterBuffer.prototype.destroy = function () {
+                /**
+                Extend destroy behavior to deal with back buffer.
+                @method destroy
+                **/
+                // Put second buffer in first place, whence export begins.
+                this.pingpong();
+                _super.prototype.destroy.call(this);
+                // Delete second buffer as well
+                if (this.gl) {
+                    this.gl.deleteTexture(this._texture2);
+                    this.gl.deleteFramebuffer(this._framebuffer2);
+                }
+            };
+            FilterBuffer.prototype._drawCanvas = function () {
+                /**
+                Custom canvas draw behavior.
+                @method _drawCanvas
+                @protected
+                **/
+                var i;
+                this.clear();
+                // Render base image
+                this._ctx2.drawImage(this.atlasInput.image, 0, 0, this.atlasInput.image.width, this.atlasInput.image.height, 0, 0, this.width, this.height);
+                for (i = 0; i < this.filters.length; i++) {
+                    if (this.filters[i].active) {
+                        this.filters[i].render(this);
+                    }
+                }
+            };
+            FilterBuffer.prototype._drawGl = function () {
+                /**
+                Custom WebGL draw behavior.
+                @method _drawGl
+                @protected
+                **/
+                this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.bufferOut);
+                this.gl.viewport(0, 0, this.width, this.height);
+                this.bufferer.filterBufferGlRenderManager.renderBuffer(this);
+            };
+            FilterBuffer.prototype.exportImage = function (key) {
+                /**
+                Export the current state of the buffer to a global texture file
+                as a `SingleImage` with the supplied key parameter.
+                An associated atlas will be added to the state texture library.
+    
+                The texture file will be stored as a canvas element.
+    
+                WebGL note: This will unbind any currently-bound framebuffer.
+    
+                This method is extended for `FilterBuffer`.
+                It will pingpong before export.
+    
+                @method exportImage
+                @param key {string} Key for new texture file
+                **/
+                this.pingpong();
+                _super.prototype.exportImage.call(this, key);
+            };
+            FilterBuffer.prototype.exportSpritesheet = function (key, model) {
+                /**
+                Export the current state of the buffer to a global texture file
+                as a `SpriteSheet` with the supplied key parameter
+                and the model's sprite properties.
+                An associated atlas will be added to the state texture library.
+    
+                The texture file will be stored as a canvas element.
+    
+                WebGL note: This will unbind any currently-bound framebuffer.
+    
+                This method is extended for `FilterBuffer`.
+                It will pingpong before export.
+    
+                @method exportSpritesheet
+                @param key {string} Key for new texture file
+                @param model {Kiwi.Textures.SpriteSheet} Sprite sheet
+                    from which to copy properties
+                **/
+                this.pingpong();
+                _super.prototype.exportSpritesheet.call(this, key, model);
+            };
+            FilterBuffer.prototype.getFilter = function (name) {
+                /**
+                Return the specified filter, if it exists on this `FilterBuffer`.
+    
+                @method getFilter
+                @param name {string} Name of the filter to seek
+                @return {object} Filter with the specified name, or `null`.
+                **/
+                var i;
+                for (i = 0; i < this.filters.length; i++) {
+                    if (this.filters[i].name === name) {
+                        return this.filters[i];
+                    }
+                }
+                return null;
+            };
+            FilterBuffer.prototype.pingpong = function () {
+                /**
+                Swap buffers. Note that this will not swap the buffer
+                on the texture atlas. Used during filter rendering.
+                It should not be necessary to call this.
+    
+                If you are writing your own `FilterCanvas` extensions, you may wish
+                to use `pingpong()`. Canvas filters do not automatically pingpong,
+                but it may sometimes be useful to have the second buffer available
+                to draw or process.
+    
+                @method pingpong
+                **/
+                var swap;
+                if (this.gl) {
+                    swap = this._framebuffer2;
+                    this._framebuffer2 = this._framebuffer;
+                    this._framebuffer = swap;
+                    swap = this._texture2;
+                    this._texture2 = this._texture;
+                    this._texture = swap;
+                }
+                else {
+                    swap = this._canvas2;
+                    this._canvas2 = this._canvas;
+                    this._canvas = swap;
+                    swap = this._ctx2;
+                    this._ctx2 = this._ctx;
+                    this._ctx = swap;
+                }
+                this.updateTextureAtlas();
+            };
+            FilterBuffer.prototype._setupSecondBuffer = function (params) {
+                /**
+                Setup a second framebuffer, so the renderer can pingpong.
+    
+                This puts the initial buffer into the second position,
+                which is thereafter used as the output texture source.
+                The first-position buffer is drawn into the second position,
+                so should be more fundamentally accessible to filters and shaders.
+    
+                @method _setupSecondBuffer
+                @param params {object} Composite parameter object from constructor
+                @private
+                **/
+                if (this.gl) {
+                    this._framebuffer2 = this._framebuffer;
+                    this._texture2 = this._texture;
+                    this._setupGlBuffer(params);
+                    this.atlasSource = new Kiwi.Buffers.BufferAtlas({
+                        name: this.name + "SourceAtlas",
+                        cells: [{ x: 0, y: 0, w: this.width, h: this.height }],
+                        type: Kiwi.Textures.TextureAtlas.SINGLE_IMAGE,
+                        texture: this._texture,
+                        width: this.width,
+                        height: this.height
+                    });
+                    this.state.textureLibrary.textures[this.atlasSource.name] = this.atlasSource;
+                    this.game.renderer.addTexture(this.gl, this.atlasSource);
+                }
+                else {
+                    this._canvas2 = this._canvas;
+                    this._ctx2 = this._ctx;
+                    this._setupCanvasBuffer(params);
+                    this.atlasSource = new Kiwi.Textures.SingleImage(this.name + "AtlasSource", this._canvas2, this.width, this.height);
+                    this.state.textureLibrary.textures[this.atlasSource.name] = this.atlasSource;
+                }
+            };
+            FilterBuffer.prototype.updateTextureAtlas = function () {
+                /**
+                Ensure that the output texture atlas is pointing at
+                the correct sub-buffer.
+    
+                @method updateTextureAtlas
+                **/
+                if (this.gl) {
+                    this.atlas.glTextureWrapper.texture = this._texture2;
+                    this.atlasSource.glTextureWrapper.texture = this._texture;
+                }
+                else {
+                    this.atlas.image = this._canvas2;
+                }
+            };
+            return FilterBuffer;
+        })(Kiwi.Buffers.Buffer);
+        GameObjects.FilterBuffer = FilterBuffer;
+    })(GameObjects = Kiwi.GameObjects || (Kiwi.GameObjects = {}));
+})(Kiwi || (Kiwi = {}));
+/**
+@module Kiwi
+@submodule GameObjects
+**/
+var Kiwi;
+(function (Kiwi) {
+    var GameObjects;
+    (function (GameObjects) {
+        var GroupBuffer = (function (_super) {
+            __extends(GroupBuffer, _super);
+            function GroupBuffer(params) {
+                /**
+                Buffer that draws a subgraph.
+                The GroupBuffer can either use its own children,
+                or another entity with members, as the subgraph.
+                The subgraph will be rendered into the buffer.
+    
+                The GroupBuffer functions as a `Group`.
+    
+                Children of the GroupBuffer will not be drawn
+                as part of the regular render sequence.
+    
+                All standard Buffer options are available.
+    
+                You should create `GroupBuffer` objects
+                using the `createGroupBuffer` method of a `Bufferer` object.
+    
+                @class GroupBuffer
+                @namespace Kiwi.GameObjects
+                @constructor
+                @extends Kiwi.Buffers.Buffer
+                @extends Kiwi.Group
+                @param params {object} Composite parameter object
+                    @param params.state {Kiwi.State} Current game state
+                    @param params.bufferer {Kiwi.Buffers.Bufferer} Buffer
+                        manager object. You should not create `GroupBuffer` objects
+                        on their own; use a manager to ensure they are properly
+                        registered. The manager will auto-complete this parameter.
+                    @param [params.camera] {Kiwi.Camera} Camera to use
+                    @param [params.renderTask] {string} Render task identifier
+                    @param [params.target=this] {Kiwi.Entity} Parent of a subgraph
+                **/
+                _super.call(this, params);
+                this._extendWithGroupMethods();
+                this.camera = params.camera || new Kiwi.Camera(this.game, 0, this.name ? this.name + "-camera" : "GroupBufferCamera", 0, 0, this.width, this.height);
+                this.camera.fitToStage = false;
+                this._camMatrix = new Kiwi.Geom.Matrix();
+                this.members = [];
+                this.renderTask = params.renderTask;
+                this.target = params.target || this;
+                this.addTag("GroupBuffer");
+            }
+            GroupBuffer.prototype._drawCanvas = function () {
+                /**
+                Custom canvas draw behavior.
+                @method _drawCanvas
+                @protected
+                **/
+                var ct, i, ignorance, stageCtx;
+                this.clear();
+                // Standard render techniques always use the stage context.
+                // We're going to steal it, impersonate it, and put it back.
+                stageCtx = this.game.stage.ctx;
+                this.game.stage.ctx = this._ctx;
+                this._ctx.save();
+                // Apply camera
+                ct = this.camera.transform;
+                this._camMatrix.setFromOffsetTransform(0, 0, ct.scaleX, ct.scaleY, ct.rotation, ct.anchorPointX, ct.anchorPointY);
+                this._ctx.setTransform(this._camMatrix.a, this._camMatrix.b, this._camMatrix.c, this._camMatrix.d, this._camMatrix.tx, this._camMatrix.ty);
+                this._ctx.transform(1, 0, 0, 1, ct.x - ct.anchorPointX, ct.y - ct.anchorPointY);
+                // Draw elements
+                if (this.target === this) {
+                    // GroupBuffers which render their own children
+                    // must apply an inverse transform
+                    // to the camera, otherwise children will inherit\
+                    // parent transforms and slide around as the object transforms
+                    ignorance = this.transform.ignoreChild;
+                    this.transform.ignoreChild = true;
+                    if (this.renderTask) {
+                        for (i = 0; i < this.members.length; i++) {
+                            this._recurseTask(this.members[i]);
+                        }
+                    }
+                    else {
+                        for (i = 0; i < this.members.length; i++) {
+                            this._recurse(this.members[i]);
+                        }
+                    }
+                }
+                else {
+                    if (this.renderTask) {
+                        this._recurseTask(this.target);
+                    }
+                    else {
+                        this._recurse(this.target);
+                    }
+                }
+                this._ctx.restore();
+                this.transform.ignoreChild = ignorance;
+                this.game.stage.ctx = stageCtx;
+            };
+            GroupBuffer.prototype._drawGl = function () {
+                /**
+                Custom WebGL draw behavior.
+                @method _drawGl
+                @protected
+                **/
+                this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this._framebuffer);
+                this.gl.viewport(0, 0, this.width, this.height);
+                this.bufferer.groupBufferGlRenderManager.renderBuffer(this);
+            };
+            GroupBuffer.prototype.destroy = function () {
+                /**
+                Destroy the `GroupBuffer` and its own children.
+                Hybrid of `Buffer` and `Group` destroy methods.
+    
+                Do not call this method. Use `exists = false` to ensure the entity
+                is removed at the appropriate point during the game loop.
+    
+                @method destroy
+                **/
+                var i;
+                _super.prototype.destroy.call(this);
+                for (i = this.members.length - 1; i >= 0; i--) {
+                    this.members[i].destroy(true);
+                }
+            };
+            GroupBuffer.prototype.drawCopy = function (target) {
+                /**
+                Draw a copy of the target, using this `GroupBuffer`'s camera.
+    
+                This is useful for capturing snapshots.
+    
+                The operation will temporarily set `this.target` to `target`,
+                then call `drawImmediate()`.
+                Ensure that `clearOnRender` and `redraw` are set appropriately.
+    
+                @method drawCopy
+                @param target {Kiwi.IChild} Entity to draw into the buffer.
+                **/
+                var _target = this.target;
+                this.target = target;
+                this.drawImmediate();
+                this.target = _target;
+            };
+            GroupBuffer.prototype.drawCut = function (target) {
+                /**
+                Draw the target, using this `GroupBuffer`'s camera.
+                The target is then deleted.
+    
+                This is useful for one-time renders, such as custom sprite sheets.
+    
+                The operation will temporarily set `this.target` to `target`,
+                then call `drawImmediate()`.
+                Ensure that `clearOnRender` and `redraw` are set appropriately.
+    
+                @method drawCut
+                @param target {Kiwi.Entity} Entity to draw into the buffer.
+                **/
+                this.drawCopy(target);
+                target.exists = false;
+            };
+            GroupBuffer.prototype._extendWithGroupMethods = function () {
+                /**
+                Copy properties from `Kiwi.Group` to simulate multiple inheritance.
+                @method _extendWithGroupMethods
+                @private
+                **/
+                // The `GroupBuffer` shouldn't be a `Group`, because
+                // (A) it needs the `Buffer` inheritance, and
+                // (B) groups don't enter the render pipeline.
+                var i, props = [
+                    "_validateChild",
+                    "addChild",
+                    "addChildAfter",
+                    "addChildAt",
+                    "addChildBefore",
+                    "callAll",
+                    "clear",
+                    "contains",
+                    "containsAncestor",
+                    "containsDescendant",
+                    "forEach",
+                    "getAllChildren",
+                    "getChildAt",
+                    "getChildByID",
+                    "getChildByName",
+                    "getChildIndex",
+                    "getChildrenByTag",
+                    "getFirstChildByTag",
+                    "getLastChildByTag",
+                    "numChildren",
+                    "removeChild",
+                    "removeChildAt",
+                    "removeChildren",
+                    "replaceChild",
+                    "setAll",
+                    "setChildIndex",
+                    "swapChildren",
+                    "swapChildrenAt"
+                ];
+                for (i = 0; i < props.length; i++) {
+                    Kiwi.GameObjects.GroupBuffer.prototype[props[i]] = Kiwi.Group.prototype[props[i]];
+                }
+            };
+            GroupBuffer.prototype._recurse = function (child) {
+                /**
+                Recursively render a subgraph. Used for canvas rendering.
+                @method _recurse
+                @param child {object} Child being checked
+                @private
+                **/
+                var i;
+                // Do not render non-visible objects or their children
+                if (!child.visible) {
+                    return;
+                }
+                if (child.childType() === Kiwi.GROUP) {
+                    for (i = 0; i < child.members.length; i++) {
+                        this._recurse(child.members[i]);
+                    }
+                }
+                else {
+                    child.render(this.camera);
+                }
+            };
+            GroupBuffer.prototype._recurseTask = function (child) {
+                /**
+                Recursively render a subgraph with Canvas.
+                This variant of `_recurse` renders using `RenderTask` functions
+                matching this `GroupBuffer`.
+    
+                @method _recurseTask
+                @param child {object} Child being checked
+                @private
+                **/
+                var alpha, i;
+                // Do not render non-visible objects or their children
+                if (!child.visible) {
+                    return;
+                }
+                if (child.childType() === Kiwi.GROUP) {
+                    for (i = 0; i < child.members.length; i++) {
+                        this._recurseTask(child.members[i]);
+                    }
+                }
+                else {
+                    if (child.renderTasks && child.renderTasks[this.renderTask]) {
+                        alpha = child.alpha;
+                        child.alpha = child.renderTasks[this.renderTask].alpha;
+                        child.renderTasks[this.renderTask].renderCanvas.call(child, this.camera);
+                        child.alpha = alpha;
+                    }
+                }
+            };
+            GroupBuffer.prototype.update = function () {
+                /**
+                Override default method.
+                @method update
+                **/
+                _super.prototype.update.call(this);
+                this._updateMembers();
+            };
+            GroupBuffer.prototype._updateMembers = function () {
+                /**
+                Trigger update for all members. Update does not propagate into
+                `GroupBuffer` objects, because they're not explicitly groups.
+    
+                @method _updateMembers
+                @private
+                **/
+                var i;
+                for (i = 0; i < this.members.length; i++) {
+                    this.members[i].update();
+                }
+            };
+            return GroupBuffer;
+        })(Kiwi.Buffers.Buffer);
+        GameObjects.GroupBuffer = GroupBuffer;
+    })(GameObjects = Kiwi.GameObjects || (Kiwi.GameObjects = {}));
+})(Kiwi || (Kiwi = {}));
+/**
+@module Kiwi
+@submodule Renderers
+**/
+var Kiwi;
+(function (Kiwi) {
+    var Renderers;
+    (function (Renderers) {
+        var FilterCanvas = (function () {
+            function FilterCanvas() {
+                /**
+                Renders a filtered version of an input image.
+    
+                Filters are added to a `FilterBuffer` object,
+                created by a `Bufferer`. They will not work on their own.
+    
+                This filter system is effectively a replacement of
+                `Kiwi.Entity.render()`.
+                It can run a wide variety of image manipulation algorithms.
+    
+                This class should be extended and used as an example
+                for developing other canvas filters. It contains useful utilities.
+    
+                CocoonJS note: This platform is not capable of using
+                `globalCompositeOperation` modes. All other clients support them.
+                As best practice, avoid creating canvas filters that rely on
+                `globalCompositeOperation`,
+                and instead use direct pixel manipulation
+                via `ImageData` properties.
+    
+                @class FilterCanvas
+                @namespace Kiwi.Renderers
+                @constructor
+                **/
+                this.active = true;
+            }
+            FilterCanvas.prototype.clear = function (filterBuffer) {
+                /**
+                Clear the output canvas.
+                @method clear
+                @param filterBuffer {Kiwi.GameObjects.FilterBuffer}
+                **/
+                filterBuffer.ctxOutput.clearRect(0, 0, filterBuffer.canvasOutput.width, filterBuffer.canvasOutput.height);
+            };
+            FilterCanvas.prototype.render = function (filterBuffer) {
+                /**
+                Render the `input` canvas to the `output` canvas.
+                This is not proportional; corners map to corners.
+    
+                @method render
+                @param filterBuffer {Kiwi.GameObjects.FilterBuffer}
+                **/
+                this.clear(filterBuffer);
+                filterBuffer.ctxOutput.drawImage(filterBuffer.canvasInput, 0, 0, filterBuffer.canvasInput.width, filterBuffer.canvasInput.height, 0, 0, filterBuffer.canvasOutput.width, filterBuffer.canvasOutput.height);
+            };
+            /**
+            Shorthand name to identify the filter
+            @property name
+            @type string
+            @default "FilterCanvas"
+            @static
+            **/
+            FilterCanvas.name = "FilterCanvas";
+            return FilterCanvas;
+        })();
+        Renderers.FilterCanvas = FilterCanvas;
+    })(Renderers = Kiwi.Renderers || (Kiwi.Renderers = {}));
+})(Kiwi || (Kiwi = {}));
+/**
+@module Kiwi
+@submodule Renderers
+**/
+var Kiwi;
+(function (Kiwi) {
+    var Renderers;
+    (function (Renderers) {
+        var FilterGl = (function (_super) {
+            __extends(FilterGl, _super);
+            function FilterGl(params) {
+                /**
+                Renders a filtered version of an input image.
+    
+                Filters are added to a `FilterBuffer` object,
+                created by a `Bufferer`. They will not work on their own.
+    
+                This filter system is effectively a `Kiwi.Renderers.Renderer`,
+                specialized to deal with texture filtering.
+                It draws a square of WebGL texture coordinates 0-1
+                (the entire image).
+                The main variant is the shader used by the filter.
+                It may also use extra information.
+    
+                @class FilterGl
+                @namespace Kiwi.Renderers
+                @constructor
+                @extends Kiwi.Renderers.Renderer
+                @param params {object} Composite parameter object
+                    @param params.gl {WebGLRenderingContext} Rendering context
+                    @param [params.name] {string} Name to identify the filter
+                    @param params.shaderManager {Kiwi.Shaders.GLShaderManager}
+                    @param [params.shaderName] {string} Name of shader pair to use
+                **/
+                _super.call(this, params.gl, params.shaderManager, false);
+                this.active = true;
+                this._indexBuffer = new Kiwi.Renderers.GLElementArrayBuffer(params.gl, 1, [1, 2, 0, 3]);
+                this.name = params.name;
+                if (!params.shaderName) {
+                    params.shaderName = "FilterBase";
+                }
+                this._shaderPairName = params.shaderName;
+                this._vertexBuffer = new Kiwi.Renderers.GLArrayBuffer(params.gl, 4);
+            }
+            FilterGl.prototype.enable = function (gl) {
+                /**
+                Enable the renderer for drawing.
+                @method enable
+                @param gl {WebGLRenderingContext}
+                **/
+                this.shaderPair = this.shaderManager.requestShader(gl, this._shaderPairName);
+                // Texture
+                gl.uniform1i(this.shaderPair.uniforms.uSampler.location, 0);
+            };
+            FilterGl.prototype.disable = function (gl) {
+                /**
+                Disable the renderer to make room for another.
+                @method disable
+                @param gl {WebGLRenderingContext}
+                **/
+                gl.disableVertexAttribArray(this.shaderPair.attributes.aXYUV);
+            };
+            FilterGl.prototype.drawCorners = function (gl, corners) {
+                /**
+                Make a draw call. Actual rendering to current framebuffer ensues.
+                @method drawCorners
+                @param gl {WebGLRenderingContext}
+                @param corners {array} List of XYUV corner quadruplets
+                **/
+                this._vertexBuffer.items = corners;
+                this._vertexBuffer.uploadBuffer(gl, this._vertexBuffer.items);
+                gl.enableVertexAttribArray(this.shaderPair.attributes.aXYUV);
+                gl.vertexAttribPointer(this.shaderPair.attributes.aXYUV, 4, gl.FLOAT, false, 16, 0);
+                gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this._indexBuffer.buffer);
+                gl.drawElements(gl.TRIANGLE_STRIP, 4, gl.UNSIGNED_SHORT, 0);
+            };
+            return FilterGl;
+        })(Kiwi.Renderers.Renderer);
+        Renderers.FilterGl = FilterGl;
+    })(Renderers = Kiwi.Renderers || (Kiwi.Renderers = {}));
+})(Kiwi || (Kiwi = {}));
+/**
+@module Kiwi
+@submodule Shaders
+**/
+var Kiwi;
+(function (Kiwi) {
+    var Shaders;
+    (function (Shaders) {
+        var FilterBase = (function (_super) {
+            __extends(FilterBase, _super);
+            function FilterBase() {
+                /**
+                Shader for rendering base images in filters.
+    
+                Common base for shader filters.
+    
+                @class FilterBase
+                @namespace Kiwi.Shaders
+                @constructor
+                @extends Kiwi.Shaders.ShaderPair
+                **/
+                _super.call(this);
+                /**
+                Source for the WebGL fragment shader.
+                @property fragSource
+                @type array
+                **/
+                this.fragSource = [
+                    "precision mediump float;",
+                    "uniform sampler2D uSampler;",
+                    "varying vec2 vTextureCoord;",
+                    "void main( void ) {",
+                    "	gl_FragColor = texture2D( uSampler, vTextureCoord );",
+                    "}"
+                ];
+                /**
+                Source for the WebGL vertex shader.
+                @property vertSource
+                @type array
+                **/
+                this.vertSource = [
+                    "attribute vec4 aXYUV;",
+                    "varying vec2 vTextureCoord;",
+                    "void main( void ) {",
+                    "	gl_Position = vec4( aXYUV.xy * 2.0 - 1.0, 0.0, 1.0 );",
+                    "	vTextureCoord = aXYUV.zw;",
+                    "}"
+                ];
+                this.attributes = {
+                    aXYUV: null
+                };
+                this.uniforms = {
+                    uSampler: {
+                        type: "1i"
+                    }
+                };
+            }
+            FilterBase.prototype.init = function (gl) {
+                /**
+                Initialize shader pair.
+                @method init
+                @param gl {WebGLRenderingContext} WebGL rendering context
+                **/
+                _super.prototype.init.call(this, gl);
+                this.attributes.aXYUV = gl.getAttribLocation(this.shaderProgram, "aXYUV");
+                this.initUniforms(gl);
+            };
+            /**
+            Shorthand name to identify the shader
+            @property name
+            @type string
+            @default "Base"
+            @static
+            **/
+            FilterBase.name = "Base";
+            return FilterBase;
+        })(Kiwi.Shaders.ShaderPair);
+        Shaders.FilterBase = FilterBase;
+    })(Shaders = Kiwi.Shaders || (Kiwi.Shaders = {}));
+})(Kiwi || (Kiwi = {}));
+/**
+@module Kiwi
+@submodule Shaders
+**/
+var Kiwi;
+(function (Kiwi) {
+    var Shaders;
+    (function (Shaders) {
+        var FilterBlurHorizontal = (function (_super) {
+            __extends(FilterBlurHorizontal, _super);
+            function FilterBlurHorizontal() {
+                /**
+                Filter shader: blur image horizontally.
+    
+                This should be stacked with a vertical blur to create
+                a radial blur effect. The blur will be elliptical, proportionate to
+                screen aspect ratio.
+    
+                @class FilterBlurHorizontal
+                @namespace Kiwi.Shaders
+                @constructor
+                @extends Kiwi.Shaders.ShaderPair
+                **/
+                _super.call(this);
+                /**
+                Source for the WebGL fragment shader.
+                @property fragSource
+                @type array
+                **/
+                this.fragSource = [
+                    "precision mediump float;",
+                    "uniform sampler2D uSampler;",
+                    "varying vec2 vUV;",
+                    "const float probeSum = 4.0;",
+                    "void main( void ) {",
+                    "	vec4 sample = texture2D( uSampler, vUV );",
+                    "	sample += texture2D( uSampler, vec2( vUV.x - 0.01, vUV.y ) ) * 0.75;",
+                    "	sample += texture2D( uSampler, vec2( vUV.x + 0.01, vUV.y ) ) * 0.75;",
+                    "	sample += texture2D( uSampler, vec2( vUV.x - 0.02, vUV.y ) ) * 0.5;",
+                    "	sample += texture2D( uSampler, vec2( vUV.x + 0.02, vUV.y ) ) * 0.5;",
+                    "	sample += texture2D( uSampler, vec2( vUV.x - 0.03, vUV.y ) ) * 0.25;",
+                    "	sample += texture2D( uSampler, vec2( vUV.x + 0.03, vUV.y ) ) * 0.25;",
+                    "	gl_FragColor = sample / probeSum;",
+                    "}"
+                ];
+                /**
+                Source for the WebGL vertex shader.
+                @property vertSource
+                @type array
+                **/
+                this.vertSource = [
+                    "attribute vec4 aXYUV;",
+                    "varying vec2 vUV;",
+                    "void main( void ) {",
+                    "	gl_Position = vec4( aXYUV.xy * 2.0 - 1.0, 0.0, 1.0 );",
+                    "	vUV = aXYUV.zw;",
+                    "}"
+                ];
+            }
+            /**
+            Shorthand name to identify the shader
+            @property name
+            @type string
+            @default "BlurHorizontal"
+            @static
+            **/
+            FilterBlurHorizontal.name = "BlurHorizontal";
+            return FilterBlurHorizontal;
+        })(Kiwi.Shaders.FilterBase);
+        Shaders.FilterBlurHorizontal = FilterBlurHorizontal;
+    })(Shaders = Kiwi.Shaders || (Kiwi.Shaders = {}));
+})(Kiwi || (Kiwi = {}));
+/**
+@module Kiwi
+@submodule Shaders
+**/
+var Kiwi;
+(function (Kiwi) {
+    var Shaders;
+    (function (Shaders) {
+        var FilterBlurVertical = (function (_super) {
+            __extends(FilterBlurVertical, _super);
+            function FilterBlurVertical() {
+                /**
+                Filter shader: blur image vertically.
+    
+                This should be stacked with a horizontal blur to create
+                a radial blur effect. The blur will be elliptical, proportionate to
+                screen aspect ratio.
+    
+                @class FilterBlurVertical
+                @namespace Kiwi.Shaders
+                @constructor
+                @extends Kiwi.Shaders.ShaderPair
+                **/
+                _super.call(this);
+                /**
+                Source for the WebGL fragment shader.
+                @property fragSource
+                @type array
+                **/
+                this.fragSource = [
+                    "precision mediump float;",
+                    "uniform sampler2D uSampler;",
+                    "varying vec2 vUV;",
+                    "const float probeSum = 4.0;",
+                    "void main( void ) {",
+                    "	vec4 sample = texture2D( uSampler, vUV );",
+                    "	sample += texture2D( uSampler, vec2( vUV.x, vUV.y - 0.01 ) ) * 0.75;",
+                    "	sample += texture2D( uSampler, vec2( vUV.x, vUV.y + 0.01 ) ) * 0.75;",
+                    "	sample += texture2D( uSampler, vec2( vUV.x, vUV.y - 0.02 ) ) * 0.5;",
+                    "	sample += texture2D( uSampler, vec2( vUV.x, vUV.y + 0.02 ) ) * 0.5;",
+                    "	sample += texture2D( uSampler, vec2( vUV.x, vUV.y - 0.03 ) ) * 0.25;",
+                    "	sample += texture2D( uSampler, vec2( vUV.x, vUV.y + 0.03 ) ) * 0.25;",
+                    "	gl_FragColor = sample / probeSum;",
+                    "}"
+                ];
+                /**
+                Source for the WebGL vertex shader.
+                @property vertSource
+                @type array
+                **/
+                this.vertSource = [
+                    "attribute vec4 aXYUV;",
+                    "varying vec2 vUV;",
+                    "void main( void ) {",
+                    "	gl_Position = vec4( aXYUV.xy * 2.0 - 1.0, 0.0, 1.0 );",
+                    "	vUV = aXYUV.zw;",
+                    "}"
+                ];
+            }
+            /**
+            Shorthand name to identify the shader
+            @property name
+            @type string
+            @default "BlurVertical"
+            @static
+            **/
+            FilterBlurVertical.name = "BlurVertical";
+            return FilterBlurVertical;
+        })(Kiwi.Shaders.FilterBase);
+        Shaders.FilterBlurVertical = FilterBlurVertical;
+    })(Shaders = Kiwi.Shaders || (Kiwi.Shaders = {}));
+})(Kiwi || (Kiwi = {}));
+/**
+@module Kiwi
+@submodule Shaders
+**/
+var Kiwi;
+(function (Kiwi) {
+    var Shaders;
+    (function (Shaders) {
+        var FilterChannelMultCanvas = (function (_super) {
+            __extends(FilterChannelMultCanvas, _super);
+            function FilterChannelMultCanvas() {
+                /**
+                Tints or multiplies the channels of the buffer
+                relative to a reference color.
+    
+                ChannelMult multiplies each channel by the corresponding channel
+                of a reference color.
+    
+                Adjust the values of the `color` property to adjust the
+                reference color. Default color is black.
+    
+                @class FilterChannelMultCanvas
+                @namespace Kiwi.Shaders
+                @constructor
+                @extends Kiwi.Renderers.FilterCanvas
+                @param params {object} Composite parameter object
+                    @param [params.color] {Kiwi.Utils.Color} Reference color
+                **/
+                _super.call(this);
+                this.color = new Kiwi.Utils.Color(0, 0, 0, 1);
+            }
+            FilterChannelMultCanvas.prototype.render = function (filterBuffer) {
+                /**
+                Render the inversion effect.
+    
+                This does not require a pingpong, and can operate entirely on
+                buffer 2 pixels.
+    
+                @method render
+                @param filterBuffer {Kiwi.GameObjects.FilterBuffer}
+                **/
+                var i, pixels = filterBuffer.ctxOutput.getImageData(0, 0, filterBuffer.canvasOutput.width, filterBuffer.canvasOutput.height);
+                for (i = 0; i < pixels.data.length; i += 4) {
+                    pixels.data[i] = pixels.data[i] * this.color.r;
+                    pixels.data[i + 1] = pixels.data[i + 1] * this.color.g;
+                    pixels.data[i + 2] = pixels.data[i + 2] * this.color.b;
+                    pixels.data[i + 3] = pixels.data[i + 3] * this.color.a;
+                }
+                filterBuffer.ctxOutput.putImageData(pixels, 0, 0);
+            };
+            /**
+            Shorthand name to identify the filter
+            @property name
+            @type string
+            @default "ChannelMult"
+            @static
+            **/
+            FilterChannelMultCanvas.name = "ChannelMult";
+            return FilterChannelMultCanvas;
+        })(Kiwi.Renderers.FilterCanvas);
+        Shaders.FilterChannelMultCanvas = FilterChannelMultCanvas;
+    })(Shaders = Kiwi.Shaders || (Kiwi.Shaders = {}));
+})(Kiwi || (Kiwi = {}));
+/**
+@module Kiwi
+@submodule Shaders
+**/
+var Kiwi;
+(function (Kiwi) {
+    var Shaders;
+    (function (Shaders) {
+        var FilterColorValue = (function (_super) {
+            __extends(FilterColorValue, _super);
+            function FilterColorValue() {
+                /**
+                Filter shader: convert to grayscale based on color value.
+    
+                Desaturation is achieved by RGB / 3.
+    
+                @class FilterColorValue
+                @namespace Kiwi.Shaders
+                @constructor
+                @extends Kiwi.Shaders.FilterBase
+                **/
+                _super.call(this);
+                /**
+                Source for the WebGL fragment shader.
+                @property fragSource
+                @type array
+                **/
+                this.fragSource = [
+                    "precision mediump float;",
+                    "uniform sampler2D uSampler;",
+                    "varying vec2 vUV;",
+                    "void main( void ) {",
+                    "	vec4 sample = texture2D( uSampler, vUV );",
+                    "	float bw = ( sample.r + sample.g + sample.b ) / 3.0;",
+                    "	gl_FragColor = vec4( bw, bw, bw, sample.a );",
+                    "}"
+                ];
+                /**
+                Source for the WebGL vertex shader.
+                @property vertSource
+                @type array
+                **/
+                this.vertSource = [
+                    "attribute vec4 aXYUV;",
+                    "varying vec2 vUV;",
+                    "void main( void ) {",
+                    "	gl_Position = vec4( aXYUV.xy * 2.0 - 1.0, 0.0, 1.0 );",
+                    "	vUV = aXYUV.zw;",
+                    "}"
+                ];
+            }
+            /**
+            Shorthand name to identify the shader
+            @property name
+            @type string
+            @default "ColorValue"
+            @static
+            **/
+            FilterColorValue.name = "ColorValue";
+            return FilterColorValue;
+        })(Kiwi.Shaders.FilterBase);
+        Shaders.FilterColorValue = FilterColorValue;
+    })(Shaders = Kiwi.Shaders || (Kiwi.Shaders = {}));
+})(Kiwi || (Kiwi = {}));
+/**
+@module Kiwi
+@submodule Shaders
+**/
+var Kiwi;
+(function (Kiwi) {
+    var Shaders;
+    (function (Shaders) {
+        var FilterInvertCanvas = (function (_super) {
+            __extends(FilterInvertCanvas, _super);
+            function FilterInvertCanvas() {
+                /**
+                Filter: invert RGB channels.
+                @class FilterInvertCanvas
+                @namespace Kiwi.Shaders
+                @constructor
+                @extends Kiwi.Renderers.FilterCanvas
+                **/
+                _super.call(this);
+            }
+            FilterInvertCanvas.prototype.render = function (filterBuffer) {
+                /**
+                Render the inversion effect.
+    
+                This does not require a pingpong, and can operate entirely on
+                buffer 2 pixels.
+    
+                @method render
+                @param filterBuffer {Kiwi.GameObjects.FilterBuffer}
+                **/
+                var i, j, pixels = filterBuffer.ctxOutput.getImageData(0, 0, filterBuffer.canvasOutput.width, filterBuffer.canvasOutput.height);
+                for (i = 0; i < pixels.data.length; i += 4) {
+                    for (j = 0; j < 3; j++) {
+                        pixels.data[i + j] = 255 - pixels.data[i + j];
+                    }
+                }
+                filterBuffer.ctxOutput.putImageData(pixels, 0, 0);
+            };
+            /**
+            Shorthand name to identify the filter
+            @property name
+            @type string
+            @default "Invert"
+            @static
+            **/
+            FilterInvertCanvas.name = "Invert";
+            return FilterInvertCanvas;
+        })(Kiwi.Renderers.FilterCanvas);
+        Shaders.FilterInvertCanvas = FilterInvertCanvas;
+    })(Shaders = Kiwi.Shaders || (Kiwi.Shaders = {}));
+})(Kiwi || (Kiwi = {}));
+/**
+@module Kiwi
+@submodule Shaders
+**/
+var Kiwi;
+(function (Kiwi) {
+    var Shaders;
+    (function (Shaders) {
+        var FilterInvert = (function (_super) {
+            __extends(FilterInvert, _super);
+            function FilterInvert() {
+                /**
+                Filter shader: invert image
+                @class FilterInvert
+                @namespace Kiwi.Shaders
+                @constructor
+                @extends Kiwi.Shaders.FilterBase
+                **/
+                _super.call(this);
+                /**
+                Source for the WebGL fragment shader.
+                @property fragSource
+                @type array
+                **/
+                this.fragSource = [
+                    "precision mediump float;",
+                    "uniform sampler2D uSampler;",
+                    "varying vec2 vTextureCoord;",
+                    "void main( void ) {",
+                    "	vec4 sample = texture2D( uSampler, vTextureCoord );",
+                    "	gl_FragColor = vec4( vec3( 1 ) - sample.rgb, sample.a );",
+                    "}"
+                ];
+                /**
+                Source for the WebGL vertex shader.
+                @property vertSource
+                @type array
+                **/
+                this.vertSource = [
+                    "attribute vec4 aXYUV;",
+                    "varying vec2 vTextureCoord;",
+                    "void main( void ) {",
+                    "	gl_Position = vec4( aXYUV.xy * 2.0 - 1.0, 0.0, 1.0 );",
+                    "	vTextureCoord = aXYUV.zw;",
+                    "}"
+                ];
+            }
+            /**
+            Shorthand name to identify the shader
+            @property name
+            @type string
+            @default "Invert"
+            @static
+            **/
+            FilterInvert.name = "Invert";
+            return FilterInvert;
+        })(Kiwi.Shaders.FilterBase);
+        Shaders.FilterInvert = FilterInvert;
+    })(Shaders = Kiwi.Shaders || (Kiwi.Shaders = {}));
+})(Kiwi || (Kiwi = {}));
 /// <reference path="core/Game.ts" />
 /// <reference path="core/Stage.ts" />
 /// <reference path="core/ComponentManager.ts" />
@@ -34429,6 +39002,7 @@ var Kiwi;
 /// <reference path="render/GLArrayBuffer.ts" />
 /// <reference path="render/GLBlendMode.ts" />
 /// <reference path="render/GLElementArrayBuffer.ts" />
+/// <reference path="render/render-task.ts" />
 /// <reference path="render/renderers/Renderer.ts" />
 /// <reference path="render/renderers/TextureAtlasRenderer.ts" />
 /// <reference path="render/shaders/ShaderPair.ts" />
@@ -34487,6 +39061,22 @@ var Kiwi;
 /// <reference path="utils/RequestAnimationFrame.ts" />
 /// <reference path="utils/Log.ts" />
 /// <reference path="utils/Version.ts" />
+/// <reference path="buffers/buffer.ts" />
+/// <reference path="buffers/buffer-atlas.ts" />
+/// <reference path="buffers/bufferer.ts" />
+/// <reference path="buffers/filter-buffer-gl-render-manager.ts" />
+/// <reference path="buffers/group-buffer-gl-render-manager.ts" />
+/// <reference path="gameobjects/filter-buffer.ts" />
+/// <reference path="gameobjects/group-buffer.ts" />
+/// <reference path="render/renderers/filter-canvas.ts" />
+/// <reference path="render/renderers/filter-gl.ts" />
+/// <reference path="render/shaders/filters/base.ts" />
+/// <reference path="render/shaders/filters/blur-horizontal.ts" />
+/// <reference path="render/shaders/filters/blur-vertical.ts" />
+/// <reference path="render/shaders/filters/channel-mult-canvas.ts" />
+/// <reference path="render/shaders/filters/color-value.ts" />
+/// <reference path="render/shaders/filters/invert-canvas.ts" />
+/// <reference path="render/shaders/filters/invert.ts" />
 /**
 * Module - Kiwi (Core)
 * The top level namespace in which all core classes and modules are defined.
@@ -34510,7 +39100,7 @@ var Kiwi;
     * @type string
     * @public
     */
-    Kiwi.VERSION = "1.4.0";
+    Kiwi.VERSION = "1.5.0";
     //DIFFERENT RENDERER STATIC VARIABLES
     /**
     * A Static property that contains the number associated with the CANVAS RENDERER.
@@ -34664,7 +39254,7 @@ var Kiwi;
         * Used to register a new Game with this manager. Returns the new number of games that have been registered.
         * @method register
         * @param game {Game} The game you are wanting to register.
-        * @return {Number] The new number of games registered.
+        * @return {Number} The new number of games registered.
         * @public
         */
         GameManager.register = function (game) {
@@ -34779,7 +39369,10 @@ var Kiwi;
             */
             AudioFile.prototype._load = function () {
                 this.attemptCounter++;
-                if (this.useTagLoader) {
+                if (this.game.audio.noAudio) {
+                    this.loadError("Audio is not supported. Skipping audio loading");
+                }
+                else if (this.useTagLoader) {
                     this.tagLoader();
                 }
                 else {
@@ -34845,7 +39438,8 @@ var Kiwi;
             */
             AudioFile.prototype._decodeAudio = function () {
                 var _this = this;
-                this.game.audio.context.decodeAudioData(this.data.raw, function (buffer) {
+                // Slice-copy the raw data, because this is a destructive decode.
+                this.game.audio.context.decodeAudioData(this.data.raw.slice(0), function (buffer) {
                     if (buffer) {
                         _this.data.buffer = buffer;
                         _this.data.decoded = true;
@@ -35024,52 +39618,67 @@ var Kiwi;
         Files.DataFile = DataFile;
     })(Files = Kiwi.Files || (Kiwi.Files = {}));
 })(Kiwi || (Kiwi = {}));
-/**
-*
-* @module Kiwi
-* @submodule Files
-*
-*/
 var Kiwi;
 (function (Kiwi) {
     var Files;
     (function (Files) {
         /**
-        * TextureFile which contains settings, loading, and processing information for textures/images in Kiwi.
-        *
-        * Contains two methods of loading. XHR + arraybuffer and also tag loading.
-        *
-        * @class TextureFile
-        * @namespace Kiwi.Files
-        * @extends Kiwi.Files.File
-        * @since 1.2.0
-        * @constructor
-        * @param game {Kiwi.Game} The game that this file is for
-        * @param params {Object} Options for this file.
-        *   @param params.key {String} User defined name for this file. This would be how the user would access it in the file store.
-        *   @param params.url {String} Location of the file to be loaded.
-        *   @param {Object} [params.metadata={}] Any metadata to be associated with the file.
-        *   @param [params.state=null] {Kiwi.State} The state that this file belongs to. Used for defining global assets vs local assets.
-        *   @param [params.fileStore=null] {Kiwi.Files.FileStore} The filestore that this file should be save in automatically when loaded.
-        *   @param [params.type=UNKNOWN] {Number} The type of file this is.
-        *   @param [params.tags] {Array} Any tags to be associated with this file.
-        *   @param [params.xhrLoading=false] {Boolean} If xhr + arraybuffer loading should be used instead of tag loading.
-        * @return {Kiwi.Files.TextureFile}
-        *
-        */
+        @module Kiwi
+        @submodule Files
+        **/
         var TextureFile = (function (_super) {
             __extends(TextureFile, _super);
+            /**
+            TextureFile which contains settings, loading,
+            and processing information for textures/images in Kiwi.
+    
+            Contains two methods of loading. XHR + arraybuffer, and tag loading.
+    
+            @class TextureFile
+            @namespace Kiwi.Files
+            @extends Kiwi.Files.File
+            @since 1.2.0
+            @constructor
+            @param game {Kiwi.Game} Game that this file is for
+            @param params {object} Composite parameter object
+                @param params.key {string} User defined name for this file.
+                    This would be how the user would access it in the file store.
+                @param params.url {string} Location of the file to be loaded.
+                @param {object} [params.metadata={}] Any metadata
+                    to be associated with the file.
+                @param [params.state=null] {Kiwi.State} State that this file
+                    belongs to. Used for defining global assets vs local assets.
+                @param [params.fileStore=null] {Kiwi.Files.FileStore} Filestore
+                    that this file should be saved in automatically when loaded.
+                @param [params.type=UNKNOWN] {number} Type of file this is
+                @param [params.tags] {array} Tags to be associated with this file
+                @param [params.xhrLoading=false] {boolean} If xhr + arraybuffer
+                    loading should be used instead of tag loading
+            **/
             function TextureFile(game, params) {
                 if (params === void 0) { params = {}; }
                 _super.call(this, game, params);
                 /**
-                * For tag loading only. The crossOrigin value applied to loaded images. Very often this needs to be set to 'anonymous'
-                * @property crossOrigin
-                * @type String
-                * @default ''
-                * @public
-                */
-                this.crossOrigin = '';
+                For tag loading only. The crossOrigin value applies to loaded images.
+                Very often this needs to be set to "anonymous".
+        
+                @property crossOrigin
+                @type String
+                @default ""
+                @public
+                **/
+                this.crossOrigin = "";
+                /**
+                Texture created from this file. This is set during state rebuilds,
+                so that subsequent state rebuilds don't have to do all that work again.
+        
+                @property texture
+                @type Kiwi.Textures.TextureAtlas
+                @default null
+                @public
+                @since 1.5.0
+                **/
+                this.texture = null;
                 if (params.xhrLoading) {
                     this.useTagLoader = false;
                     this._loadInParallel = false;
@@ -35082,37 +39691,40 @@ var Kiwi;
                     this.crossOrigin = params.crossOrigin;
                 }
             }
-            /**
-            * Returns the type of this object
-            * @method objType
-            * @return {String} "TextureFile"
-            * @public
-            */
             TextureFile.prototype.objType = function () {
+                /**
+                Return the type of this object.
+    
+                @method objType
+                @return {string} "TextureFile"
+                @public
+                **/
                 return "TextureFile";
             };
-            //this.dataType === File.IMAGE || this.dataType === File.SPRITE_SHEET || this.dataType === File.TEXTURE_ATLAS
-            /**
-            * Initialises the loading method.
-            * Tagloading is the default but also supports XHR + arraybuffer.
-            * @method _load
-            * @protected
-            */
             TextureFile.prototype._load = function () {
+                /**
+                Initialise the loading method.
+    
+                Tagloading is the default, but also supports XHR + arraybuffer.
+    
+                @method _load
+                @protected
+                **/
                 this.attemptCounter++;
                 if (this.useTagLoader) {
                     this.tagLoader();
                 }
                 else {
-                    this.xhrLoader('GET', 'arraybuffer');
+                    this.xhrLoader("GET", "arraybuffer");
                 }
             };
-            /**
-            * Contains the functionality for tag loading
-            * @method tagLoader
-            * @private
-            */
             TextureFile.prototype.tagLoader = function () {
+                /**
+                Perform tag loading.
+    
+                @method tagLoader
+                @private
+                **/
                 var _this = this;
                 this.data = new Image();
                 this.data.src = this.URL;
@@ -35122,51 +39734,52 @@ var Kiwi;
                 this.data.onload = function () { return _this.loadSuccess(); };
                 this.data.onerror = function (event) { return _this.loadError(event); };
             };
-            /**
-            * Gets the response data (which is an arraybuffer), creates a Blob from it
-            * and creates an objectURL from it.
-            *
-            * @method processXhr
-            * @param response {Any} The data stored in the 'xhr.response' tag
-            * @protected
-            */
             TextureFile.prototype.processXhr = function (response) {
-                //Careful, Blobs are not supported on CocoonJS Canvas+
-                this.data = document.createElement('img');
+                /**
+                Get the response data (which is an arraybuffer ),
+                create a Blob from it, and create an objectURL from it.
+    
+                @method processXhr
+                @param response {Any} The data stored in the "xhr.response" tag
+                @protected
+                **/
+                // Careful, Blobs are not supported on CocoonJS Canvas+
+                this.data = document.createElement("img");
                 var blob = new Blob([response], { type: this.type });
                 var that = this;
-                this.data.addEventListener('load', function (event) {
+                this.data.addEventListener("load", function (event) {
                     that.loadSuccess();
                 });
-                if (window['URL']) {
-                    this.data.src = window['URL'].createObjectURL(blob);
+                if (window["URL"]) {
+                    this.data.src = window["URL"].createObjectURL(blob);
                 }
-                else if (window['webkitURL']) {
-                    this.data.src = window['webkitURL'].createObjectURL(blob);
+                else if (window["webkitURL"]) {
+                    this.data.src = window["webkitURL"].createObjectURL(blob);
                 }
             };
-            /**
-            * Revokes the object url that was added to the window when creating the image.
-            * Also tells the File that the loading is now complete.
-            *
-            * @method revoke
-            * @private
-            */
             TextureFile.prototype.revoke = function () {
-                if (window['URL']) {
-                    window['URL'].revokeObjectURL(this.data.src);
+                /**
+                Revoke the object url that was added to the window when creating
+                the image. Also tells the `File` that loading is now complete.
+    
+                @method revoke
+                @private
+                **/
+                if (window["URL"]) {
+                    window["URL"].revokeObjectURL(this.data.src);
                 }
-                else if (window['webkitURL']) {
-                    window['webkitURL'].revokeObjectURL(this.data.src);
+                else if (window["webkitURL"]) {
+                    window["webkitURL"].revokeObjectURL(this.data.src);
                 }
             };
-            /**
-            * Destroys all external object references on this object.
-            * @method destroy
-            * @since 1.2.0
-            * @public
-            */
             TextureFile.prototype.destroy = function () {
+                /**
+                Destroy all external object references on this object.
+    
+                @method destroy
+                @since 1.2.0
+                @public
+                **/
                 if (!this.useTagLoader) {
                     this.revoke();
                 }

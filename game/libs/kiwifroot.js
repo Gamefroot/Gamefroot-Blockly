@@ -17,7 +17,7 @@ var Kiwifroot = {
 	* @public
 	* @static
 	*/
-	VERSION: '1.2.2',
+	VERSION: '1.4.0',
 
 
 	/**
@@ -67,21 +67,21 @@ var Kiwifroot = {
 		* 
 		* @property taImageURL
 		* @type String
-		* @default 'assets/kiwifrootAtlas.png'
+		* @default '../../assets/kiwifrootAtlas.png'
 		* @public
 		* @static
 		*/
-		taImageURL: 'assets/kiwifrootAtlas.png',
+		taImageURL: '../../assets/kiwifrootAtlas.png',
 
 		/**
 		* 
 		* @property taJsonURL
 		* @type String
-		* @default 'assets/kiwifrootAtlas.json'
+		* @default '../../assets/kiwifrootAtlas.json'
 		* @public
 		* @static
 		*/
-		taJsonURL: 'assets/kiwifrootAtlas.json',
+		taJsonURL: '../../assets/kiwifrootAtlas.json',
 
 		/**
 		* 
@@ -327,7 +327,57 @@ var Kiwifroot = {
 	* @default false
 	* @public
 	*/
-	crossOrigin: false
+	crossOrigin: false,
+
+	/**
+	* 
+	* @property ERRORS
+	* @type String
+	* @public
+	*/
+	ERRORS: {
+
+		/**
+		*
+		* @property ERRORS.GAME_JSON
+		* @type String
+		* @public
+		*/
+		GAME_JSON: "Game Information not found. Make sure you have either specified a JSON file or passed the raw information.",
+
+		/**
+		*
+		* @property ERRORS.NO_LEVELS
+		* @type String
+		* @public
+		*/
+		NO_LEVELS: "No levels could be found. Make sure your game has at least a single level.",
+
+		/**
+		*
+		* @property ERRORS.ASSET_NOT_FOUND
+		* @type String
+		* @public
+		*/
+		ASSET_NOT_FOUND: "Asset failed to load. Make sure you that the file specified exists.",
+
+		/**
+		*
+		* @property ERRORS.CURRENT_LEVEL_NOT_FOUND
+		* @type String
+		* @public
+		*/
+		CURRENT_LEVEL_NOT_FOUND: "Opps. Could not locate the current level.",
+
+		/**
+		*
+		* @property ERRORS.CURRENT_LEVEL_NO_DATA
+		* @type String
+		* @public
+		*/
+		CURRENT_LEVEL_NO_DATA: "Current level doesn't contain any data."
+
+	}
 
 };
 
@@ -7321,26 +7371,54 @@ Kiwifroot.Physics.ArcadeSystem.prototype.overlapsTiles = function(comp, tilemap)
 	if( comp.immovable ) {
 		return false;
 	}
-	
-	//var tiles = tilemap.owner.getOverlappingTiles(comp.owner),
+
 	var tiles = this.getOverlappingTiles( tilemap, comp ),
-		seperatedX = false,
-		seperatedY = false,
+		separatedX = false,
+		separatedY = false,
 		i = 0;
 
+	// Until all tiles have been checked,
+	// try to perform a single separation on X and a single on Y.
+	// Collisions are based on pre-computed exposed sides of tiles,
+	// and whether the physics object is moving into that side.
 	while( i < tiles.length ) {
-		
-		if( !seperatedX ) {
-			seperatedX = this.seperateTileX( comp, tilemap, tiles[i] );
-		} 
-		if( !seperatedY ) {
-			seperatedY = this.seperateTileY( comp, tilemap, tiles[i] );
+		if (
+			!separatedX &&
+			tiles[ i ].collisionLeft &&
+			comp.velocity.x > 0 ) {
+
+			separatedX = this.seperateTileX( comp, tilemap, tiles[ i ] );
+		}
+		if (
+			!separatedX &&
+			tiles[ i ].collisionRight &&
+			comp.velocity.x < 0 ) {
+
+			separatedX = this.seperateTileX( comp, tilemap, tiles[ i ] );
+		}
+		if (
+			!separatedY &&
+			tiles[ i ].collisionTop &&
+			comp.velocity.y > 0 ) {
+
+			separatedY = this.seperateTileY( comp, tilemap, tiles[ i ] );
+		}
+		if (
+			!separatedY &&
+			tiles[ i ].collisionBottom &&
+			comp.velocity.y < 0 ) {
+
+			separatedY = this.seperateTileY( comp, tilemap, tiles[ i ] );
 		}
 
-		i++;				
+		if ( separatedX && separatedY ) {
+			break;
+		}
+
+		i++;
 	}
 
-	return seperatedX || seperatedY;
+	return separatedX || separatedY;
 };
 
 /**
@@ -7370,9 +7448,28 @@ Kiwifroot.Physics.ArcadeSystem.prototype.getOverlappingTiles = function( tilemap
     var w = Kiwi.Utils.GameMath.snapToCeil(hitbox.width, tilemap.owner.tileWidth) / tilemap.owner.tileWidth;
     var h = Kiwi.Utils.GameMath.snapToCeil(hitbox.height, tilemap.owner.tileHeight) / tilemap.owner.tileHeight;
 
-    //Add one, because we want to include the very end tile.
-    return tilemap.owner.getCollidableTiles(x, y, w + 1, h + 1);
+	//Add one, because we want to include the very end tile.
+	var tiles = tilemap.owner.getCollidableTiles(x, y, w + 1, h + 1);
 
+	// Compute collision sides in real time.
+	// This should prevent collisions with unintended (internal) tile sides.
+	// However, it could be more optimal;
+	// we could bake collision sides into tile maps on load,
+	// or determine it by `tileType`.
+	tiles.forEach( function computeCollisionSides ( tile ) {
+		var o = tilemap.owner;
+		var data = o.data;
+		var mapX = tile.x / o.tileWidth;
+		var mapY = tile.y / o.tileHeight;
+
+		// Check sides
+		tile.collisionTop = !data[ mapX + ( mapY - 1 ) * o.width ];
+		tile.collisionBottom = !data[ mapX + ( mapY + 1 ) * o.width ];
+		tile.collisionLeft = !data[ mapX - 1 + mapY * o.width ];
+		tile.collisionRight = !data[ mapX + 1 + mapY * o.width ];
+	}, this );
+
+    return tiles;
 };
 
 
@@ -9135,7 +9232,7 @@ Kiwifroot.States.Launch.prototype.create = function() {
 	}
 
 	if( !this.game.info.data ) {
-		this.game.reportError( 'No game data found. Runtime cannot progress', "Game Information not located..." );
+		this.game.reportError( 'No game data found. Runtime cannot progress', Kiwifroot.ERRORS.GAME_JSON );
 		return;
 	}
 
@@ -9154,20 +9251,25 @@ Kiwifroot.States.Launch.prototype.create = function() {
 */
 Kiwifroot.States.Launch.prototype.loadGlobalGameAssets = function() {
 
+	var assetsLength = this.game.info.data.assets.length;
+
     this.onExecute.dispatch( Kiwifroot.States.Launch.EVENTS.GLOBAL_ASSETS_LOAD );
 
 	//Display Splash Screen
 	this.showSplashScreen();
 
-	if( this.game.info.data.assets.length > 0 || ( this.game.info.loadLevelJsonAtStart && this.game.info.levels.length > 0 ) ) {
+	if( assetsLength > 0 || ( this.game.info.loadLevelJsonAtStart && this.game.info.levels.length > 0 ) ) {
 
 		this.game.log.log( 'Starting to load global game assets.' );
+	    
+	    this.showAssetLoadBar();
 
+		this.game.loader.onQueueProgress.add( this._loadProgress, this );
 	    this.game.loader.onQueueComplete.addOnce( this.globalLoadComplete, this );
 		
 	    //Loop through the files and load them in...
-	    this.game.log.log( this.game.info.data.assets.length + ' are to be loaded.' );
-	    for(var i = 0; i < this.game.info.data.assets.length; i++) {
+	    this.game.log.log( assetsLength + ' are to be loaded.' );
+	    for(var i = 0; i < assetsLength; i++) {
 	    	this.game.asset.load( this.game.info.data.assets[ i ], true );
 	    }
 
@@ -9209,6 +9311,13 @@ Kiwifroot.States.Launch.prototype.globalLoadComplete = function() {
 
 	this.assetLoadingComplete = true;
 
+	// Remove hooks on loading bar.
+	if ( this.loadingBar ) {
+		this.game.loader.onQueueProgress.remove( this._loadProgress, this );
+		this.game.tweens.remove( this.tweenBar );
+	}
+
+
 	if( this.game.info.data.plugins.length <= 0) {
 		this.game.log.log('No plugins for game detected. Skipping plugin phase.');
 		this.checkAssetLoadingProgress();
@@ -9243,11 +9352,12 @@ Kiwifroot.States.Launch.prototype.globalLoadComplete = function() {
 * @private
 */
 Kiwifroot.States.Launch.prototype.loadFirstLevel = function(argument) {
-
+	this.game.log.log( "#DEBUG", "loadFirstLevel()" );
 	this.game.input.onUp.remove( this._openGamefrootPage, this );
 
 	if( !this.game.info.data.firstLevel ) {
-		this.game.reportError( 'No first level set. Runtime cannot progress.', 'No level could be found... Runtime halted', 'LAUNCH' );
+		this.game.log.error( "#DEBUG", "No first level set. Runtime cannot progress." );
+		this.game.reportError( 'No first level set. Runtime cannot progress.', Kiwifroot.ERRORS.NO_LEVELS, 'LAUNCH' );
 		return;
 	} 
 
@@ -9260,6 +9370,49 @@ Kiwifroot.States.Launch.prototype.loadFirstLevel = function(argument) {
 
 	this.game.log.log( 'Kiwifroot now preloading Level ID ' + this.game.info.data.firstLevel );
 	this.game.info.switchLevel( this.game.info.data.firstLevel );
+};
+
+
+Kiwifroot.States.Launch.prototype._loadProgress = function( percent, bytes, file ) {
+	/**
+	Update loading bar display.
+
+	@method _loadProgress
+	@param percent {Number}
+	@param bytes {Number}
+	@param file {Kiwi.Files.File}
+	@private
+	**/ 
+
+	this.game.log.log( 'Global asset load percentage: ' + percent );
+	var scale = ( this.game.stage.width * ( percent / 100 ) ) / this.loadingBar.width;
+
+	this.tweenBar.delay( 50 );
+	this.tweenBar.to(
+		{ scaleX: scale },
+		250,
+		Kiwi.Animations.Tweens.Easing.Cubic.Out,
+		true );
+};
+
+
+Kiwifroot.States.Launch.prototype.showAssetLoadBar = function () {
+	/**
+	Display a loading bar for global assets.
+
+	@method showAssetLoadBar
+	@private
+	**/
+
+	//Loading bar
+	this.loadingBar = new Kiwi.GameObjects.Sprite( this, this.textures.kiwifrootTextureAtlas, 0, 0 );
+	this.loadingBar.cellIndex = 1;
+	this.loadingBar.y = (this.game.stage.height - this.loadingBar.height);
+	this.loadingBar.scaleX = 0;
+	this.loadingBar.anchorPointX = 0;
+	this.addChild( this.loadingBar );
+
+	this.tweenBar = this.game.tweens.create( this.loadingBar );
 };
 
 
@@ -9334,14 +9487,16 @@ Kiwifroot.States.Launch.prototype._openGamefrootPage = function() {
 * @private 
 */
 Kiwifroot.States.Launch.prototype.checkAssetLoadingProgress = function() {
+	this.game.log.log( "#DEBUG", "checkAssetLoadingProgress()" );
+	var self = this;
 	if(this.assetLoadingComplete && ( this.game.info.skipLaunch || !this.tween.isRunning ) ) {
-
+		this.game.log.log( "#DEBUG", "checkAssetLoadingProgress proceeding..." );
 		if( this.game.info.loadLevelJsonAtStart ) {
-
+			this.game.log.log( "#DEBUG", "checkAssetLoadingProgress loadLevelJsonAtStart" );
 			var levels = this.game.info.levels;
 
 	    	for (var i = 0; i < levels.length; i++) {
-	    		
+				this.game.log.log( "#DEBUG", "checkAssetLoadingProgress loadLevelJsonAtStart level", i );
 	    		var level = levels[ i ],
 	    			file = this.game.fileStore.getFile( ('level-' + level.id) );
 
@@ -9355,6 +9510,7 @@ Kiwifroot.States.Launch.prototype.checkAssetLoadingProgress = function() {
 				}
 
 				if( extract ) {
+					this.game.log.log( "#DEBUG", "checkAssetLoadingProgress loadLevelJsonAtStart level", i, "assigning data" );
 					level.keep = true;
 					level.assignData( extract );
 				}
@@ -9363,9 +9519,25 @@ Kiwifroot.States.Launch.prototype.checkAssetLoadingProgress = function() {
 	    }
 
 		if( !this.game.info.skipLaunch && this.tween ) {
-			this.tween.onComplete( this.checkAssetStatus, this );
-			this.tween.delay( 1000 );
-			this.tween.to( { alpha: 0 }, 750, Kiwi.Animations.Tweens.Easing.Cubic.In, true );
+			this.game.log.log( "#DEBUG", "checkAssetLoadingProgress tweening out..." );
+			// Defer execution until the tween is fully executed.
+			// Otherwise, we could freeze if the game loads too fast.
+			// Basically, don't trigger a tween inside a tween.
+			setTimeout( function deferTweenOut () {
+				self.tween.onComplete( self.checkAssetStatus, self );
+				self.tween.delay( 1000 );
+				self.tween.to(
+					{ alpha: 0 },
+					750,
+					Kiwi.Animations.Tweens.Easing.Cubic.In,
+					true );
+
+				if ( self.loadingBar ) {
+					self.tween.onUpdate( function coFadeBar ( obj, value ) {
+						self.loadingBar.alpha = obj.alpha;
+					}, self );
+				}
+			}, 1 );
 		} else {
 			this.checkAssetStatus();
 		}
@@ -9380,11 +9552,11 @@ Kiwifroot.States.Launch.prototype.checkAssetLoadingProgress = function() {
 * @public
 */
 Kiwifroot.States.Launch.prototype.checkAssetStatus = function() {
-
+	this.game.log.log( "#DEBUG", "checkAssetStatus()" );
 	var assets = this.game.asset.removeAssetsNotLoaded();
 
 	if( assets.length > 0) {
-    	
+    	this.game.log.log( "#DEBUG", "checkAssetStatus found outstanding assets", assets );
     	this.onExecute.dispatch( Kiwifroot.States.Launch.EVENTS.GLOBAL_ASSETS_RELOAD );
 		this.game.loader.onQueueComplete.addOnce( this.finalAssetCheck, this );
 		
@@ -9408,11 +9580,13 @@ Kiwifroot.States.Launch.prototype.checkAssetStatus = function() {
 * @public
 */
 Kiwifroot.States.Launch.prototype.finalAssetCheck = function() {
+	this.game.log.log( "#DEBUG", "finalAssetCheck()" );
 	var assets = this.game.asset.removeAssetsNotLoaded();
 
 	if( assets.length > 0) {
+		this.game.log.log( "#DEBUG", "finalAssetCheck found outstanding assets", assets );
     	this.onExecute.dispatch( Kiwifroot.States.Launch.EVENTS.GLOBAL_ASSETS_FAILED );
-		this.game.reportError( assets.length + " assets failed to load.", 'Asset #' + assets[0].id + ' failed to load... Runtime halted', 'LAUNCH' );
+		this.game.reportError( assets.length + " assets failed to load.", Kiwifroot.ERRORS.ASSET_NOT_FOUND, 'LAUNCH' );
 	} else {
 		this.loadFirstLevel();
 	}
@@ -9467,7 +9641,6 @@ Kiwifroot.States.Level = function() {
 	* @public
 	*/
 	this.onExecute = new Kiwi.Signal();
-
 };
 
 /**
@@ -9671,6 +9844,14 @@ Kiwifroot.States.Level.prototype.create = function() {
 	* @public
 	*/
 	this.system = new Kiwifroot.System.Manager( this );
+
+	/**
+	Time helper for preventing out-of-state timer and tween issues
+	@property timeHelper
+	@type Kiwifroot.States.TimeHelper
+	@public
+	**/
+	this.timeHelper = new Kiwifroot.States.TimeHelper( { owner: this } );
 
 	this.start();
 
@@ -9998,7 +10179,7 @@ Kiwifroot.States.Preloader.prototype.create = function() {
 	var cl = this.game.info.currentLevel;
 
 	if( !cl ) {
-		this.game.reportError( 'Opps, well this is embarrassing. No current level found.', "An error has occured... Could not locate the level...", "RUNTIME" );
+		this.game.reportError( 'Opps, well this is embarrassing. No current level found.', Kiwifroot.ERRORS.CURRENT_LEVEL_NOT_FOUND, "RUNTIME" );
 		return;
 	}
 
@@ -10020,7 +10201,7 @@ Kiwifroot.States.Preloader.prototype.create = function() {
 
 	//Check to see if the level now has data.
 	if( !cl.hasData ) {
-		this.game.reportError( 'The current level does not have any data. Cannot progress.', "The current level contains no data...", "RUNTIME" );
+		this.game.reportError( 'The current level does not have any data. Cannot progress.', Kiwifroot.ERRORS.CURRENT_LEVEL_NO_DATA, "RUNTIME" );
 		return;
 	}
 
@@ -10264,7 +10445,7 @@ Kiwifroot.States.Preloader.prototype.finalAssetCheck = function() {
 	if( assets.length > 0 ) {
 		//Report error
     	this.onExecute.dispatch( Kiwifroot.States.Preloader.EVENTS.ASSETS_FAILED );
-		this.game.reportError( assets.length + " assets failed to load.", 'Asset #' + assets[0].id + ' failed to load... Runtime halted', "RUNTIME" );
+		this.game.reportError( assets.length + " assets failed to load.", Kiwifroot.ERRORS.ASSET_NOT_FOUND, "RUNTIME" );
 	
 	} else {
 		this.game.log.log( 'All assets were successfully loaded the second time.' );
@@ -10328,6 +10509,320 @@ Kiwifroot.States.Preloader.EVENTS = {
 	'ASSETS_COMPLETE': 'load-assets-complete',
 	'SHUT_DOWN': 'shut-down'
 };
+/**
+State Time Helper
+
+Derived from the KiwiJS plugin "State Time Helper v1.0.1".
+
+This helper adds a pair of linked managers to a `State`.
+These helpers are `clocks` and `tween`.
+You may access the helper to create a `Clock`/`TweenManager` pair.
+This pair is automatically linked, so each clock has associated tweens,
+and each tween manager runs on its own clock.
+The clock can also run timer functions.
+
+The helper runs as a state component to ensure that
+tween managers are updated.
+
+By default, the helper creates `ui` and `world` pairs.
+These are sufficient for the vast majority of timing purposes.
+**/
+
+
+Kiwifroot.States.TimeHelper = function( params ) {
+    /**
+    This component manages time helper functions
+    and serves as central control.
+
+    This component will automatically register itself to the owner,
+    and create `clocks` and `tweens` properties on the owner.
+    You may create clocks and tween managers using `create`.
+    If you do not specify keys, it will automatically create
+    `ui` and `world` clocks/tween managers.
+
+    The component will automatically update tween managers.
+
+    You may get, set, and run properties and functions on the entire
+    list of clocks or tweens using functions. This may be useful for
+    diagnostic purposes. Not all functions can be easily accessed
+    in this way, but for some like `isPaused()` it is a convenient shortcut.
+
+    @class TimeHelper
+    @extends Kiwi.Component
+    @namespace Kiwifroot.State
+    @constructor
+    @param params {object} Composite parameter object
+        @param params.owner {Kiwi.Entity} Owner of the helper, ideally a State
+        @param [params.keys=["ui","world"]] {array} List of names of
+            `Clock`/`TweenManager` pairs to create
+        @param [params.maxFrameDuration=100] {number} Maximum frame duration
+            for clocks
+        @param [params.state] {Kiwi.State} Alias for `owner`, as this is
+            usually added to a state
+    @return Kiwifroot.States.TimeHelper
+    **/
+
+    var i;
+
+    if ( params.state && !params.owner ) {
+        params.owner = params.state;
+    }
+
+    Kiwi.Component.call( this, params.owner, "TimeHelper" );
+
+    params.owner.components.add( this );
+
+    /**
+    * Clock storage, mirrored on `owner`
+    * @property clocks
+    * @type object
+    * @default {}
+    */
+    this.clocks = {};
+    this.owner.clocks = this.clocks;
+
+    /**
+    * Tween storage, mirrored on `owner`
+    * @property tweens
+    * @type object
+    * @default {}
+    */
+    this.tweens = {};
+    this.owner.tweens = this.tweens;
+
+    // Create key pairs
+    if ( !params.keys ) {
+        params.keys = [ "ui", "world" ];
+    }
+    for ( i in params.keys ) {
+        this.create( params.keys[ i ] );
+    }
+
+    // Set maxframes
+    for ( i in this.clocks ) {
+        this.clocks[ i ].maxFrameDuration = params.maxFrameDuration || 100;
+    }
+
+    return this;
+};
+Kiwi.extend( Kiwifroot.States.TimeHelper, Kiwi.Component );
+
+
+Kiwifroot.States.TimeHelper.prototype.create = function( key ) {
+    /**
+    Create a `Clock`/`TweenManager` pair.
+    Link and register them.
+    
+    @method create
+    @param key {string} Access key for the pair on `clocks` and `tweens`.
+    **/
+
+    var clock, tween;
+
+    if ( typeof key !== "string" ) {
+        Kiwi.Log.error(
+            "#TimeHelper",
+            "could not create invalid key name" );
+        return;
+    }
+
+    if ( this.clocks[ key ] || this.tweens[ key ] ) {
+        Kiwi.Log.error(
+            "#TimeHelper",
+            "could not create Clock/TweenManager with key",
+            key,
+            "as it already exists." );
+        return;
+    }
+
+    clock = this.owner.game.time.addClock( key );
+    tween = new Kiwi.Animations.Tweens.TweenManager( this.game, clock );
+
+    this.clocks[ key ] = clock;
+    this.tweens[ key ] = tween;
+
+    clock.start();
+};
+
+
+Kiwifroot.States.TimeHelper.prototype.getOnAllClocks = function( property ) {
+    /**
+    Return a list of the property on all clocks.
+
+    @method getOnAllClocks
+    @param property {string} Name of the property to read
+    @return array
+    **/
+
+    var i,
+        array = [];
+
+    for ( i in this.clocks ) {
+        array.push( this.clocks[ i ][ property ] );
+    }
+
+    return array;
+};
+
+
+Kiwifroot.States.TimeHelper.prototype.getOnAllTweens = function( property ) {
+    /**
+    Return a list of the property on all tween managers.
+
+    @method getOnAllTweens
+    @param property {string} Name of the property to read
+    @return array
+    **/
+
+    var i,
+        array = [];
+
+    for ( i in this.tweens ) {
+        array.push( this.tweens[ i ][ property ] );
+    }
+
+    return array;
+};
+
+
+Kiwifroot.States.TimeHelper.prototype.runOnAllClocks = function( property ) {
+    /**
+    Execute the specified method on all clocks.
+    Additional parameters will be passed to the functions.
+    This returns a list of any return values.
+
+    @method runOnAllClocks
+    @param property {string} Name of the function to call
+    @return {array} List of function returns
+    */
+
+    var i,
+        args = [],
+        returns = [];
+
+    for ( i = 1; i < arguments.length; i++ ) {
+        args.push( arguments[ i ] );
+    }
+
+    for ( i in this.clocks ) {
+        returns.push(
+            ( this.clocks[ i ][ property ] ).apply( this.clocks[ i ], args ) );
+    }
+
+    return returns;
+};
+
+
+Kiwifroot.States.TimeHelper.prototype.runOnAllTweens = function( property ) {
+    /**
+    Execute the specified method on all tween managers.
+    Additional parameters will be passed to the functions.
+    This returns a list of any return values.
+
+    @method runOnAllClocks
+    @param property {string} Name of the function to call
+    @return {array} List of function returns
+    **/
+
+    var i,
+        args = [],
+        returns = [];
+
+    for ( i = 1; i < arguments.length; i++ ) {
+        args.push( arguments[ i ] );
+    }
+
+    for ( i in this.tweens ) {
+        returns.push(
+            ( this.tweens[ i ][ property ] ).apply( this.tweens[ i ], args ) );
+    }
+
+    return returns;
+};
+
+
+Kiwifroot.States.TimeHelper.prototype.setOnAllClocks = function(
+    property, value ) {
+    /**
+    Set the property on all clocks.
+
+    @method setOnAllClocks
+    @param property {string} Name of the property to set
+    @param value {any} Value to set
+    **/
+
+    var i;
+
+    for ( i in this.clocks ) {
+        this.clocks[ i ][ property ] = value;
+    }
+};
+
+
+Kiwifroot.States.TimeHelper.prototype.setOnAllTweens = function(
+    property, value ) {
+    /**
+    Set the property on all tween managers.
+
+    @method setOnAllTweens
+    @param property {string} Name of the property to set
+    @param value {any} Value to set
+    **/
+
+    var i;
+
+    for ( i in this.tweens ) {
+        this.tweens[ i ][ property ] = value;
+    }
+};
+
+
+Kiwifroot.States.TimeHelper.prototype.update = function() {
+    /**
+    Call every frame. Override default `Component.update`.
+
+    @method update
+    **/
+
+    var i;
+
+    for ( i in this.tweens ) {
+        this.tweens[ i ].update();
+    }
+};
+
+
+Kiwifroot.States.TimeHelper.prototype.destroy = function() {
+    /**
+    Clean up time components to avoid end-of-state errors.
+
+    This method should be called automatically in KiwiJS versions 1.4.1
+    and up.
+
+    @method destroy
+    **/
+
+    var i, j;
+
+    this.runOnAllClocks( "stop" );
+    for ( i in this.tweens ) {
+        this.tweens[ i ].removeAll();
+    }
+
+    // Somewhat naughty clock removal.
+    // This violates privacy,
+    // but it also prevents accumulation of orphan clocks.
+    for ( i = this.game.time._clocks.length - 1; i >= 0; i-- ) {
+        for ( j in this.clocks ) {
+            if ( this.game.time._clocks[ i ] === this.clocks[ j ] ) {
+                this.game.time._clocks.splice( i, 1 );
+            }
+        }
+    }
+
+    Kiwi.Component.prototype.destroy.call( this );
+};
+
 /**
 * 
 * @module System
@@ -10593,3 +11088,6059 @@ Kiwifroot.System.Manager.prototype.destroy = function() {
 	delete this.game;
 
 };
+
+/**
+* 
+* @module Kiwi
+* @submodule Plugins
+*
+*/
+
+/**
+* 
+* 
+* @namespace Kiwi.Plugins
+* @class GamefrootText
+* @static
+* 
+*/
+Kiwi.Plugins.GamefrootText = {
+
+	/**
+	*
+	* @property name
+	* @type String
+	* @static
+	* @default 'GamefrootText'
+	* @public
+	*/
+	name: 'GamefrootText',
+
+	/**
+	*
+	* @property version
+	* @type String
+	* @default '0.0.1'
+	* @static
+	* @readOnly
+	* @public
+	*/
+	version: '0.0.1',
+
+	/**
+	* 
+	* @property minimumKiwiVersion
+	* @type String
+	* @default '1.3.0'
+	* @static
+	* @readOnly
+	* @public
+	*/
+	minimumKiwiVersion: '1.3.0',
+
+
+	/**
+	* 
+	* @property pluginDependencies
+	* @type Array
+	* @default []
+	* @static
+	* @readOnly
+	* @public
+	*/
+	pluginDependencies:  [],
+
+	/**
+	*
+	* @property kiwifrootPlugins
+	* @type Array
+	* @public
+	*/
+	kiwifrootPlugins: []
+	
+
+};	
+
+// Register this with the kiwi plugin manager
+Kiwi.PluginManager.register( Kiwi.Plugins.GamefrootText );
+
+
+//Add the GameObject
+Kiwi.Plugins.GamefrootText.kiwifrootPlugins.push( 
+	{
+		type: Kiwifroot.Plugins.GAMEOBJECT,
+		name: 'multiline-text',
+		namespace: Kiwi.Plugins.GamefrootText
+	} 
+);
+
+
+/**
+* 
+* @module Kiwi
+* @submodule Plugins
+*
+*/
+
+
+/**
+* 
+* 
+* @namespace Kiwi.Plugins
+* @class GamefrootText
+* @static
+* 
+*/
+
+/**
+*
+* @method create
+* @param state {Kiwi.State}
+* @param params {Object}
+* 	@param params.type {string}
+* @public
+*/
+Kiwi.Plugins.GamefrootText.add = function( state, params, parent ) {
+	
+	params.state = state;
+	
+	/*
+		params contain:
+		x
+		y
+		maxWidth
+		color
+		size
+		weight
+		fontFamily
+		lineHeight
+		text
+	*/
+
+	var go = new Kiwi.Plugins.Text( params );
+	parent.addChild( go );
+
+	return go;
+
+};
+
+
+/**
+* 
+* @module Kiwi
+* @submodule Plugins
+*
+*/
+
+/**
+* 
+* 
+* @namespace Kiwi.Plugins
+* @class GamefrootText
+* @static
+* 
+*/
+Kiwi.Plugins.GamefrootText = {
+
+	/**
+	*
+	* @property name
+	* @type String
+	* @static
+	* @default 'GamefrootText'
+	* @public
+	*/
+	name: 'GamefrootText',
+
+	/**
+	*
+	* @property version
+	* @type String
+	* @default '0.0.1'
+	* @static
+	* @readOnly
+	* @public
+	*/
+	version: '0.0.1',
+
+	/**
+	* 
+	* @property minimumKiwiVersion
+	* @type String
+	* @default '1.3.0'
+	* @static
+	* @readOnly
+	* @public
+	*/
+	minimumKiwiVersion: '1.3.0',
+
+
+	/**
+	* 
+	* @property pluginDependencies
+	* @type Array
+	* @default []
+	* @static
+	* @readOnly
+	* @public
+	*/
+	pluginDependencies:  [],
+
+	/**
+	*
+	* @property kiwifrootPlugins
+	* @type Array
+	* @public
+	*/
+	kiwifrootPlugins: []
+	
+
+};	
+
+// Register this with the kiwi plugin manager
+Kiwi.PluginManager.register( Kiwi.Plugins.GamefrootText );
+
+
+//Add the GameObject
+Kiwi.Plugins.GamefrootText.kiwifrootPlugins.push( 
+	{
+		type: Kiwifroot.Plugins.GAMEOBJECT,
+		name: 'multiline-text',
+		namespace: Kiwi.Plugins.GamefrootText
+	} 
+);
+
+
+/**
+* 
+* @module Kiwi
+* @submodule Plugins
+*
+*/
+
+
+/**
+* 
+* 
+* @namespace Kiwi.Plugins
+* @class GamefrootText
+* @static
+* 
+*/
+
+/**
+*
+* @method create
+* @param state {Kiwi.State}
+* @param params {Object}
+* 	@param params.type {string}
+* @public
+*/
+Kiwi.Plugins.GamefrootText.add = function( state, params, parent ) {
+	
+	params.state = state;
+	
+	/*
+		params contain:
+		x
+		y
+		maxWidth
+		color
+		size
+		weight
+		fontFamily
+		lineHeight
+		text
+	*/
+
+	var go = new Kiwi.Plugins.Text( params );
+	parent.addChild( go );
+
+	return go;
+
+};
+
+/**
+* @module Kiwi
+* @submodule Plugins
+* @namespace Kiwi.Plugins
+*/
+
+Kiwi.Plugins.Text =
+	function( params ) {
+
+	/**
+	* Text is a GameObject that is used when you are wanting to render
+	* text onto the current State.
+	*
+	* Text has width/height and a hitbox, but because text is difficult
+	* to measure, these may not be 100% accurate. It does not have an
+	* "Input" component either, although you may choose to add one.
+	* Be aware of these limitations.
+	*
+	* @class Text
+	* @extends Kiwi.Entity
+	* @constructor
+	* @param params {object} Composite parameter object
+	*	@param [params.addToState=true] {boolean} Whether the Text object
+	*		should be automatically added to the State upon creation
+	*	@param [params.alignment="left"] {string} Text alignment.
+	*		May be "left", "right", "center",
+	*		`Kiwi.Plugins.Text.TEXT_ALIGN_CENTER`,
+	*		`Kiwi.Plugins.Text.TEXT_ALIGN_LEFT`,
+	*		or `Kiwi.Plugins.Text.TEXT_ALIGN_RIGHT`.
+	*	@param [params.alpha=1] {number} Object opacity
+	*	@param [params.anchorNormalX=0] {number} Horizontal anchor point
+	*		as a ratio of width
+	*	@param [params.anchorNormalY=0] {number} Vertical anchor point
+	*		as a ratio of height
+	*	@param [params.anchorPointX=0] {number} Horizontal anchor point
+	*		coordinate
+	*	@param [params.anchorPointY=0] {number} Vertical anchor point
+	*		coordinate
+	*	@param [params.color="#000000"] {string} Text color
+	*	@param [params.fontFamily="sans-serif"] {String}
+	*		Font family to be used when rendering
+	*	@param [params.fontSize=32] {number} Size of the text in pixels;
+	*		equivalent to and overrides `size`
+	*	@param [params.lineHeight="1em"] {string} Height of lines, defined
+	*		in pixels or ems
+	*	@param [params.lineHeightNormalized=1] {number} Height of lines in ems.
+	*		Takes priority over `lineHeight` during creation.
+	*	@param [params.maxHeight=Infinity] {number} Maximum pixel height
+	*		of text.
+	*	@param [params.maxLines=Infinity] {number} Maximum number
+	*		of text lines to render.
+	*	@param [params.maxWidth=Infinity] {number} Maximum pixel width
+	*		of text lines.
+	*	@param [params.rotation=0] {number} Initial rotation
+	*	@param [params.scale=1] {number} Scale, before X and Y axes
+	*	@param [params.scaleX=1] {number} Horizontal scale
+	*	@param [params.scaleY=1] {number} Vertical scale
+	*	@param [params.size=32] {number} Size of the text in pixels;
+	*		equivalent to and overridden by `fontSize`. Deprecated.
+	*	@param params.state {Kiwi.State} State that this Text belongs to
+	*	@param [params.text="text"] {string} Text to be displayed
+	*	@param [params.weight="normal"] {String} Weight of the text
+	*	@param [params.x=0] {number} Horizontal coordinate
+	*	@param [params.y=0] {number} Vertical coordinate
+	*/
+
+	/**
+	* Maximum pixel height of text. If undefined, an infinite number
+	* of lines will be permitted. Note that only the first 2048
+	* pixel rows will display.
+	*
+	* @property _maxHeight
+	* @type number
+	* @default Infinity
+	* @private
+	*/
+	this._maxHeight = params.maxHeight || Infinity;
+
+	/**
+	* Maximum number of text lines. If undefined, an infinite number
+	* of lines will be permitted. Note that only the first 2048
+	* pixel rows will display.
+	*
+	* @property _maxLines
+	* @type number
+	* @default Infinity
+	* @private
+	*/
+	this._maxLines = params.maxLines || Infinity;
+
+	/**
+	* Maximum pixel width of text lines. If undefined, lines may be
+	* infinite in length. Note that only the first 2048 pixel columns
+	* will display.
+	*
+	* @property _maxWidth
+	* @type number
+	* @default Infinity
+	* @private
+	*/
+	this._maxWidth = params.maxWidth || Infinity;
+
+	/**
+	* If the temporary canvas is dirty and needs to be re-rendered.
+	*
+	* @property _tempDirty
+	* @type boolean
+	* @private
+	*/
+	this._tempDirty = true;
+
+	if ( typeof params.text !== "string" ) {
+		if ( typeof params.text === "number" ) {
+			params.text = "" + params.text;
+		} else {
+			params.text = "text";
+		}
+	}
+	if ( isNaN( params.x ) ) {
+		params.x = 0;
+	}
+	if ( isNaN( params.y ) ) {
+		params.y = 0;
+	}
+	if ( params.color === void 0 ) {
+		params.color = "#000000";
+	}
+	if ( params.size === void 0 ) {
+		params.size = 32;
+	}
+	if ( params.fontSize === void 0 ) {
+		params.fontSize = params.size;
+	}
+	if ( params.weight === void 0 ) {
+		params.weight = "normal";
+	}
+	if ( params.fontFamily === void 0 ) {
+		params.fontFamily = "sans-serif";
+	}
+
+	// Call super
+	Kiwi.Entity.call( this, params.state, params.x, params.y );
+
+	// Set transforms
+	this.rotation = isNaN( params.rotation ) ? 0 : params.rotation;
+	this.scale = isNaN( params.scale ) ? 1 : params.scale;
+	this.scaleX = isNaN( params.scaleX ) ? this.scaleX : params.scaleX;
+	this.scaleY = isNaN( params.scaleY ) ? this.scaleY : params.scaleY;
+	this.alpha = isNaN( params.alpha ) ? 1 : params.alpha;
+	this.anchorPointX = isNaN( params.anchorPointX ) ? 0 : params.anchorPointX;
+	this.anchorPointY = isNaN( params.anchorPointY ) ? 0 : params.anchorPointY;
+
+	/**
+	* Horizontal anchor normal. This defines `anchorPointX` as a proportion
+	* of `width`. If `anchorNormalX` is defined, it will update `anchorPointX`
+	* when the dimensions of the rendered image change.
+	*
+	* @property _anchorNormalX
+	* @type number
+	* @default undefined
+	* @private
+	*/
+	this._anchorNormalX = params.anchorNormalX;
+
+	/**
+	* Vertical anchor normal. This defines `anchorPointY` as a proportion
+	* of `height`. If `anchorNormalY` is defined, it will update `anchorPointY`
+	* when the dimensions of the rendered image change.
+	*
+	* @property _anchorNormalY
+	* @type number
+	* @default undefined
+	* @private
+	*/
+	this._anchorNormalY = params.anchorNormalY;
+
+	if ( this.game.renderOption === Kiwi.RENDERER_WEBGL ) {
+
+		/**
+		* GL renderer for this text object's internal canvas
+		*
+		* @property glRenderer
+		* @type Kiwi.Renderers.Renderer
+		*/
+
+		this.glRenderer =
+			this.game.renderer.requestSharedRenderer( "TextureAtlasRenderer" );
+	}
+
+	this.lineHeight = params.lineHeight || "1em";
+	if ( params.lineHeightNormalized ) {
+		this.lineHeightNormalized = params.lineHeightNormalized;
+	}
+
+	/**
+	* The text that is to be rendered.
+	* @property _text
+	* @type string
+	* @private
+	*/
+	this._text = params.text;
+
+	/**
+	* The weight of the font.
+	* @property _fontWeight
+	* @type string
+	* @default "normal"
+	* @private
+	*/
+	this._fontWeight = params.weight;
+
+	/**
+	* The size of the font.
+	* @property _fontSize
+	* @type number
+	* @default 32
+	* @private
+	*/
+	this._fontSize = params.fontSize;
+
+	/**
+	* The color of the text.
+	* @property _fontColor
+	* @type Kiwi.Utils.Color
+	* @private
+	*/
+	this._fontColor = new Kiwi.Utils.Color( params.color );
+
+	/**
+	* The font family that is to be rendered.
+	* @property _fontFamily
+	* @type string
+	* @default "sans-serif"
+	* @private
+	*/
+	this._fontFamily = params.fontFamily;
+
+	/**
+	* The alignment of the text. This can either be "left", "right" or "center"
+	* @property _textAlign
+	* @type string
+	* @default "center"
+	* @private
+	*/
+	this._textAlign = "left";
+	if ( params.alignment ) {
+		this.alignment = params.alignment;
+	}
+
+	/**
+	* The baseline of the text to be rendered.
+	* @property _baseline
+	* @type string
+	* @private
+	*/
+	this._baseline = "top";
+
+
+	/**
+	* Canvas element onto which the text is rendered
+	* @property _canvas
+	* @type HTMLCanvasElement.
+	* @private
+	*/
+	this._canvas = document.createElement( "canvas" );
+	this._canvas.width = 2;
+	this._canvas.height = 2;
+
+	/**
+	* Context for the canvas element. Used while rendering text.
+	* @property _ctx
+	* @type CanvasRenderingContext2D
+	* @private
+	*/
+	this._ctx = this._canvas.getContext( "2d" );
+
+	// Add it to the TextureLibrary
+	this.atlas = new Kiwi.Textures.SingleImage(
+		this.game.rnd.uuid(), this._canvas );
+	this.state.textureLibrary.add( this.atlas );
+	this.atlas.dirty = true;
+
+	/**
+	* Hitbox component
+	* @property box
+	* @type Kiwi.Components.Box
+	* @public
+	*/
+	this.box = this.components.add( new Kiwi.Components.Box(
+		this, this.x, this.y, this.width, this.height ) );
+
+	// Auto-add to state
+	if ( params.addToState !== false ) {
+		this.state.addChild( this );
+	}
+
+	this._createPool();
+};
+Kiwi.extend( Kiwi.Plugins.Text, Kiwi.Entity );
+
+
+Kiwi.Plugins.Text.prototype.create = function( game ) {
+
+	/**
+	* Execute when Kiwi Game that has been told to use this plugin
+	* reaches the boot stage of the game loop.
+	*
+	* @method create
+	* @param game {Kiwi.Game} Game that is current in the boot stage
+	*/
+};
+
+
+Kiwi.Plugins.Text.prototype._createPool = function() {
+
+	/**
+	* Create a pool of objects to be used during rendering.
+	*
+	* @method _createPool
+	* @private
+	*/
+
+	/**
+	* Composite pool object
+	*
+	* @property _pool
+	* @type object
+	* @private
+	*/
+	this._pool = {
+		pt1: new Kiwi.Geom.Point( 0, 0 ),
+		pt2: new Kiwi.Geom.Point( 0, 0 ),
+		pt3: new Kiwi.Geom.Point( 0, 0 ),
+		pt4: new Kiwi.Geom.Point( 0, 0 ),
+		xOffset: 0
+	};
+};
+
+
+/**
+* The name of this plugin.
+*
+* @property name
+* @type string
+* @default "Text"
+*/
+Kiwi.Plugins.Text.name = "Text";
+
+
+/**
+* The version of this plugin.
+*
+* @property version
+* @type string
+* @default "0.0.1"
+*/
+Kiwi.Plugins.Text.version = "0.0.1";
+
+
+/**
+* Returns the type of object that this is.
+*
+* @method objType
+* @return {string} "Text"
+*/
+Kiwi.Plugins.Text.prototype.objType = function () {
+	return "Text";
+};
+
+
+Object.defineProperty( Kiwi.Plugins.Text.prototype, "anchorNormalX", {
+
+	/**
+	* Horizontal anchor normal. This defines `anchorPointX` as a proportion
+	* of `width`. If `anchorNormalX` is defined, it will update `anchorPointX`
+	* when the dimensions of the rendered image change.
+	*
+	* @property anchorNormalX
+	* @type number
+	* @default undefined
+	*/
+
+	get: function () {
+		return this._anchorNormalX;
+	},
+	set: function (value) {
+		this._anchorNormalX = value;
+		this.anchorPointX = this.width * this._anchorNormalX;
+	}
+} );
+
+
+Object.defineProperty( Kiwi.Plugins.Text.prototype, "anchorNormalY", {
+
+	/**
+	* Vertical anchor normal. This defines `anchorPointY` as a proportion
+	* of `height`. If `anchorNormalY` is defined, it will update `anchorPointY`
+	* when the dimensions of the rendered image change.
+	*
+	* @property anchorNormalY
+	* @type number
+	* @default undefined
+	*/
+
+	get: function () {
+		return this._anchorNormalY;
+	},
+	set: function (value) {
+		this._anchorNormalY = value;
+		this.anchorPointY = this.height * this._anchorNormalY;
+	}
+} );
+
+
+Object.defineProperty( Kiwi.Plugins.Text.prototype, "alignment", {
+
+	/**
+	* Alignment of text. You can either use the static TEXT_ALIGN
+	* constants or pass a string.
+	*
+	* Alias of `textAlign`.
+	*
+	* @property alignment
+	* @type string
+	*/
+
+	get: function () {
+		return this._textAlign;
+	},
+	set: function (value) {
+		this._textAlign = value;
+		this._tempDirty = true;
+	}
+} );
+
+
+Object.defineProperty( Kiwi.Plugins.Text.prototype, "lineHeight", {
+
+	/**
+	* Height of individual text lines. Measured in pixels or ems.
+	* For example, "100px" or "1.3em".
+	*
+	* @property lineHeight
+	* @type string
+	*/
+
+	get: function() {
+
+		/**
+		* Main storage of line height.
+		*
+		* @property _lineHeight
+		* @type string
+		* @private
+		*/
+
+		return this._lineHeight;
+	},
+	set: function( value ) {
+		this._lineHeight = value;
+		this._tempDirty = true;
+	}
+} );
+
+
+Object.defineProperty( Kiwi.Plugins.Text.prototype, "lineHeightNormalized", {
+
+	/**
+	* Height of individual text lines, determining separation
+	* between lines. Measured in ems relative to font size.
+	*
+	* @property lineHeightNormalized
+	* @type number
+	*/
+
+	get: function () {
+		var factor = 1;
+
+		if ( this._lineHeight.slice( -2 ) === "em" ) {
+			factor = this._lineHeight.slice(0, this._lineHeight.length - 2 );
+		} else if ( this._lineHeight.slice( -2 ) === "px" ) {
+			factor = this._lineHeight.slice(0, this._lineHeight.length - 2 ) /
+				this._fontSize;
+		}
+		
+		if ( isNaN( factor ) ) {
+			factor = 1;
+		}
+		return factor * 1;
+	},
+	set: function( value ) {
+		if ( !isNaN( value ) ) {
+			this._lineHeight = value + "em";
+		}
+	}
+} );
+
+
+Object.defineProperty(Kiwi.Plugins.Text.prototype, "text", {
+
+	/**
+	* The text that you would like to appear in this textfield.
+	*
+	* @property text
+	* @type string
+	*/
+
+	get: function () {
+		return this._text;
+	},
+	set: function ( value ) {
+		this._text = value;
+		this._tempDirty = true;
+	},
+	enumerable: true,
+	configurable: true
+} );
+
+
+Object.defineProperty(Kiwi.Plugins.Text.prototype, "color", {
+
+	/**
+	* The color of the font that is contained in this textfield.
+	* May be set with a string, or an array of any valid
+	* Kiwi.Utils.Color arguments.
+	*
+	* Returns a hex string prepended with "#".
+	*
+	* @property color
+	* @type string
+	*/
+
+	get: function () {
+		return "#" + this._fontColor.getHex();
+	},
+	set: function ( value ) {
+		if (!Kiwi.Utils.Common.isArray(value)) {
+			value = [value];
+		}
+		this._fontColor.set.apply(this._fontColor, value);
+		this._tempDirty = true;
+	},
+	enumerable: true,
+	configurable: true
+});
+
+
+Object.defineProperty(Kiwi.Plugins.Text.prototype, "fontWeight", {
+
+	/**
+	* The weight of the font.
+	*
+	* @property fontWeight
+	* @type string
+	*/
+
+	get: function () {
+		return this._fontWeight;
+	},
+	set: function (value) {
+		this._fontWeight = value;
+		this._tempDirty = true;
+	},
+	enumerable: true,
+	configurable: true
+});
+
+
+Object.defineProperty(Kiwi.Plugins.Text.prototype, "fontSize", {
+
+	/**
+	* The size on font when being displayed onscreen.
+	* @property fontSize
+	* @type number
+	*/
+
+	get: function () {
+		return this._fontSize;
+	},
+	set: function (value) {
+		this._fontSize = value;
+		this._tempDirty = true;
+	},
+	enumerable: true,
+	configurable: true
+});
+
+
+Object.defineProperty(Kiwi.Plugins.Text.prototype, "size", {
+
+	/**
+	* The size on font when being displayed onscreen.
+	* Alias for `fontSize`.
+	* @property size
+	* @type number
+	* @deprecated
+	*/
+
+	get: function () {
+		return this._fontSize;
+	},
+	set: function (value) {
+		this._fontSize = value;
+		this._tempDirty = true;
+	},
+	enumerable: true,
+	configurable: true
+});
+
+
+Object.defineProperty(Kiwi.Plugins.Text.prototype, "fontFamily", {
+
+	/**
+	* The font family that is being used to render the text.
+	*
+	* @property fontFamily
+	* @type string
+	*/
+
+	get: function () {
+		return this._fontFamily;
+	},
+	set: function (value) {
+		this._fontFamily = value;
+		this._tempDirty = true;
+	},
+	enumerable: true,
+	configurable: true
+});
+
+
+Object.defineProperty( Kiwi.Plugins.Text.prototype, "maxHeight", {
+
+	/**
+	* Maximum pixel height of text. If undefined, an infinite number
+	* of lines will be permitted. Note that only the first 2048
+	* pixel columns will display.
+	*
+	* @property maxHeight
+	* @type number
+	* @default Infinity
+	*/
+
+	get: function() {
+		return this._maxHeight;
+	},
+	set: function( value ) {
+		this._maxHeight = value ? value : Infinity;
+		this._tempDirty = true;
+	},
+	enumerable: true,
+	configurable: true
+} );
+
+
+Object.defineProperty( Kiwi.Plugins.Text.prototype, "maxLines", {
+
+	/**
+	* Maximum number of text lines. If undefined, an infinite number
+	* of lines will be permitted. Note that only the first 2048
+	* pixel rows will display.
+	*
+	* @property maxLines
+	* @type number
+	* @default Infinity
+	*/
+
+	get: function() {
+		return this._maxLines;
+	},
+	set: function( value ) {
+		this._maxLines = value ? value : Infinity;
+		this._tempDirty = true;
+	},
+	enumerable: true,
+	configurable: true
+} );
+
+
+Object.defineProperty( Kiwi.Plugins.Text.prototype, "maxWidth", {
+
+	/**
+	* Maximum pixel width of text lines. If undefined, lines may be
+	* infinite in length. Note that only the first 2048 pixel columns
+	* will display.
+	*
+	* @property maxWidth
+	* @type number
+	* @default Infinity
+	*/
+
+	get: function() {
+		return this._maxWidth;
+	},
+	set: function( value ) {
+		this._maxWidth = value ? value : Infinity;
+		this._tempDirty = true;
+	},
+	enumerable: true,
+	configurable: true
+} );
+
+
+Object.defineProperty(Kiwi.Plugins.Text.prototype, "textAlign", {
+
+	/**
+	* Alignment of the text. You can either use the static TEXT_ALIGN
+	* constants or pass a string.
+	*
+	* @property textAlign
+	* @type string
+	*/
+
+	get: function () {
+		return this._textAlign;
+	},
+	set: function (value) {
+		this._textAlign = value;
+		this._tempDirty = true;
+	},
+	enumerable: true,
+	configurable: true
+});
+
+
+Kiwi.Plugins.Text.prototype.renderText = function () {
+
+	/**
+	* This method is used to render the text to an offscreen-canvas
+	* which is held in a TextureAtlas (which is generated upon the
+	* instanitation of this class). This is so that the canvas doesn't
+	* render it every frame as it can be costly and so that it can be used
+	* in WebGL with the TextureAtlasRenderer.
+	*
+	* You should not need to call this function. It will automatically
+	* be invoked during the render cycle. In the event that you need to
+	* get up-to-date metrics, however, you should use this method before
+	* accessing object properties to ensure they are updated.
+	*
+	* @method renderText
+	*/
+
+	var height, i, measurements, maxWidth,
+		textLine, textLines, textWords, width, word, x;
+
+	this._ctx.font = this._fontWeight + " " + this._fontSize + "px " +
+		this._fontFamily;
+
+
+	// Split text onto multiple lines
+
+	textWords = this.text;
+
+	// Convert linebreak characters to words
+	// We do not consider trailing spaces here, because we add one,
+	// and the first trailing space will be stripped by line parsing.
+	// This preserves any leading space that users might put on a newline,
+	// such as for indentation.
+	textWords = textWords.replace( / *$\s/gm, " \n " );
+
+	textWords = textWords.split( " " );
+	textLines = [];
+	maxWidth = 0;
+	while ( textWords.length > 0 ) {
+		textLine = [];
+		while ( this._ctx.measureText( textLine.join( " " ) ).width <=
+				this._maxWidth && textWords.length > 0) {
+			if ( textWords[ 0 ] === "\n" ) {
+
+				// Allow line breaks
+				textWords.shift();
+				break;
+			}
+			textLine.push( textWords.shift() );
+		}
+
+		// If the last word overran the limits, remove it
+		if ( this._ctx.measureText( textLine.join( " " ) ).width >
+				this._maxWidth ) {
+			if ( textLine.length > 1 ) {
+				textWords.unshift( textLine.pop() );
+			} else {
+
+				// If a single word would overflow the entire line, hyphenate it
+				textWords.unshift( textLine.pop() );
+				word = "";
+				while ( this._ctx.measureText( word + "-" ).width <=
+						this._maxWidth && textWords[ 0 ].length > 1 ) {
+					word += textWords[ 0 ].slice( 0, 1 );
+					textWords[ 0 ] = textWords[ 0 ].slice( 1 );
+				}
+				if ( this._ctx.measureText( word + "-" ).width >
+						this._maxWidth && word.length > 1 ) {
+
+					// Put the last letter onto the next line
+					textWords[ 0 ] = word.slice( -1 ) + textWords[ 0 ];
+					word = word.slice( 0, word.length - 1 );
+				}
+				word = word + "-";
+				textLine.push( word );
+			}
+		}
+
+		// Finalize current line
+		textLines.push( textLine.join( " " ) );
+
+		// Track dimensions
+		maxWidth = Math.max(
+			maxWidth, this._ctx.measureText( textLine.join( " " ) ).width );
+
+		// Limit number of lines
+		if ( textLines.length === this._maxLines ||
+				this._fontSize * this.lineHeightNormalized *
+				( textLines.length + 1.5 ) > this._maxHeight ) {
+			break;
+		}
+	}
+	width = maxWidth;
+	height = this._fontSize * this.lineHeightNormalized *
+		( textLines.length + 0.5 );
+
+	// Update inherited properties
+	this.width = width;
+	this.height = height;
+
+	// Set normalized anchor points
+	if ( this._anchorNormalX ) {
+		this.anchorPointX = this._anchorNormalX * width;
+	}
+	if ( this._anchorNormalY ) {
+		this.anchorPointY = this._anchorNormalY * height;
+	}
+
+	// Is the width base2?
+	if ( Kiwi.Utils.Common.base2Sizes.indexOf( width ) === -1 ||
+			width === 4096 ) {
+		i = 0;
+		while ( Kiwi.Utils.Common.base2Sizes[ i ] < 2048 &&
+				width > Kiwi.Utils.Common.base2Sizes[ i ] ) {
+			i++;
+		}
+		width = Kiwi.Utils.Common.base2Sizes[ i ];
+	}
+
+	// Is the height base2?
+	if ( Kiwi.Utils.Common.base2Sizes.indexOf( height ) === -1 ||
+			height === 4096  ) {
+		i = 0;
+		while ( Kiwi.Utils.Common.base2Sizes[ i ] < 2048 &&
+				height > Kiwi.Utils.Common.base2Sizes[ i ] ) {
+			i++;
+		}
+		height = Kiwi.Utils.Common.base2Sizes[ i ];
+	}
+
+	// Apply the width/height
+	this._canvas.width = width;
+	this._canvas.height = height;
+
+	// Clear the canvas
+	this._ctx.clearRect(0, 0, width, height);
+
+	// Reapply the styles, as we've recreated the canvas
+	this._ctx.font =
+		this._fontWeight + " " + this._fontSize + "px " + this._fontFamily;
+	this._ctx.fillStyle = this.color.slice( 0, 7 );
+	this._ctx.textBaseline = this._baseline;
+
+	// Draw the text
+	for ( i in textLines ) {
+		x = 0;
+		switch ( this._textAlign ) {
+			case Kiwi.Plugins.Text.TEXT_ALIGN_CENTER:
+				x = ( this.width -
+					this._ctx.measureText( textLines[ i ] ).width ) / 2;
+				break;
+			case Kiwi.Plugins.Text.TEXT_ALIGN_RIGHT:
+				x = ( this.width -
+					this._ctx.measureText( textLines[ i ] ).width );
+				break;
+		}
+		this._ctx.fillText(
+			textLines[ i ],
+			x,
+			i * this._fontSize * this.lineHeightNormalized );
+	}
+
+	// Update the cell and dirty/undirtyfy
+	this.atlas.cells[ 0 ] = {
+		x: 0,
+		y: 0,
+		w: this._canvas.width,
+		h: this._canvas.height,
+		hitboxes: [ {
+			x: this._textAlign === Kiwi.Plugins.Text.TEXT_ALIGN_LEFT ?
+				0 :
+				this._textAlign === Kiwi.Plugins.Text.TEXT_ALIGN_CENTER ?
+					-this.width * 0.5 :
+					-this.width,
+			y: 0,
+			w: this.width,
+			h: this.height
+		} ]
+	};
+	this._tempDirty = false;
+	this.atlas.dirty = true;
+};
+
+
+Kiwi.Plugins.Text.prototype.render = function ( camera ) {
+
+	/**
+	* Called by the Layer to which this Game Object is attached
+	*
+	* @method render
+	* @param camera {Kiwi.Camera} Current camera
+	* @public
+	*/
+
+	var m;
+
+	if (this.alpha > 0 && this.visible) {
+
+		// Render on stage
+		this.game.stage.ctx.save();
+		if (this.alpha > 0 && this.alpha <= 1) {
+			this.game.stage.ctx.globalAlpha = this.alpha;
+		}
+
+		// Re-render text
+		if (this._tempDirty) {
+			this.renderText();
+		}
+
+		// Align the text
+		switch (this._textAlign) {
+			case Kiwi.Plugins.Text.TEXT_ALIGN_LEFT:
+				this._pool.xOffset = 0;
+				break;
+			case Kiwi.Plugins.Text.TEXT_ALIGN_CENTER:
+				this._pool.xOffset = this.width * 0.5;
+				break;
+			case Kiwi.Plugins.Text.TEXT_ALIGN_RIGHT:
+				this._pool.xOffset = this.width;
+				break;
+		}
+
+		// Draw the Image
+		m = this.transform.getConcatenatedMatrix();
+		this.game.stage.ctx.transform( m.a, m.b, m.c, m.d, m.tx, m.ty );
+		this.game.stage.ctx.drawImage( this._canvas,
+			0, 0,
+			this._canvas.width, this._canvas.height,
+			-this.transform.anchorPointX - this._pool.xOffset,
+			-this.transform.anchorPointY,
+			this._canvas.width, this._canvas.height) ;
+		this.game.stage.ctx.restore();
+	}
+};
+
+
+
+Kiwi.Plugins.Text.prototype.renderGL = function (gl, camera, params) {
+
+	/**
+	* Renders the GameObject using WebGL.
+	*
+	* @method renderGL
+	* @param gl {WebGLRenderingContext} Target WebGL rendering context
+	* @param camera {Kiwi.Camera} Current camera
+	* @param params {Object} Composite parameter object
+	* @public
+	*/
+
+	// Re-render text
+	if ( this._tempDirty ) {
+		this.renderText();
+	}
+
+	// Transform/Matrix
+	var m = this.transform.getConcatenatedMatrix();
+
+	// Align text
+	switch (this._textAlign) {
+		case Kiwi.Plugins.Text.TEXT_ALIGN_LEFT:
+			this._pool.xOffset = 0;
+			break;
+		case Kiwi.Plugins.Text.TEXT_ALIGN_CENTER:
+			this._pool.xOffset = -( this.width * 0.5 );
+			break;
+		case Kiwi.Plugins.Text.TEXT_ALIGN_RIGHT:
+			this._pool.xOffset = -( this.width );
+			break;
+	}
+
+	// Set the Point Objects.
+	this._pool.pt1.setTo(
+		this._pool.xOffset - this.transform.anchorPointX,
+		0 - this.transform.anchorPointY );
+	this._pool.pt2.setTo(
+		this._canvas.width + this._pool.xOffset - this.transform.anchorPointX,
+		0 - this.transform.anchorPointY );
+	this._pool.pt3.setTo(
+		this._canvas.width + this._pool.xOffset - this.transform.anchorPointX,
+		this._canvas.height - this.transform.anchorPointY );
+	this._pool.pt4.setTo(
+		this._pool.xOffset - this.transform.anchorPointX,
+		this._canvas.height - this.transform.anchorPointY );
+
+	// Apply the matrix to the points
+	m.transformPoint( this._pool.pt1 );
+	m.transformPoint( this._pool.pt2 );
+	m.transformPoint( this._pool.pt3 );
+	m.transformPoint( this._pool.pt4 );
+
+	// Add to the batch!
+	this.glRenderer.concatBatch( [
+		this._pool.pt1.x, this._pool.pt1.y,
+		0, 0, this.alpha,
+		this._pool.pt2.x, this._pool.pt2.y,
+		this._canvas.width, 0, this.alpha,
+		this._pool.pt3.x, this._pool.pt3.y,
+		this._canvas.width, this._canvas.height, this.alpha,
+		this._pool.pt4.x, this._pool.pt4.y,
+		0, this._canvas.height, this.alpha
+	] );
+};
+
+
+/**
+* A static property that contains the string to center align the text.
+* @property TEXT_ALIGN_CENTER
+* @type string
+* @static
+* @final
+* @public
+*/
+Kiwi.Plugins.Text.TEXT_ALIGN_CENTER = "center";
+
+
+/**
+* A static property that contains the string to right align the text.
+* @property TEXT_ALIGN_RIGHT
+* @type string
+* @static
+* @final
+* @public
+*/
+Kiwi.Plugins.Text.TEXT_ALIGN_RIGHT = "right";
+
+
+/**
+* A static property that contains the string to left align the text.
+* @property TEXT_ALIGN_LEFT
+* @type string
+* @static
+* @final
+* @public
+*/
+Kiwi.Plugins.Text.TEXT_ALIGN_LEFT = "left";
+
+
+/**
+* 
+* @module Kiwi
+* @submodule Plugins
+*
+*/
+
+
+/**
+* 
+* 
+* @namespace Kiwi.Plugins
+* @class GamefrootParticleGameObject
+* @static
+* 
+*/
+Kiwi.Plugins.GamefrootParticles = {
+
+	/**
+	*
+	* @property name
+	* @type String
+	* @static
+	* @default 'GamefrootParticles'
+	* @public
+	*/
+	name: 'GamefrootParticles',
+
+	/**
+	*
+	* @property version
+	* @type String
+	* @default '1.0.0'
+	* @static
+	* @readOnly
+	* @public
+	*/
+	version: '1.0.0',
+
+	/**
+	* 
+	* @property minimumKiwiVersion
+	* @type String
+	* @default '1.1.1'
+	* @static
+	* @readOnly
+	* @public
+	*/
+	minimumKiwiVersion: '1.1.1',
+
+
+	/**
+	* 
+	* @property pluginDependencies
+	* @type Array
+	* @default []
+	* @static
+	* @readOnly
+	* @public
+	*/
+	pluginDependencies:  [
+		{
+			name: "ParticlesGL",
+			minimumVersion: "1.2.1"
+		}
+	],
+
+	/**
+	*
+	* @property kiwifrootPlugins
+	* @type Array
+	* @public
+	*/
+	kiwifrootPlugins: [
+	]
+	
+
+};	
+
+// Register this with the kiwi plugin manager
+Kiwi.PluginManager.register( Kiwi.Plugins.GamefrootParticles );
+
+
+//Add the GameObject
+Kiwi.Plugins.GamefrootParticles.kiwifrootPlugins.push( 
+	{
+		type: Kiwifroot.Plugins.GAMEOBJECT,
+		name: 'particles',
+		namespace: Kiwi.Plugins.GamefrootParticles
+	} 
+);
+
+
+/**
+* 
+* @module Kiwi
+* @submodule Plugins
+*
+*/
+
+
+/**
+* 
+* 
+* @namespace Kiwi.Plugins
+* @class GamefrootParticleGameObject
+* @static
+* 
+*/
+
+/**
+*
+* @method create
+* @param state {Kiwi.State}
+* @param params {Object}
+* 	@param params.type {string}
+* @public
+*/
+Kiwi.Plugins.GamefrootParticles.add = function( state, params, parent ) {
+
+	if( state.game.renderer.objType() !== "GLRenderManager" ) {
+		state.game.log.warn( 'Not rendering using WebGL. Particles can only work when using the WebGL renderer.' );
+		return null;
+	}
+
+	if( !this.validate( params ) ) {
+		state.game.log.error( 'Could not create a Particle GameObject. Parameters passed were not valid.' );
+		return null;
+	}
+	
+	if( !state.textures[ params.imageId ] || typeof params.jsonId !== "undefined" && !state.data[ params.jsonId ] ) {
+		state.game.log.error( "An asset could not be found. Object not created." );
+		return null;
+	}
+
+	if( params.jsonId ) {
+		try {
+			var config = JSON.parse( state.data[ params.jsonId ].data );
+		} catch(e) {
+			state.game.log.error('Error parsing particle config file.');
+			return null;
+		}
+
+	} else {
+		var config = params.config;
+	}
+	
+	var particles = new Kiwi.GameObjects.StatelessParticles( state, state.textures[ params.imageId ], params.x, params.y, config );
+	
+	if( params.emitting || typeof params.emitting == "undefined" ) {
+
+		var loop = ( typeof params.looping !== "undefined" ) ? params.looping : true ; 
+		var removeOnComplete = ( typeof params.removeOnComplete !== "undefined" ) ? params.removeOnComplete : true;
+
+		particles.startEmitting( loop, removeOnComplete );
+	}
+
+	if( Kiwi.Utils.Common.isNumeric( params.scheduleStop ) ) {
+		particles.scheduleStop( params.scheduleStop, true );
+	}
+
+	parent.addChild( particles );
+
+	return particles;
+
+};
+
+
+
+/**
+*
+* @method validate
+* @param params {Object} 
+* @return {Boolean}
+* @public
+*/
+Kiwi.Plugins.GamefrootParticles.validate = function( params ) {
+
+	//Do your own validaton of the parameters passed to the 'add' method here....
+	if( typeof params.imageId === "undefined" ||
+		( typeof params.jsonId === "undefined" && typeof params.config === "undefined" ) ) {
+		return false;
+	}
+
+	if( typeof params.x === "undefined" ) {
+		params.x = 0;
+	}
+
+	if( typeof params.y === "undefined" ) {
+		params.y = 0;
+	}
+
+	return true;
+};
+
+
+
+/**
+* @module Kiwi
+* @submodule GameObjects
+* @main StatelessParticles
+*/
+
+/**
+* Creates a particle game object
+* @class StatelessParticles
+* @extends Kiwi.Entity
+* @constructor
+* @param state {Kiwi.State} State to which the game object belongs
+* @param atlas {Kiwi.Textures.TextureAtlas} Texture for the particle object
+* @param x {number} X position of the game object
+* @param y {number} Y position of the game object
+* @param config {object} Particle configuration object;
+*	see properties for more information.
+* @param [clock] {Kiwi.Time.Clock} Clock to govern animation.
+*	If omitted, will use state.game.time.clock.
+* @public
+* @return {Kiwi.GameObjects.StatelessParticles}
+*/
+
+Kiwi.GameObjects.StatelessParticles =
+		function( state, atlas, x, y, config, clock ) {
+	Kiwi.Entity.call( this, state, x, y );
+
+	if ( !clock || clock.objType !== "Clock" ) {
+		clock = state.game.time.clock;
+	}
+
+	return this.constructor( state, atlas, x, y, config, clock );
+
+};
+Kiwi.extend( Kiwi.GameObjects.StatelessParticles, Kiwi.Entity );
+
+
+(function() {
+	var protoProps = {
+
+		constructor : function( state, atlas, x, y, config, clock ) {
+			var i;
+
+			/**
+			* Config object. This allows you to alter any or all of the default
+			*	properties of a particle object. You do not need to specify
+			*	any config values; they all have default values.
+			*	A complete listing is as follows:
+			* <ul>
+			* <li>additive: Whether to draw in additive mode. Boolean.
+			*	Default false.</li>
+			* <li>alpha: Overall object transparency. Number, range 0-1.
+			*	More sophisticated alpha control is available via
+			*	alphaGradient and alphaStops.
+			*	Default 1.</li>
+			* <li>alphaGradient: Alpha value at four points throughout the
+			*	lifetime of each particle. Array of numbers, range 0-1.
+			*	Default [ 1, 1, 1, 0 ].</li>
+			* <li>alphaStops: Coordinates for alpha gradient stops.
+			*	The beginning and end are always 0 and 1 respectively;
+			*	this specifies the middle two stops.
+			*	Array of numbers, range 0-1. Default [ 0.3, 0.7 ].</li>
+			* <li>angStartMin: 0,</li>
+			* <li>angStartMax: 0,</li>
+			* <li>angVelocityConform: false,</li>
+			* <li>colEnv0: Initial color value in the particle's lifespan.
+			*	Array of three numbers, range 0-1. Default [ 1, 0, 0 ].</li>
+			* <li>colEnv1: Second color value in the particle's lifespan.
+			*	Array of three numbers, range 0-1. Default [ 1, 1, 0 ].</li>
+			* <li>colEnv2: Third color value in the particle's lifespan.
+			*	Array of three numbers, range 0-1. Default [ 1, 1, 1 ].</li>
+			* <li>colEnv3: Final color value in the particle's lifespan.
+			*	Array of three numbers, range 0-1. Default [ 0, 0, 0 ].</li>
+			* <li>colEnvKeyframes: Coordinates for color gradient stops.
+			*	The beginning and end are always 0 and 1 respectively;
+			*	this specifies the middle two stops.
+			*	Array of numbers, range 0-1. Default [ 0.5, 0.6 ].</li>
+			* <li>endSize: Size of particle at end of lifespan in pixels.
+			*	Number, default 150.</li>
+			* <li>gravityX: Acceleration along X axis. Number, default 0.</li>
+			* <li>gravityY: Acceleration along Y axis. Number, default -50.
+			* <li>loop: Whether the particles repeat, or play once.
+			*	Boolean, default true.</li>
+			* <li>maxLifespan: Maximum random lifespan. Number, default 5.</li>
+			* <li>maxStartTime: Maximum random start time.
+			*	Number, default 6.</li>
+			* <li>maxVel: Maximum random start velocity.
+			*	Number, default 100.</li>
+			* <li>minLifespan: Minimum random lifespan. Number, default 3.</li>
+			* <li>minStartTime: Minimum random start time.
+			*	Number, default 1.</li>
+			* <li>minVel: Minimum random start velocity.
+			*	Number, default 70.</li>
+			* <li>numParts: Number of particles to emit, default 20.</li>
+			* <li>posAngle: Angle of "line" emitter. Number, default 0.
+			* <li>posConstrainRadial: Whether to emit from the edge of a
+			*	"radial" emitter. Boolean, default true.</li>
+			* <li>posConstrainRect: Whether to emit from the edge of a
+			*	"rectangle" emitter. Boolean, default true.</li>
+			* <li>posHeight: Height of "rectangle" emitter.
+			*	Number, default 100.</li>
+			* <li>posLength: Length of "line" emitter.
+			*	Number, default 100.</li>
+			* <li>posOffsetX: Position offset of emitter.
+			*	Number, default 0.</li>
+			* <li>posOffsetY: Position offset of emitter.
+			*	Number, default 0.</li>
+			* <li>posRadialStart: Beginning angle of arc of "radial"
+			*	emitter. Number, default 4.363323129985823.</li>
+			* <li>posRadialEnd: End angle of arc of "radial" emitter.
+			*	Number, default 5.061454830783556.</li>
+			* <li>posRadius: Radius of "radial" emitter.
+			*	Number, default 50.</li>
+			* <li>posShape: Shape of emitter. String, default "radial".
+			*	Choose one of:
+			* <ul>
+			* <li>"radial"</li>
+			* <li>"rectangle"</li>
+			* <li>"line"</li>
+			* </ul></li>
+			* <li>posWidth: Width of "rectangle" emitter.
+			*	Number, default 100.</li>
+			* <li>startSize: Size of particle at start of lifespan in
+			*	pixels. Number, default 4.</li>
+			* <li>velAngle: Angle of "line" emission velocity type.
+			*	Number, default 0.</li>
+			* <li>velAngMin: Minimum angular velocity of emitted particles.
+			*	Number, default -2.</li>
+			* <li>velAngMax: Maximum angular velocity of emitted particles.
+			*	Number, default 2.</li>
+			* <li>velConstrainRadial: Whether to constrain velocities
+			*	of particles emitted using "radial" velocity to the edge
+			*	of a circle, ensuring they all have the same magnitude.
+			*	Number, default false.</li>
+			* <li>velConstrainRect: Whether to constrain velocities
+			*	of particles emitted using "rectangle" velocity to the edge
+			*	of the rectangle. Number, default false.</li>
+			* <li>velHeight: Height of velocity vectors created by
+			*	"rectangle" type emitter. Number, default 100.</li>
+			* <li>velLength: Range of lengths of velocity vectors
+			*	created by "line" type emitter. Number, default 30.</li>
+			* <li>velOffsetX: Offset applied to all velocity vectors.
+			*	Number, default 0.</li>
+			* <li>velOffsetY: Offset applied to all velocity vectors.
+			*	Number, default 0.</li>
+			* <li>velRadialStart: Low angle of arc describing
+			*	velocity vectors created with "radial" type velocity.
+			*	Number, default 0.</li>
+			* <li>velRadialEnd: High angle of arc describing
+			*	velocity vectors created with "radial" type velocity.
+			*	Number, default 6.283185307179586.</li>
+			* <li>velRadius: Radius of velocity vectors created
+			*	using "radial" type velocity. Number, default 100.</li>
+			* <li>velShape: Shape of velocity vector creator.
+			*	String, default "line".
+			* <ul>
+			* <li>"center"</li>
+			* <li>"radial"</li>
+			* <li>"rectangle"</li>
+			* <li>"line"</li>
+			* </ul></li>
+			* <li>velWidth: Width of velocity vectors created by
+			*	"rectangle" type emitter. Number, default 100.</li>
+			* </ul>
+			* @property config
+			* @type Object
+			* @public
+			*/
+			this.config = this.buildDefaultConfig();
+
+			/**
+			* Used to determine how to scale particles when the stage changes.
+			* @property _stageScale
+			* @type Kiwi.Geom.Point
+			* @default ( 1, 1 )
+			* @private
+			* @since 1.1.1
+			*/
+			this._stageScale = new Kiwi.Geom.Point( 1, 1 );
+
+			/**
+			* Indicates whether the object has been altered
+			*	and is in need of update.
+			* @property dirty
+			* @type Boolean
+			* @public
+			* @since 1.1.2
+			*/
+			this.dirty = false;
+
+			/**
+			* Color at stop 0 (start)
+			* @property color0
+			* @type Kiwi.Utils.Color
+			* @private
+			* @since 1.2.0
+			*/
+			this._color0 = new Kiwi.Utils.Color();
+
+			/**
+			* Color at stop 1
+			* @property color1
+			* @type Kiwi.Utils.Color
+			* @private
+			* @since 1.2.0
+			*/
+			this._color1 = new Kiwi.Utils.Color();
+
+			/**
+			* Color at stop 2
+			* @property color2
+			* @type Kiwi.Utils.Color
+			* @private
+			* @since 1.2.0
+			*/
+			this._color2 = new Kiwi.Utils.Color();
+
+			/**
+			* Color at stop 3 (end)
+			* @property color3
+			* @type Kiwi.Utils.Color
+			* @private
+			* @since 1.2.0
+			*/
+			this._color3 = new Kiwi.Utils.Color();
+
+			/**
+			* Timer used to schedule particle cessation
+			* @property _timer
+			* @type Kiwi.Time.Timer
+			* @private
+			*/
+			this._timer = null;
+
+			/**
+			* Matrix used to compute angles during rendering.
+			* This is a scratch value and has no other meaning.
+			*
+			* @property _deriveAngleTransformMatrix
+			* @type Kiwi.Geom.Matrix
+			* @private
+			*/
+			this._deriveAngleTransformMatrix = new Kiwi.Geom.Matrix();
+
+			/**
+			* Matrix used to compute angles during rendering.
+			* This is a scratch value and has no other meaning.
+			*
+			* @property _deriveAngleOffsetMatrix
+			* @type Kiwi.Geom.Matrix
+			* @private
+			*/
+			this._deriveAngleOffsetMatrix = new Kiwi.Geom.Matrix();
+
+			this.clock = clock;
+
+			this.randoms = function() {
+				var arr = [];
+				for ( i =0; i < 5000; i++ ) {
+					arr.push( Math.random() );
+				}
+				return arr;
+			}();
+
+			if ( typeof x === "undefined" ) {
+				x = 0;
+			}
+			if ( typeof y === "undefined" ) {
+				y = 0; }
+			if( typeof config !== "undefined" ) {
+				this.mergeConfig( this.config, config );
+			}
+
+			if ( this.game.renderOption === Kiwi.RENDERER_WEBGL ) {
+				this.glRenderer = this.game.renderer.requestRendererInstance(
+					"StatelessParticleRenderer",
+					{
+						config: this.config,
+						gameObject: this
+					} );
+			}
+
+			if ( typeof atlas === "undefined" ) {
+				console.error( "A Texture Atlas was not passed when " +
+					"instantiating a new StatelessParticles." );
+				this.visible = false;
+				this.active = false;
+				return;
+			}
+
+			//Set coordinates and texture
+			this.atlas = atlas;
+			this.cellIndex = this.atlas.cellIndex;
+			this.width = atlas.cells[ 0 ].w;
+			this.height = atlas.cells[ 0 ].h;
+			this.transform.rotPointX = 0;
+			this.transform.rotPointY = 0;
+			this.box = this.components.add(
+				new Kiwi.Components.Box( this, x, y, this.width, this.height) );
+
+			// Hide object until it is fully initialised by startEmitting
+			this.visible = false;
+		},
+
+		/**
+		* Sets a color stop using Kiwi.Utils.Color terminology.
+		* Specify any valid Color arguments after the index.
+		* You may set alpha in this way.
+		* @method setColor
+		* @param index {number} Index of the color stop: 0-3.
+		* @public
+		* @since 1.2.0
+		*/
+		setColor: function( index ) {
+			// var args = arguments;//.slice( 1 );
+			// Kiwi.Log.log( "Arguments", "#debug", arguments);
+			var i,
+				args = [];
+			for ( i in arguments ) {
+				args[ i ] = arguments[ i ];
+			}
+			args = args.slice( 1 );
+
+			switch( index ) {
+				case 0:
+					this._color0.set.apply( this._color0, args );
+					this.setConfigProp( "colEnv0",
+						[ this._color0.r, this._color0.g, this._color0.b ],
+						true );
+					this.setConfigProp( "alphaGradient",
+						[ this._color0.a,
+						this.config.alphaGradient[1],
+						this.config.alphaGradient[2],
+						this.config.alphaGradient[3] ],
+						true );
+					break;
+				case 1:
+					this._color1.set.apply( this._color1, args );
+					this.setConfigProp( "colEnv1",
+						[ this._color1.r, this._color1.g, this._color1.b ],
+						true );
+					this.setConfigProp( "alphaGradient",
+						[ this.configalphaGradient[0],
+						this._color1.a,
+						this.config.alphaGradient[2],
+						this.config.alphaGradient[3] ],
+						true );
+					break;
+				case 2:
+					this._color2.set.apply( this._color2, args );
+					this.setConfigProp( "colEnv2",
+						[ this._color2.r, this._color2.g, this._color2.b ],
+						true );
+					this.setConfigProp( "alphaGradient",
+						[ this.config.alphaGradient[0],
+						this.config.alphaGradient[1],
+						this._color2.a,
+						this.config.alphaGradient[3] ],
+						true );
+					break;
+				case 3:
+					this._color3.set.apply( this._color3, args );
+					this.setConfigProp( "colEnv3",
+						[ this._color3.r, this._color3.g, this._color3.b ],
+						true );
+					this.setConfigProp( "alphaGradient",
+						[ this.config.alphaGradient[0],
+						this.config.alphaGradient[1],
+						this.config.alphaGradient[2],
+						this._color3.a ],
+						true );
+					break;
+			}
+		},
+
+		/**
+		* Returns a color from this object. Note that this color will not
+		* update the particles if you change it; you must use "setColor".
+		* @method getColor
+		* @param index {number} Position of color stop, 0-3
+		* @return Kiwi.Utils.Color
+		* @public
+		* @since 1.2.0
+		*/
+		getColor: function( index ) {
+			switch( index ) {
+				case 1:
+					this._color1.set(
+						this.config.colEnv1[0],
+						this.config.colEnv1[1],
+						this.config.colEnv1[2],
+						this.config.alphaGradient[1] );
+					return this._color1;
+				case 2:
+					this._color2.set(
+						this.config.colEnv2[0],
+						this.config.colEnv2[1],
+						this.config.colEnv2[2],
+						this.config.alphaGradient[2] );
+					return this._color2;
+				case 3:
+					this._color3.set(
+						this.config.colEnv3[0],
+						this.config.colEnv3[1],
+						this.config.colEnv3[2],
+						this.config.alphaGradient[3] );
+					return this._color3;
+				default:
+					this._color0.set(
+						this.config.colEnv0[0],
+						this.config.colEnv0[1],
+						this.config.colEnv0[2],
+						this.config.alphaGradient[0] );
+					return this._color0;
+			}
+		},
+
+		/**
+		* Populates a new object with default config parameters
+		* @method buildDefaultConfig
+		* @return {object}
+		* @public
+		*/
+		buildDefaultConfig: function()
+		{
+			return {
+				"additive": false,
+				"alpha": 1,
+				"alphaGradient": [
+					1,
+					1,
+					1,
+					0
+				],
+				"alphaStops": [
+					0.3,
+					0.7
+				],
+				"angStartMin": 0,
+				"angStartMax": 0,
+				"angVelocityConform": false,
+				"numParts": 20,
+				"colEnv0": [
+					1,
+					0,
+					0
+				],
+				"colEnv1": [
+					1,
+					1,
+					0
+				],
+				"colEnv2": [
+					1,
+					1,
+					1
+				],
+				"colEnv3": [
+					0,
+					0,
+					0
+				],
+				"colEnvKeyframes": [
+					0.5,
+					0.6
+				],
+				"endSize": 150,
+				"gravityX": 0,
+				"gravityY": -50,
+				"loop": true,
+				"maxLifespan": 5,
+				"maxStartTime": 6,
+				"maxVel": 100,
+				"minLifespan": 3,
+				"minStartTime": 1,
+				"minVel": 70,
+				"posAngle": 0,
+				"posConstrainRadial": true,
+				"posConstrainRect": true,
+				"posHeight": 100,
+				"posLength": 100,
+				"posOffsetX": 0,
+				"posOffsetY": 0,
+				"posRadialStart": 4.363323129985823,
+				"posRadialEnd": 5.061454830783556,
+				"posRadius": 50,
+				"posShape": "radial",
+				"posWidth": 100,
+				"startSize": 4,
+				"velAngle": 0,
+				"velAngMin": -2,
+				"velAngMax": +2,
+				"velConstrainRadial": false,
+				"velConstrainRect": false,
+				"velHeight": 100,
+				"velLength": 30,
+				"velOffsetX": 0,
+				"velOffsetY": 0,
+				"velRadialStart": 0,
+				"velRadialEnd": 6.283185307179586,
+				"velRadius": 100,
+				"velShape": "line",
+				"velWidth": 100
+			};
+		},
+
+
+		/**
+		* Merges config objects, overwriting the first config with all
+		* definitions in the second while preserving non-revised terms.
+		* @method mergeConfig
+		* @param config1 {object} Config object to modify
+		* @param config2 {object} Config object to copy in
+		* @public
+		*/
+		mergeConfig: function( config1, config2 ) {
+			var i;
+
+			for ( i in config2 ) {
+				config1[ i ] = this.forceNumeric( config2[ i ] );
+			}
+		},
+
+		/**
+		* Recursively forces anything that can be a number
+		* to be a number, including array members.
+		* @method forceNumeric
+		* @param value {any} A value to force
+		* @return {any} The value
+		* @public
+		* @since 1.2.0
+		*/
+		forceNumeric: function( value ) {
+			var i, num;
+
+			if ( typeof value === "string" ) {
+				num = +value;
+				if ( !isNaN( num ) ) {
+					return num;
+				}
+			}
+
+			if ( Kiwi.Utils.Common.isArray( value ) ) {
+				for ( i in value ) {
+					value[ i ] = this.forceNumeric( value[ i ] );
+				}
+			}
+
+			return value;
+		},
+
+
+		/**
+		* Returns the state of the particle effect.
+		* Either "stopped","started" or "stopping" 
+		* @property state
+		* @type boolean
+		* @readonly
+		* @public
+		*/
+		effectState : "stopped",
+
+
+		/**
+		* The type of object that this is.
+		* @method objType
+		* @return string
+		* @public
+		*/
+		objType : function() {
+			return "StatelessParticles";
+		},
+
+		/**
+		* An array of vectors that conatains generated velocities
+		* if useDrawingVectors is true. Used by the particle editor.
+		* @property drawingVectors
+		* @type array
+		* @private
+		*/
+		drawingVectors : [],
+
+		/**
+		* If true, velocity vectors will be stored on particle generation.
+		* Used by the particle editor.
+		* @property useDrawingVectors
+		* @type boolean
+		* @private
+		*/
+		useDrawingVectors : false,
+
+		/**
+		* A function delegated to return a random number.
+		* Used by the particle editor.
+		* @property rnd
+		* @type function
+		* @private
+		*/
+		rnd : null,
+
+		/**
+		* If useRandoms is true, This array will contain pregenerate random
+		* numbers which will be used every new generation refresh.
+		* Used by the particle editor.
+		* @property randoms
+		* @type array
+		* @private
+		*/
+		randoms : [],
+
+		/**
+		* If true, pregenerate random numbers. Used by the particle editor.
+		* @property useRandoms
+		* @type boolean
+		* @private
+		*/
+		useRandoms : false,
+
+		/**
+		* The number of random numbers to generate if useRandoms is true.
+		* @property numRandoms
+		* @type number
+		* @private
+		*/
+		numRandoms: 5000,
+
+		/**
+		* The index of the next random number in useRandoms.
+		* Used by the particle editor.
+		* @property nextRandomIndex
+		* @type number
+		* @private
+		*/
+		nextRandomIndex : -1,
+
+		/**
+		* The maximum loop length of the system. Used for calculating
+		* the timeout when stopping emission. This is calculated when
+		* the particles are generated. It can be overridden once
+		* the emission has started.
+		* @property timeoutLength
+		* @type number
+		* @public
+		*/
+		timeoutLength:0,
+
+		/**
+		* Get the next random number from the randoms list.
+		* Used by the particle editor.
+		* @method nextRandom
+		* @return number
+		* @private
+		*/
+		nextRandom : function() {
+			this.nextRandomIndex++;
+			if (this.nextRandomIndex >= this.numRandoms) {
+				this.nextRandomIndex = -1;
+			}
+			return this.randoms[ this.nextRandomIndex ];
+		},
+
+		/**
+		* Starts the system emitting particles.
+		* Particles will be regenerated each time.
+		* @method startEmitting
+		* @param loop {boolean} Set to true for continuous looping.
+		*	Overrides and updates the config loop setting. 
+		* @param removeOnComplete {boolean} If not looping, then
+		*	the gameobject will destroy itself after one full emission cycle.
+		* @param numParts {number} Number of particles to generate,
+		*	set on the config object - if not provided
+		*	the current config value will be used 
+		* @public
+		*/
+		startEmitting : function( loop, removeOnComplete, numParts ) {
+			if ( typeof loop === "undefined" ) {
+				loop = true;
+			}
+			if ( typeof removeOnComplete === "undefined" ) {
+				removeOnComplete = false;
+			}
+			if ( typeof numParts === "undefined" ) {
+				numParts = this.config.numParts;
+			}
+
+			this.config.numParts = numParts;
+			this.config.loop = loop;
+			
+			this.glRenderer.resetTime();
+			this.glRenderer.resetPauseTime();
+
+			this.setConfig( this.config, true, true );
+
+			if ( !loop && removeOnComplete ) {
+				this.scheduleStop( this.timeoutLength * 1000, true );
+			}
+
+			this.effectState = "started";
+			this.visible = true;
+			this.clock.removeTimer( this._timer );
+		},
+
+		/**
+		* Stops the system from emitting particles.
+		* @method stopEmitting
+		* @param immediate {boolean} Stops the emitter
+		*	and removes any existing particles.
+		* @param remove {boolean} If true the gameobject will mark itself
+		*	for removal either immediately, or after a completed cycle.
+		* @public
+		*/
+		stopEmitting : function( immediate, remove ) {
+			if ( typeof immediate === "undefined") {
+				immediate = false;
+			}
+			if ( typeof remove === "undefined") {
+				remove = false;
+			}
+
+			if ( this.effectState === "started" ) {
+				if ( immediate && remove ) {
+					this.remove();
+				} else if ( immediate && !remove ) {
+					this.effectState = "stopped";
+					this.visible = false;
+				} else if ( !immediate && !remove ) {
+					this.glRenderer.pause();
+					this.effectState = "stopping";
+					this.scheduleStop( this.timeoutLength * 1000, false );
+				} else if ( !immediate && remove ) {
+					this.config.loop = false;
+					this.scheduleStop( this.timeoutLength * 1000, true );
+				}
+			}
+		},
+
+		/**
+		* Schedules the particle effect to stop (discontinue rendering),
+		*	and optionally marks the gameobject for removal.
+		* @method scheduleStop
+		* @param milliseconds {number} Delay time in milliseconds
+		*	before being marked for removal.
+		* @param remove {boolean} Mark the gameobject for removal.
+		* @public
+		*/
+		scheduleStop: function( milliseconds, remove ) {
+			var that = this;
+			this.clock.removeTimer( this._timer );
+			this._timer = this.clock.setTimeout( function() {
+				that.effectState = "stopped";
+				that.visible = false;
+				if ( remove ) {
+					that.remove.call( that );
+				}
+			}, milliseconds );
+		},
+
+		/**
+		* Immediately marks the gameobject for removal.
+		* @method remove
+		* @public
+		*/
+		remove : function() {
+			this.glRenderer.destroy();
+			this.exists = false;
+		},
+
+		/**
+		* Sets the configuration object and optionally regenerates particles
+		*	and sets runtime properties.
+		* @method setConfig
+		* @param config {object} New configuration object
+		* @param doGenerate {boolean} Immediately regenerate particles
+		* @param doUniforms {boolean} Apply runtime properties.
+		*	Deprecated: would apply runtime properties before rendering,
+		*	and this parameter only served to create errors.
+		* @public
+		*/
+		setConfig : function( config, doGenerate, doUniforms ) {
+			this.config = config;
+			this.glRenderer.setConfig( config );
+			if ( doGenerate ) {
+				this._generateParticles();
+			}
+			this.dirty = true;
+		},
+
+		/**
+		* Sets a property on the configuration object and optionally
+		* regenerates particles and sets runtime properties.
+		* @method setConfigProp
+		* @param prop {string} Name of the property to set
+		* @param val {any} Value of the property to set
+		* @param doGenerate {boolean} Immediately regenerate particles
+		* @param doUniforms {boolean} Apply runtime properties.
+		*	Deprecated: would apply runtime properties before rendering,
+		*	and this parameter only served to create errors.
+		* @public
+		*/
+		setConfigProp : function( prop, val, doGenerate, doUniforms ) {
+			this.config[ prop ] = val;
+			this.setConfig( this.config, doGenerate, doUniforms );
+		},
+
+		/**
+		* Gets the configuration object.
+		*	To change it, use setConfig or setConfigProp.
+		* @method getConfig
+		* @return {object}
+		* @public
+		*/
+		getConfig : function() {
+			return this.config;
+		},
+
+
+		/**
+		* Generates particles based on configuration object.
+		* @method _generateParticles
+		* @private
+		*/
+		_generateParticles : function() {
+			var angDiff, cell, cellIndex, diff, direction, i, lifespan,
+				magnitude, numCells, pos, posSeed, startAng, startTime,
+				vel, velAng, velSeed,
+				cfg = this.config,
+				vertexItems = [];
+				
+
+			this.nextRandomIndex = -1;
+			this.drawingVectors = [];
+
+			if ( this.useRandoms ) {
+				this.rnd = this.nextRandom;
+			} else {
+				this.rnd = Math.random;
+			}
+
+			for ( i = 0; i < cfg.numParts; i++ ) {
+
+				// Calculate pos
+				pos = { x: 0, y: 0 };
+				posSeed = { x: 0, y: 0 };
+				vel = { x: cfg.velOffsetX, y: cfg.velOffsetY };
+				velSeed = { x: 0, y: 0 };
+
+				switch ( cfg.posShape ) {
+
+					case "radial":
+						if ( cfg.posRandomRadial ) {
+							posSeed = ( cfg.posConstrainRadial ) ?
+								this.randomPointCirclePerimeter(
+									cfg.posRadialStart, cfg.posRadialEnd ) :
+								this.randomPointCircle(
+									cfg.posRadialStart, cfg.posRadialEnd );
+						} else {
+							posSeed = ( cfg.posConstrainRadial ) ?
+							this.regularPointCirclePerimeter(
+								cfg.posRadialStart, cfg.posRadialEnd,
+								i, cfg.numParts - 1 ) :
+							this.randomPointCircle(
+								cfg.posRadialStart, cfg.posRadialEnd );
+						}
+						pos.x  = posSeed.x * cfg.posRadius;
+						pos.y  = posSeed.y * cfg.posRadius;
+						break;
+
+					case "rectangle":
+						posSeed = cfg.posConstrainRect ?
+							this.randomPointRectPerimeter() :
+							this.randomPointRect();
+						pos.x += posSeed.x * cfg.posWidth;
+						pos.y += posSeed.y * cfg.posHeight;
+						break;
+
+					case "line":
+						if ( cfg.posRandomLine ) {
+							posSeed = this.randomPointLine( cfg.posAngle );
+						} else {
+							posSeed = this.regularPointLine(
+								cfg.posAngle, i, cfg.numParts - 1 );
+						}
+						pos.x += posSeed.x * cfg.posLength;
+						pos.y += posSeed.y * cfg.posLength;
+						break;
+
+					case "point" :
+						break;
+				}
+
+				switch (cfg.velShape) {
+
+					case "center":
+						direction = posSeed;
+						magnitude = cfg.minVel + this.rnd() *
+							(cfg.maxVel - cfg.minVel);
+						vel.x = direction.x * magnitude ;
+						vel.y = direction.y * magnitude ;
+						break;
+
+					case "radial":
+						if ( cfg.velRandomRadial ) {
+							velSeed = cfg.velConstrainRadial ?
+								this.randomPointCirclePerimeter(
+									cfg.velRadialStart, cfg.velRadialEnd ) :
+								this.randomPointCircle(
+									cfg.velRadialStart, cfg.velRadialEnd );
+						} else {
+							velSeed = cfg.velConstrainRadial ?
+								this.regularPointCirclePerimeter(
+									cfg.velRadialStart, cfg.velRadialEnd,
+									i, cfg.numParts - 1 ) :
+								this.randomPointCircle(
+									cfg.velRadialStart, cfg.velRadialEnd );
+						}
+
+						vel.x += velSeed.x * cfg.velRadius;
+						vel.y += velSeed.y * cfg.velRadius;
+						break;
+
+					case "rectangle":
+						velSeed = cfg.velConstrainRect ?
+							this.randomPointRectPerimeter() :
+							this.randomPointRect();
+
+						vel.x += velSeed.x * cfg.velWidth;
+						vel.y += velSeed.y * cfg.velHeight;
+						break;
+
+					case "line":
+						if ( cfg.velRandomLine ) {
+							velSeed = this.randomPointLine( cfg.velAngle );
+						} else {
+							velSeed = this.regularPointLine(
+								cfg.velAngle, i, cfg.numParts - 1 );
+						}
+						vel.x += velSeed.x * cfg.velLength;
+						vel.y += velSeed.y * cfg.velLength;
+						break;
+
+					case "point":
+						break;
+				}
+
+				// Angular velocity
+				diff = Math.max( cfg.velAngMax, cfg.velAngMin ) -
+					Math.min( cfg.velAngMax, cfg.velAngMin );
+				velAng = cfg.velAngMin + this.rnd() * diff;
+
+				// Angular spawn parameters
+				angDiff = Math.abs( cfg.angStartMax - cfg.angStartMin );
+				startAng = cfg.angStartMin + this.rnd() * angDiff;
+				if ( cfg.angVelocityConform ) {
+
+					// Base angle is based on velocity vector
+					startAng += Math.atan2( vel.y, vel.x );
+				}
+
+				pos.x += cfg.posOffsetX;
+				pos.y += cfg.posOffsetY;
+
+				vertexItems.push( pos.x, pos.y, vel.x, vel.y );
+				this.drawingVectors.push(
+					{ x: pos.x, y: pos.y, vx: vel.x, vy: vel.y } );
+
+				startTime = cfg.minStartTime + this.rnd() *
+					( cfg.maxStartTime - cfg.minStartTime );
+				lifespan = cfg.minLifespan + this.rnd() *
+					( cfg.maxLifespan - cfg.minLifespan );
+
+				this.timeoutLength =
+					Math.max( this.timeoutLength, startTime + lifespan );
+				cellIndex = 0;
+
+				if ( cfg.cells ) {
+					numCells = cfg.cells.length;
+					if ( numCells > 1 ) {
+						cellIndex =
+							cfg.cells[ Math.floor( this.rnd() * numCells ) ];
+					} else {
+						cellIndex = cfg.cells[ 0 ];
+					}
+				}
+
+				vertexItems.push(
+					startTime,
+					lifespan,
+					velAng,
+					startAng );
+				cell = this.atlas.cells[ cellIndex ];
+				vertexItems.push( cell.x, cell.y, cell.w, cell.h );
+			}
+
+			this.glRenderer.initBatch( vertexItems );
+		},
+
+		/**
+		* Instructs the renderer to draw the particles.
+		* @method renderGL
+		* @private
+		*/
+		renderGL : function( gl, camera ) {
+			var aspectRatioCanvas, aspectRatioWindow, scaleFactor,
+				m = this.transform.getConcatenatedMatrix();
+
+			if ( this.dirty ) {
+				this.dirty = false;
+				this.glRenderer.enableUniforms();
+			}
+
+			this.glRenderer.modelMatrix = m;
+			this.glRenderer.setWorldAngle(
+				this.deriveWorldAngle( this.transform, camera ) );
+			this.glRenderer.setTextureUniforms( gl, this.atlas );
+
+			// Set the stage scale factor when using CocoonJS
+			// Because this is a WebGL-only plugin, we can safely assume
+			// that we must use WebGL-specific scaling techniques,
+			// as CocoonJS does not scale WebGL contexts using CSS techniques.
+			if ( this.state.game.deviceTargetOption === Kiwi.TARGET_COCOON ) {
+				if ( this.state.game.stage.scaleType ===
+						Kiwi.Stage.SCALE_NONE ) {
+					this._stageScale.setTo( 1, 1 );
+				} else if ( this.state.game.stage.scaleType ===
+						Kiwi.Stage.SCALE_FIT ) {
+					aspectRatioCanvas = this.state.game.stage.width /
+						this.state.game.stage.height;
+					aspectRatioWindow = window.innerWidth /
+						window.innerHeight;
+					if ( aspectRatioWindow > aspectRatioCanvas ) {
+						scaleFactor = window.innerHeight /
+							this.state.game.stage.height;
+						this._stageScale.setTo( scaleFactor, scaleFactor );
+					} else {
+						scaleFactor = window.innerWidth /
+							this.state.game.stage.width;
+						this._stageScale.setTo( scaleFactor, scaleFactor );
+					}
+				} else if ( this.state.game.stage.scaleType ===
+						Kiwi.Stage.SCALE_STRETCH ) {
+					this._stageScale.x = window.innerWidth /
+						this.state.game.stage.width;
+					this._stageScale.y = window.innerHeight /
+						this.state.game.stage.height;
+				}
+			}
+			this.glRenderer.stageScale.setTo(
+				this._stageScale.x, this._stageScale.y );
+		},
+
+		/**
+		* Computes a collapsed world rotation for the renderer.
+		* @method deriveWorldAngle
+		* @param transform {Kiwi.Geom.Transform} Transform of the gameObject
+		* @param camera {Kiwi.Camera} Camera being rendered
+		* @private
+		*/
+		deriveWorldAngle: function( transform, camera ) {
+			var m, worldAngle,
+				divisor = transform.scaleX * camera.transform.scaleX;
+
+			this._deriveAngleTransformMatrix.copyFrom(
+				transform.getConcatenatedMatrix() );
+			m = this._deriveAngleTransformMatrix;
+
+			// Apply camera perspective
+			m.prependMatrix( camera.transform.getConcatenatedMatrix() );
+			m.prependMatrix( this._deriveAngleOffsetMatrix.setTo( 1, 0, 0, 1,
+				-camera.transform.rotPointX, -camera.transform.rotPointY ) );
+			worldAngle = Math.acos( m.a / divisor );
+
+			// acos does not distinguish between positive and negative angles,
+			// so is wrong half the time. However, we know that sin will always
+			// be negative when the angle is below 0 (and above -PI).
+			if ( Math.asin( m.b / divisor ) < 0 ) {
+				worldAngle *= -1;
+			}
+			return worldAngle;
+		},
+
+		/**
+		* Returns a point on a unit arc based on a total number of points
+		*	and an index
+		* @method regularPointCirclePerimeter
+		* @param a {number} Start angle of the arc
+		* @param b {number} End angle of the arc
+		* @param index {number} Point index
+		* @param total {number} Total number of points
+		* @private
+		*/
+		regularPointCirclePerimeter : function( a, b, index, total ) {
+			var t = ( (b - a ) / total ) * index + a;
+			return { x: Math.cos( t ), y: Math.sin( t ) };
+		},
+
+		/**
+		* Returns a point on a unit arc
+		* @method randomPointCirclePerimeter
+		* @param a {number} Start angle of the arc
+		* @param b {number} End angle of the arc
+		* @private
+		*/
+		randomPointCirclePerimeter : function( a, b ) {
+			var t = a + ( (b - a ) * this.rnd() );
+			return { x: Math.cos( t ), y: Math.sin( t ) };
+		},
+
+		/**
+		* Returns a point within the sector of a circle
+		* @method randomPointCircle
+		* @param a {number} Start angle of the sector
+		* @param b {number} End angle of the sector
+		* @private
+		*/
+		randomPointCircle : function( a, b ) {
+			var t = a + ( (b - a )* this.rnd() );
+			var u = this.rnd() + this.rnd();
+			var r = ( u > 1 ) ? 2 - u : u;
+			return { x: r * Math.cos( t ), y: r * Math.sin( t ) };
+		},
+
+		/**
+		* Returns a point within the unit square
+		* @method randomPointRect
+		* @private
+		*/
+		randomPointRect : function() {
+			return { x: this.rnd() - 0.5, y: this.rnd() -0.5 };
+		},
+
+		/**
+		* Returns a point on the perimeter of the unit square
+		* @method randomPointRectPerimeter
+		* @private
+		*/
+		randomPointRectPerimeter : function() {
+			var t = this.rnd() * 4;
+
+			if ( t < 1 ) {
+				return { x: t - 0.5, y: -0.5 };
+			}
+			if ( t < 2 ) {
+				return { x: 0.5, y: t - 1.5 };
+			}
+			if ( t < 3 ) {
+				return { x: t - 2.5, y: 0.5 };
+			}
+
+			return { x: -0.5, y: t - 3.5 };
+		},
+
+		/**
+		* Returns a point on a unit line based on
+		*	a total number of points and an index.
+		* @method regularPointLine
+		* @param radians {number} Angle of the line
+		* @param index {number} Point index
+		* @param total {number} Total number of points
+		* @private
+		*/
+		regularPointLine : function( radians, index, total ) {
+			var len = 1 / total * index - 0.5;
+			var x = len * Math.cos( radians );
+			var y = len * Math.sin( radians );
+			return { x: x, y: y };
+		},
+
+		/**
+		* Returns a point on a unit line.
+		* @method regularPointLine
+		* @param {number} radians : the angle of the line
+		* @private
+		*/
+		randomPointLine : function( radians ) {
+			var r = this.rnd() - 0.5;
+			var x = r * Math.cos( radians );
+			var y = r * Math.sin( radians );
+			return { x: x, y: y };
+		},
+	};
+
+	for ( var prop in protoProps ) {
+		Kiwi.GameObjects.StatelessParticles.prototype[ prop ] =
+			protoProps[ prop ];
+
+	}
+}());
+
+/**
+* The particles plugin creates a new gameobject "StatelessParticles".
+*
+* @module Kiwi
+* @submodule Plugins
+* @namespace Kiwi.Plugins
+* @class ParticlesGL
+*/
+Kiwi.Plugins.ParticlesGL = {
+
+	/**
+	* The name of this plugin.
+	* @property name
+	* @type String
+	* @default "ParticlesGL"
+	* @public
+	*/
+	name:"ParticlesGL",
+
+	/**
+	* The version of this plugin.
+	* @property version
+	* @type String
+	* @public
+	*/
+	version:"1.2.1",
+
+	minimumKiwiVersion:"1.2.1",
+
+	pluginDependencies: []
+};
+
+/**
+* Registers this plugin with the Global Kiwi Plugins Manager if it is avaiable.
+* 
+*/
+Kiwi.PluginManager.register(Kiwi.Plugins.ParticlesGL);
+
+/**
+* @module Kiwi
+* @submodule Renderers
+* @main StatelessParticleRenderer
+*/
+
+/**
+* Renderer used by the Kiwi.GameObjects.StatelessParticle
+* @class StatelessParticleRenderer
+* @constructor
+* @param gl {WebGLRenderingContext}
+* @param shaderManager {Kiwi.Shaders.ShaderManager}
+* @param params {object} Parameter object
+* @param [params.config] {object} Configuration definitions
+* @public
+*/
+Kiwi.Renderers.StatelessParticleRenderer =
+		function( gl, shaderManager, params ) {
+	Kiwi.Renderers.Renderer.call( this, gl, shaderManager, false, params );
+
+	this.gl = gl;
+	this._config = params.config;
+	this._gameObject = params.gameObject;
+
+	/**
+	* Contains information on stage scaling.
+	* @property _stageScale
+	* @type Kiwi.Geom.Point
+	* @default ( 1, 1 )
+	* @private
+	* @since 1.1.1
+	*/
+	this._stageScale = new Kiwi.Geom.Point( 1, 1 );
+	
+	if ( !this._config ) {
+		console.log( "no particle configuration supplied" );
+	}
+
+	this.vertexBuffer = new Kiwi.Renderers.GLArrayBuffer( gl, 12 );
+
+	this.shaderPair = this.shaderManager.requestShader(
+		gl, "StatelessParticleShader", false );
+
+	this.worldAngle = 0;
+
+	/**
+	* Concatenated transformation matrix of the particle object
+	* currently being rendered
+	*
+	* @property modelMatrix
+	* @type Kiwi.Geom.Matrix
+	*/
+	this.modelMatrix = new Kiwi.Geom.Matrix();
+
+	/**
+	* Camera matrix derived from render manager camera data.
+	* Used to compute final matrix for shader.
+	*
+	* @property _camMatrix
+	* @type Kiwi.Geom.Matrix
+	*/
+	this._camMatrix = new Kiwi.Geom.Matrix();
+
+};
+Kiwi.extend( Kiwi.Renderers.StatelessParticleRenderer,
+	Kiwi.Renderers.Renderer );
+
+/**
+* Identification string
+* @property RENDERER_ID
+* @type string
+* @default "StatelessParticleRenderer"
+* @final
+*/
+Kiwi.Renderers.StatelessParticleRenderer.prototype.RENDERER_ID =
+	"StatelessParticleRenderer";
+
+/**
+* Contains information on stage scaling, received from the rendered entity.
+* @property stageScale
+* @type Kiwi.Geom.Point
+* @default ( 1, 1 )
+* @public
+* @since 1.1.1
+*/
+Object.defineProperty( Kiwi.Renderers.StatelessParticleRenderer.prototype,
+		"stageScale", {
+	get: function() {
+		return this._stageScale;
+	},
+	set: function( value ) {
+		this._stageScale = value;
+	}
+} );
+
+
+/**
+* Configures the shader to use the current configuration of the game object.
+* @method setConfig
+* @param config {object} Configuration object set up in GameObject
+* @public
+*/
+Kiwi.Renderers.StatelessParticleRenderer.prototype.setConfig =
+		function( config ) {
+	this._config = config;
+
+	// Set desired blend mode
+	if ( config.additive ) {
+		this.blendMode.setMode( "ADDITIVE" );
+	} else {
+		this.blendMode.setMode( "NORMAL" );
+	}
+};
+
+/**
+* Resets the timer, so that the particles begin from the start.
+* @method resetTime
+* @public
+*/
+Kiwi.Renderers.StatelessParticleRenderer.prototype.resetTime = function() {
+	this.startTime = this._now();
+};
+
+/**
+* Resets the pause time. This will probably hold for some 4 decades,
+* longer than the physical lifetime of many devices.
+* @method resetPauseTime
+* @public
+*/
+Kiwi.Renderers.StatelessParticleRenderer.prototype.resetPauseTime =
+		function() {
+	this.pauseTime = 999999999;
+};
+
+/**
+* Enables the renderer in the rendering pipeline.
+* @method enable
+* @param gl {WebGLRenderingContext}
+* @param params {object}
+* @param params.camMatrix {array} 3*3 transformation matrix
+* @public
+*/
+Kiwi.Renderers.StatelessParticleRenderer.prototype.enable =
+		function( gl, params ) {
+	this.shaderPair = this.shaderManager.requestShader(
+		gl, "StatelessParticleShader" );
+	this._setStandardUniforms( gl, params.stageResolution, params.camMatrix );
+	this._setConfigUniforms( gl );
+};
+
+/**
+* Sets key uniforms.
+* @method enableUniforms
+* @param gl {WebGLRenderingContext}
+* @public
+*/
+Kiwi.Renderers.StatelessParticleRenderer.prototype.enableUniforms =
+		function( gl ) {
+	this._setConfigUniforms( gl );
+};
+
+/**
+* Configures basic uniforms in the shader.
+* @method _setStandardUniforms
+* @param gl {WebGLRenderingContext}
+* @param stageResolution {Float32Array}
+* @param camMatrix {array} 3*3 transformation matrix
+* @private
+*/
+Kiwi.Renderers.StatelessParticleRenderer.prototype._setStandardUniforms =
+		function( gl, stageResolution, camMatrix ) {
+
+	// Texture
+	gl.uniform1i( this.shaderPair.uniforms.uSampler.location, 0 );
+
+	// Standard uniforms
+	gl.uniformMatrix3fv( this.shaderPair.uniforms.uCamMatrix.location,
+		false, camMatrix );
+	gl.uniform2fv( this.shaderPair.uniforms.uResolution.location,
+		stageResolution );
+
+	this.camMatrix = new Float32Array( camMatrix.buffer );
+};
+
+/**
+* Configures particle animation uniforms in the shader.
+* @_setConfigUniforms
+* @param gl {WebGLRenderingContext}
+* @private
+*/
+Kiwi.Renderers.StatelessParticleRenderer.prototype._setConfigUniforms =
+		function( gl ) {
+	var pointSizeRange,
+		cfg = this._config;
+	
+	gl = gl || this.gl;
+
+	// Scale point size
+	pointSizeRange = new Float32Array( [
+		cfg.startSize * this._stageScale.x,
+		cfg.endSize * this._stageScale.y
+		] );
+
+	// Particle uniforms
+	gl.uniform1f( this.shaderPair.uniforms.uAlpha.location, cfg.alpha );
+	gl.uniform4fv( this.shaderPair.uniforms.uAlphaGradient.location,
+		new Float32Array( cfg.alphaGradient ) );
+	gl.uniform2fv( this.shaderPair.uniforms.uAlphaStops.location,
+		new Float32Array( cfg.alphaStops ) );
+	gl.uniform3fv( this.shaderPair.uniforms.uColEnv0.location,
+		new Float32Array( cfg.colEnv0 ) );
+	gl.uniform3fv( this.shaderPair.uniforms.uColEnv1.location,
+		new Float32Array( cfg.colEnv1 ) );
+	gl.uniform3fv( this.shaderPair.uniforms.uColEnv2.location,
+		new Float32Array( cfg.colEnv2 ) );
+	gl.uniform3fv( this.shaderPair.uniforms.uColEnv3.location,
+		new Float32Array( cfg.colEnv3 ) );
+	gl.uniform2fv( this.shaderPair.uniforms.uColEnvKeyframes.location,
+		new Float32Array( cfg.colEnvKeyframes ) );
+	gl.uniform2fv( this.shaderPair.uniforms.uGravity.location,
+		new Float32Array( [ cfg.gravityX, cfg.gravityY ] ) );
+	gl.uniform1i( this.shaderPair.uniforms.uLoop.location,
+		cfg.loop ? 1 : 0 );
+	gl.uniform1f( this.shaderPair.uniforms.uPauseTime.location,
+		this.pauseTime );
+	gl.uniform2fv( this.shaderPair.uniforms.uPointSizeRange.location,
+		pointSizeRange );
+	gl.uniform1f( this.shaderPair.uniforms.uT.location, 0 );
+};
+
+/**
+* Configures texture uniforms on the shader.
+* @method setTextureUniforms
+* @param gl {WebGLRenderingContext}
+* @param textureAtlas {Kiwi.Textures.TextureAtlas}
+* @public
+*/
+Kiwi.Renderers.StatelessParticleRenderer.prototype.setTextureUniforms =
+		function( gl, textureAtlas ) {
+	gl.uniform2fv( this.shaderPair.uniforms.uTextureSize.location,
+		new Float32Array( [ textureAtlas.image.width,
+			textureAtlas.image.height ] ) );
+};
+
+/**
+* Disables the renderer to make way for subsequent batches.
+* @method disable
+* @param gl {WebGLRenderingContext}
+* @public
+*/
+Kiwi.Renderers.StatelessParticleRenderer.prototype.disable = function( gl ) {
+	gl.disableVertexAttribArray(
+		this.shaderPair.attributes.aXYVxVy );
+	gl.disableVertexAttribArray(
+		this.shaderPair.attributes.aBirthLifespanAngle );
+	gl.disableVertexAttribArray(
+		this.shaderPair.attributes.aCellXYWH );
+};
+
+/**
+* Clears the renderer to make way for new data.
+* @method clear
+* @public
+*/
+Kiwi.Renderers.StatelessParticleRenderer.prototype.clear = function() {
+	this.vertexBuffer.clear();
+};
+
+/**
+* The current time, used to drive stateless animation
+* @property time
+* @type number
+* @default 0
+* @public
+*/
+Kiwi.Renderers.StatelessParticleRenderer.prototype.time = 0;
+
+/**
+* The pause time
+* @property pauseTime
+* @type number
+* @default 999999999
+* @public
+*/
+Kiwi.Renderers.StatelessParticleRenderer.prototype.pauseTime = 999999999;
+
+/**
+* Pauses the particle emission.
+* @method pause
+* @param gl {WebGLRenderingContext}
+* @public
+*/
+Kiwi.Renderers.StatelessParticleRenderer.prototype.pause = function( gl ) {
+	gl = gl || this.gl;
+	this.pauseTime = this.time;
+};
+
+/**
+* Sets the "world angle"
+* Configures the shader to render correctly when the world has been rotated.
+* @method setWorldAngle
+* @param angle {number}
+* @public
+*/
+Kiwi.Renderers.StatelessParticleRenderer.prototype.setWorldAngle =
+		function( angle ) {
+	this.worldAngle = angle;
+};
+
+/**
+* Renders the object using WebGL
+* @method draw
+* @param gl {WebGLRenderingContext}
+* @public
+*/
+Kiwi.Renderers.StatelessParticleRenderer.prototype.draw = function( gl ) {
+	this._camMatrix.setTo(
+		this.camMatrix[ 0 ], this.camMatrix[ 1 ],
+		this.camMatrix[ 3 ], this.camMatrix[ 4 ],
+		this.camMatrix[ 6 ], this.camMatrix[ 7 ] );
+	this._camMatrix.appendMatrix( this.modelMatrix );
+	gl.uniformMatrix3fv( this.shaderPair.uniforms.uCamMatrix.location,
+		false, new Float32Array( [
+			this._camMatrix.a, this._camMatrix.b, 0,
+			this._camMatrix.c, this._camMatrix.d, 0,
+			this._camMatrix.tx, this._camMatrix.ty, 1 ] ) );
+
+	// calculate time
+	this.time = this._now() - this.startTime;
+	gl.uniform1f( this.shaderPair.uniforms.uT.location, this.time );
+
+	// World angle including current camera perspective
+	gl.uniform1f( this.shaderPair.uniforms.uWorldAngle.location,
+		this.worldAngle );
+
+	gl.bindBuffer( gl.ARRAY_BUFFER, this.vertexBuffer.buffer );
+
+	gl.enableVertexAttribArray( this.shaderPair.attributes.aXYVxVy );
+	gl.vertexAttribPointer( this.shaderPair.attributes.aXYVxVy,
+		4, gl.FLOAT, false, 48, 0 );
+
+	gl.enableVertexAttribArray(
+		this.shaderPair.attributes.aBirthLifespanAngle );
+	gl.vertexAttribPointer( this.shaderPair.attributes.aBirthLifespanAngle,
+		4, gl.FLOAT, false, 48, 16 );
+
+	gl.enableVertexAttribArray( this.shaderPair.attributes.aCellXYWH );
+	gl.vertexAttribPointer( this.shaderPair.attributes.aCellXYWH,
+		4, gl.FLOAT, false, 48, 32 );
+
+	gl.drawArrays( gl.POINTS, 0,this._config.numParts );
+};
+
+/**
+* Updates the stage resolution so that the image renders at the correct size.
+* @method updateStageResolution
+* @param gl {WebGLRenderingContext}
+* @param res {Float32Array}
+* @public
+*/
+Kiwi.Renderers.StatelessParticleRenderer.prototype.updateStageResolution =
+		function( gl, res ) {
+	gl.uniform2fv( this.shaderPair.uniforms.uResolution.location, res );
+};
+
+/**
+* Updates the texture information.
+* @method updateTextureSize
+* @param gl {WebGLRenderingContext}
+* @param size {Float32Array}
+* @public
+*/
+Kiwi.Renderers.StatelessParticleRenderer.prototype.updateTextureSize =
+		function( gl, size ) {
+	gl.uniform2fv( this.shaderPair.uniforms.uTextureSize.location, size );
+};
+
+/**
+* Uploads the vertex buffer. Because these particles are stateless,
+* this can be done once and left alone, making particles very efficient.
+* @method initBatch
+* @param vertexItems {Array}
+*/
+Kiwi.Renderers.StatelessParticleRenderer.prototype.initBatch =
+		function( vertexItems ) {
+	this.vertexBuffer.items = vertexItems;
+	this.vertexBuffer.uploadBuffer( this.gl, this.vertexBuffer.items );
+};
+
+/**
+* Returns the current time
+* @method _now
+* @return number
+* @private
+* @since 1.2.0
+*/
+Kiwi.Renderers.StatelessParticleRenderer.prototype._now = function() {
+	return this._gameObject.clock.elapsed();
+};
+
+
+/**
+* Removes external references, allowing this to be destroyed without
+* memory leaks.
+* @method destroy
+* @param gl {WebGLRenderingContext}
+* @public
+*/
+Kiwi.Renderers.StatelessParticleRenderer.prototype.destroy = function( gl ) {
+	gl = gl || this.gl;
+	gl.deleteBuffer( this.vertexBuffer.buffer );
+};
+
+/**
+* @module Kiwi
+* @submodule Shaders
+* @main StatelessParticleShader
+*/
+
+/**
+* Shader for stateless particles
+* @class StatelessParticleShader
+* @constructor
+* @public
+*/
+Kiwi.Shaders.StatelessParticleShader = function(){
+	Kiwi.Shaders.ShaderPair.call( this );
+
+	/**
+	* Records the attribute locations of this shader.
+	* @property attributes
+	* @type object
+	*/
+	this.attributes = {
+		aXYVxVy: null,
+		aBirthLifespanAngle: null,
+		aCellXYWH: null
+	};
+};
+Kiwi.extend( Kiwi.Shaders.StatelessParticleShader, Kiwi.Shaders.ShaderPair );
+
+/**
+* Initialises the shader wrapper with references to attributes and uniforms.
+* @method init
+* @param gl {WebGLRenderingContext}
+* @public
+*/
+Kiwi.Shaders.StatelessParticleShader.prototype.init = function( gl ) {
+	Kiwi.Shaders.ShaderPair.prototype.init.call(this,gl);
+
+	this.attributes.aBirthLifespanAngle = gl.getAttribLocation(
+		this.shaderProgram, "aBirthLifespanAngle" );
+	this.attributes.aCellXYWH = gl.getAttribLocation(
+		this.shaderProgram, "aCellXYWH" );
+	this.attributes.aXYVxVy = gl.getAttribLocation(
+		this.shaderProgram, "aXYVxVy" );
+	this.initUniforms(gl);
+};
+
+/**
+* List of uniforms and types
+* @property uniforms
+* @final
+* @type object
+* @public
+*/
+Kiwi.Shaders.StatelessParticleShader.prototype.uniforms = {
+	uAlpha: {
+		type: "1f"
+	},
+	uAlphaGradient: {
+		type: "4fv"
+	},
+	uAlphaStops: {
+		type: "2fv"
+	},
+	uCamMatrix: {
+		type: "mat3"
+	},
+	uColEnv0: {
+		type: "3fv"
+	},
+	uColEnv1: {
+		type: "3fv"
+	},
+	uColEnv2: {
+		type: "3fv"
+	},
+	uColEnv3: {
+		type: "3fv"
+	},
+	uColEnvKeyframes: {
+		type: "2fv"
+	},
+	uGravity: {
+		type: "2fv"
+	},
+	uLoop: {
+		type: "1i"
+	},
+	uPauseTime: {
+		type: "1f"
+	},
+	uPointSizeRange: {
+		type: "2fv"
+	},
+	uResolution: {
+		type: "2fv"
+	},
+	uSampler: {
+		type: "1i",
+	},
+	uT: {
+		type: "1f"
+	},
+	uTextureSize: {
+		type: "2fv"
+	},
+	uWorldAngle: {
+		type: "1f"
+	}
+};
+
+/**
+* Fragment shader source
+* @property texture2DFrag
+* @type Array
+* @public
+*/
+Kiwi.Shaders.StatelessParticleShader.prototype.fragSource = [
+	"precision mediump float;",
+	"uniform sampler2D uSampler;",
+	"varying vec4 vCol;",
+	"varying mat4 vRotationMatrix;",
+	"varying vec4 vCell;",
+	"void main( void ) {",
+	"	vec2 cellCoord = vCell.xy + vCell.zw * gl_PointCoord;",
+	"	vec2 texCoord = ( vRotationMatrix * vec4( cellCoord, 0, 1 ) ).xy;",
+	"	vec4 sampleCol = texture2D( uSampler, texCoord );",
+	"	gl_FragColor.rgb = vCol.rgb * sampleCol.rgb;",
+	"	gl_FragColor.a = sampleCol.a * vCol.a;",
+	"}"
+];
+
+
+/**
+* Vertex shader source
+* @property texture2DVert
+* @type Array
+* @public
+*/
+Kiwi.Shaders.StatelessParticleShader.prototype.vertSource = [
+	"precision mediump float;",
+	"attribute vec4 aXYVxVy;",
+	"attribute vec4 aBirthLifespanAngle;",
+	"attribute vec4 aCellXYWH;",
+
+	"uniform mat3 uCamMatrix;",
+	"uniform vec2 uTextureSize;",
+	"uniform vec2 uResolution;",
+	"uniform float uT;",
+	"uniform float uPauseTime;",
+	"uniform vec2 uGravity;",
+	
+	"uniform vec2 uPointSizeRange;",
+	"uniform vec3 uColEnv0;",
+	"uniform vec3 uColEnv1;",
+	"uniform vec3 uColEnv2;",
+	"uniform vec3 uColEnv3;",
+	"uniform vec2 uColEnvKeyframes;",
+	"uniform vec4 uAlphaGradient;",
+	"uniform vec2 uAlphaStops;",
+	"uniform float uWorldAngle;",
+	
+	"uniform float uAlpha;",
+	"uniform bool uLoop;",
+
+	"varying vec4 vCol;",
+	"varying mat4 vRotationMatrix;",
+	"varying vec4 vCell;",
+
+	"vec3 deadPos = vec3( -0.02, -0.02, 0.01 );",
+
+	"void main(void) {",
+	"	float lerp;",
+	"	float birthTime = aBirthLifespanAngle.x;",
+	"	float lifespan = aBirthLifespanAngle.y;",
+	"	float angularVelocity = aBirthLifespanAngle.z;",
+	"	float angleStart = aBirthLifespanAngle.w;",
+	"	float deathTime = birthTime + lifespan;",
+	"	float age = mod(uT-birthTime,lifespan);",
+	"	float pauseTimeAge = mod(uPauseTime-birthTime,lifespan);",
+
+	"	float loopBirthTime = (uT - birthTime) / lifespan;",
+	"	if ( uT < birthTime || (uT >= deathTime && !uLoop ) ||",
+	"			(uT >= uPauseTime - pauseTimeAge + lifespan)) {",
+	"		gl_Position = vec4(deadPos.x,deadPos.y,0,0);",
+	"		gl_PointSize = deadPos.z;",
+	"	} else {",
+	"		lerp =  age / lifespan;",
+	"		gl_PointSize = mix( uPointSizeRange.x, uPointSizeRange.y, lerp );",
+	"		vec2 pos = aXYVxVy.xy;",
+	"		vec2 vel = aXYVxVy.zw;",
+	"		pos += age * vel;",
+	"		pos += 0.5 * uGravity * age * age;",
+	"		pos = ( uCamMatrix * vec3( pos, 1.0 ) ).xy;",
+	"		pos = ( pos / uResolution ) * 2.0 - 1.0;",
+	"		gl_Position = vec4( pos * vec2( 1, -1 ), 0, 1 );",
+
+	"		float colLerp = 1.0;",
+	"		if ( lerp <= uColEnvKeyframes.x ) {",
+	"			float cLerp = lerp / uColEnvKeyframes.x;",
+	"			vCol = vec4( mix( uColEnv0, uColEnv1, cLerp ), 1.0 );",
+	"		} else if ( lerp > uColEnvKeyframes.x &&",
+	"				lerp <= uColEnvKeyframes.y ) {",
+	"			float cLerp = ( lerp - uColEnvKeyframes.x ) /",
+	"				( uColEnvKeyframes.y - uColEnvKeyframes.x );",
+	"			vCol = vec4( mix( uColEnv1, uColEnv2, cLerp ), 1.0 );",
+	"		} else {",
+	"			float cLerp = ( lerp - uColEnvKeyframes.y ) /",
+	"				( 1.0 - uColEnvKeyframes.y );",
+	"			vCol = vec4( mix( uColEnv2, uColEnv3, cLerp ), 1.0 );",
+	"		}",
+	"		if (lerp <= uAlphaStops.x) {",
+	"			vCol.a = mix( uAlphaGradient.x, uAlphaGradient.y,",
+	"				lerp / uAlphaStops.x );",
+	"		} else if ( lerp > uAlphaStops.x && lerp <= uAlphaStops.y ) {",
+	"			vCol.a = mix( uAlphaGradient.y, uAlphaGradient.z,",
+	"				( lerp - uAlphaStops.x ) /",
+	"				( uAlphaStops.y - uAlphaStops.x ) );",
+	"		} else {",
+	"			vCol.a = mix( uAlphaGradient.z, uAlphaGradient.w,",
+	"				( lerp - uAlphaStops.y ) / ( 1.0 - uAlphaStops.y ) );",
+	"		}",
+
+	"		vCol.a *= uAlpha;",
+	"		float ang = age * angularVelocity + angleStart + uWorldAngle;",
+	"		vec2 ratio = vec2( 1.0 / uTextureSize.x, 1.0 / uTextureSize.y );",
+	"		vec4 normCell = aCellXYWH;",
+	"		normCell.xz *= ratio;",
+	"		normCell.yw *= ratio;",
+	"		vec2 cellCenter = vec2( normCell.x + normCell.z / 2.0,",
+	"			normCell.y + normCell.w / 2.0 );",
+	"		float c = cos( ang );",
+	"		float s = sin( ang );",
+	"		mat4 transInMat = mat4(",
+	"			1.0, 0.0, 0.0, 0.0,",
+	"			0.0, 1.0, 0.0, 0.0,",
+	"			0.0, 0.0, 1.0, 0.0,",
+	"			cellCenter.x, cellCenter.y, 0.0, 1.0 );",
+	"		mat4 rotMat = mat4(",
+	"			c, -s, 0.0, 0.0,",
+	"			s, c, 0.0, 0.0,",
+	"			0.0, 0.0, 1.0, 0.0,",
+	"			0.0, 0.0, 0.0, 1.0 );",
+	"		mat4 resultMat = transInMat * rotMat;",
+	"		resultMat[ 3 ][ 0 ] = resultMat[ 3 ][ 0 ] + resultMat[ 0 ][ 0 ] *",
+	"			-cellCenter.x + resultMat[ 1 ][ 0 ] * -cellCenter.y;",
+	"		resultMat[ 3 ][ 1 ] = resultMat[ 3 ][ 1 ] + resultMat[ 0 ][ 1 ] *",
+	"			-cellCenter.x + resultMat[ 1 ][ 1 ] * -cellCenter.y;",
+	"		resultMat[ 3 ][ 2 ] = resultMat[ 3 ][ 2 ] + resultMat[ 0 ][ 2 ] *",
+	"			-cellCenter.x + resultMat[ 1 ][ 2 ] * -cellCenter.y;",
+
+	"		vRotationMatrix = resultMat;",
+	"		vCell = normCell;",
+	"	} ",
+	"}"
+];
+
+
+/**
+* 
+* @module Kiwi
+* @submodule Plugins
+*
+*/
+
+
+/**
+* 
+* 
+* @namespace Kiwi.Plugins
+* @class GamefrootPrimitives
+* @static
+* 
+*/
+Kiwi.Plugins.GamefrootPrimitives = {
+
+	/**
+	*
+	* @property name
+	* @type String
+	* @static
+	* @default 'GamefrootPrimitives'
+	* @public
+	*/
+	name: 'GamefrootPrimitives',
+
+	/**
+	*
+	* @property version
+	* @type String
+	* @default '1.0.3'
+	* @static
+	* @readOnly
+	* @public
+	*/
+	version: '1.0.3',
+
+	/**
+	* 
+	* @property minimumKiwiVersion
+	* @type String
+	* @default '1.1.1'
+	* @static
+	* @readOnly
+	* @public
+	*/
+	minimumKiwiVersion: '1.1.1',
+
+
+	/**
+	* 
+	* @property pluginDependencies
+	* @type Array
+	* @default []
+	* @static
+	* @readOnly
+	* @public
+	*/
+	pluginDependencies:  [
+		{
+			name: "Primitives",
+			minimumVersion: "1.0.3"
+		}
+	],
+
+	/**
+	*
+	* @property kiwifrootPlugins
+	* @type Array
+	* @public
+	*/
+	kiwifrootPlugins: [
+	],
+
+	Polygon: {},
+
+	Rectangle: {},
+
+	Ellipse: {},
+	
+	Line: {},
+
+	Triangle: {},
+
+	Star: {}
+
+};	
+
+// Register this with the kiwi plugin manager
+Kiwi.PluginManager.register( Kiwi.Plugins.GamefrootPrimitives );
+
+
+/**
+* 
+* @module Kiwi
+* @submodule Plugins
+*
+*/
+
+/**
+* 
+* 
+* @namespace Kiwi.Plugins
+* @class GamefrootPrimitives
+* @static
+* 
+*/
+
+/**
+*
+* @method create
+* @param state {Kiwi.State}
+* @param params {Object}
+* 	@param params.type {string}
+* @public
+*/
+
+Kiwi.Plugins.GamefrootPrimitives.Ellipse.add = function( state, params, parent ) {
+
+	if( !this.validate( params ) ) {
+		state.game.log.error( 'Could not create a Ellipse GameObject. Parameters passed were not valid.' );
+		return null;
+	}
+	
+	params.state = state;
+
+	/**
+	* x
+	* y
+	* radius
+	* 	width
+	* 	height 
+	* segments
+	* drawFill
+	* drawStroke 
+	* color
+	* strokeColor
+	* strokeWidth
+	* centerOnTransform
+	*/
+	
+	var object = new Kiwi.Plugins.Primitives.Ellipse( params );
+
+	parent.addChild( object );
+
+	return object;
+
+};
+
+
+
+/**
+*
+* @method validate
+* @param params {Object} 
+* @return {Boolean}
+* @public
+*/
+Kiwi.Plugins.GamefrootPrimitives.Ellipse.validate = function( params ) {
+
+	if( typeof params.x === "undefined" ) {
+		params.x = 0;
+	}
+
+	if( typeof params.y === "undefined" ) {
+		params.y = 0;
+	}
+
+	if( typeof params.drawStroke === "undefined" ) {
+		params.drawStroke = false;
+	}
+
+	return true;
+};
+
+
+/**
+* 
+* 
+* @namespace Kiwi.Plugins
+* @class GamefrootParticleGameObject
+* @static
+* 
+*/
+
+//Add the GameObject
+Kiwi.Plugins.GamefrootPrimitives.kiwifrootPlugins.push( 
+	{
+		type: Kiwifroot.Plugins.GAMEOBJECT,
+		name: 'ellipse',
+		namespace: Kiwi.Plugins.GamefrootPrimitives.Ellipse
+	} 
+);
+
+
+/**
+* 
+* @module Kiwi
+* @submodule Plugins
+*
+*/
+
+/**
+* 
+* 
+* @namespace Kiwi.Plugins
+* @class GamefrootPrimitives
+* @static
+* 
+*/
+
+/**
+*
+* @method create
+* @param state {Kiwi.State}
+* @param params {Object}
+* 	@param params.type {string}
+* @public
+*/
+Kiwi.Plugins.GamefrootPrimitives.Line.add = function( state, params, parent ) {
+
+	if( !this.validate( params ) ) {
+		state.game.log.error( 'Could not create a Line GameObject. Parameters passed were not valid.' );
+		return null;
+	}
+	
+	params.state = state;
+
+	/**
+	* x
+	* y
+	* points
+	* color
+	* strokeColor
+	* strokeWidth
+	*/
+	
+	var object = new Kiwi.Plugins.Primitives.Line( params );
+
+	parent.addChild( object );
+
+	return object;
+
+};
+
+
+
+/**
+*
+* @method validate
+* @param params {Object} 
+* @return {Boolean}
+* @public
+*/
+Kiwi.Plugins.GamefrootPrimitives.Line.validate = function( params ) {
+
+	if( typeof params.x === "undefined" ) {
+		params.x = 0;
+	}
+
+	if( typeof params.y === "undefined" ) {
+		params.y = 0;
+	}
+
+	if( !Kiwi.Utils.Common.isArray( params.points ) ) {
+		return false;
+	}
+
+	return true;
+};
+
+
+/**
+* 
+* 
+* @namespace Kiwi.Plugins
+* @class GamefrootParticleGameObject
+* @static
+* 
+*/
+
+//Add the GameObject
+Kiwi.Plugins.GamefrootPrimitives.kiwifrootPlugins.push( 
+	{
+		type: Kiwifroot.Plugins.GAMEOBJECT,
+		name: 'line',
+		namespace: Kiwi.Plugins.GamefrootPrimitives.Line
+	} 
+);
+
+
+/**
+* 
+* @module Kiwi
+* @submodule Plugins
+*
+*/
+
+/**
+* 
+* 
+* @namespace Kiwi.Plugins
+* @class GamefrootPrimitives
+* @static
+* 
+*/
+
+/**
+*
+* @method create
+* @param state {Kiwi.State}
+* @param params {Object}
+* 	@param params.type {string}
+* @public
+*/
+Kiwi.Plugins.GamefrootPrimitives.Polygon.add = function( state, params, parent ) {
+
+	if( !this.validate( params ) ) {
+		state.game.log.error( 'Could not create a Polygon GameObject. Parameters passed were not valid.' );
+		return null;
+	}
+	
+	params.state = state;
+	params.enableInput = false;
+
+	/**
+	* x
+	* y
+	* drawFill
+	* drawStroke - false by default
+	* color
+	* strokeColor
+	* strokeWidth
+	* indices - winding order of vertices
+	* vertices - points in space 
+	* strokeIndices
+	*/
+	
+	var object = new Kiwi.Plugins.Primitives.Polygon( params );
+
+	parent.addChild( object );
+
+	return object;
+
+};
+
+
+/**
+*
+* @method validate
+* @param params {Object} 
+* @return {Boolean}
+* @public
+*/
+Kiwi.Plugins.GamefrootPrimitives.Polygon.validate = function( params ) {
+
+	if( typeof params.x === "undefined" ) {
+		params.x = 0;
+	}
+
+	if( typeof params.y === "undefined" ) {
+		params.y = 0;
+	}
+
+	if( typeof params.drawStroke === "undefined" ) {
+		params.drawStroke = false;
+	}
+
+	if( !Kiwi.Utils.Common.isArray( params.vertices ) ) {
+		return false;
+	}
+
+	if( !Kiwi.Utils.Common.isArray( params.indices ) ) {
+		return false;
+	}
+
+	return true;
+};
+
+
+//Add the GameObject
+Kiwi.Plugins.GamefrootPrimitives.kiwifrootPlugins.push( 
+	{
+		type: Kiwifroot.Plugins.GAMEOBJECT,
+		name: 'polygon',
+		namespace: Kiwi.Plugins.GamefrootPrimitives.Polygon
+	} 
+);
+
+
+/**
+* 
+* @module Kiwi
+* @submodule Plugins
+*
+*/
+
+/**
+* 
+* 
+* @namespace Kiwi.Plugins
+* @class GamefrootPrimitives
+* @static
+* 
+*/
+
+/**
+*
+* @method create
+* @param state {Kiwi.State}
+* @param params {Object}
+* 	@param params.type {string}
+* @public
+*/
+Kiwi.Plugins.GamefrootPrimitives.Rectangle.add = function( state, params, parent ) {
+
+	if( !this.validate( params ) ) {
+		state.game.log.error( 'Could not create a Rectangle GameObject. Parameters passed were not valid.' );
+		return null;
+	}
+	
+	params.state = state;
+
+	/**
+	* x
+	* y
+	* width
+	* height 
+	* drawFill
+	* drawStroke 
+	* color
+	* strokeColor
+	* strokeWidth
+	* centerOnTransform
+	*/
+	
+	var object = new Kiwi.Plugins.Primitives.Rectangle( params );
+
+	parent.addChild( object );
+
+	return object;
+
+};
+
+
+
+/**
+*
+* @method validate
+* @param params {Object} 
+* @return {Boolean}
+* @public
+*/
+Kiwi.Plugins.GamefrootPrimitives.Rectangle.validate = function( params ) {
+
+	if( typeof params.x === "undefined" ) {
+		params.x = 0;
+	}
+
+	if( typeof params.y === "undefined" ) {
+		params.y = 0;
+	}
+
+	if( typeof params.drawStroke === "undefined" ) {
+		params.drawStroke = false;
+	}
+
+	return true;
+};
+
+
+/**
+* 
+* 
+* @namespace Kiwi.Plugins
+* @class GamefrootParticleGameObject
+* @static
+* 
+*/
+
+//Add the GameObject
+Kiwi.Plugins.GamefrootPrimitives.kiwifrootPlugins.push( 
+	{
+		type: Kiwifroot.Plugins.GAMEOBJECT,
+		name: 'rectangle',
+		namespace: Kiwi.Plugins.GamefrootPrimitives.Rectangle
+	} 
+);
+
+
+/**
+* 
+* @module Kiwi
+* @submodule Plugins
+*
+*/
+
+/**
+* 
+* 
+* @namespace Kiwi.Plugins
+* @class GamefrootPrimitives
+* @static
+* 
+*/
+
+/**
+*
+* @method create
+* @param state {Kiwi.State}
+* @param params {Object}
+* 	@param params.type {string}
+* @public
+*/
+Kiwi.Plugins.GamefrootPrimitives.Star.add = function( state, params, parent ) {
+
+	if( !this.validate( params ) ) {
+		state.game.log.error( 'Could not create a Star GameObject. Parameters passed were not valid.' );
+		return null;
+	}
+	
+	params.state = state;
+
+	/**
+	* x
+	* y
+	* radius
+	* 	width
+	* 	height 
+	* spikeRandom
+	* spikeLength
+	* segments
+	* drawFill
+	* drawStroke 
+	* color
+	* strokeColor
+	* strokeWidth
+	* centerOnTransform
+	*/
+	
+	var object = new Kiwi.Plugins.Primitives.Star( params );
+
+	parent.addChild( object );
+
+	return object;
+
+};
+
+
+
+/**
+*
+* @method validate
+* @param params {Object} 
+* @return {Boolean}
+* @public
+*/
+Kiwi.Plugins.GamefrootPrimitives.Star.validate = function( params ) {
+
+	if( typeof params.x === "undefined" ) {
+		params.x = 0;
+	}
+
+	if( typeof params.y === "undefined" ) {
+		params.y = 0;
+	}
+
+	if( typeof params.drawStroke === "undefined" ) {
+		params.drawStroke = false;
+	}
+
+	return true;
+};
+
+
+/**
+* 
+* 
+* @namespace Kiwi.Plugins
+* @class GamefrootParticleGameObject
+* @static
+* 
+*/
+
+//Add the GameObject
+Kiwi.Plugins.GamefrootPrimitives.kiwifrootPlugins.push( 
+	{
+		type: Kiwifroot.Plugins.GAMEOBJECT,
+		name: 'star',
+		namespace: Kiwi.Plugins.GamefrootPrimitives.Star
+	} 
+);
+
+
+/**
+* 
+* @module Kiwi
+* @submodule Plugins
+*
+*/
+
+/**
+* 
+* 
+* @namespace Kiwi.Plugins
+* @class GamefrootPrimitives
+* @static
+* 
+*/
+
+/**
+*
+* @method create
+* @param state {Kiwi.State}
+* @param params {Object}
+* 	@param params.type {string}
+* @public
+*/
+Kiwi.Plugins.GamefrootPrimitives.Triangle.add = function( state, params, parent ) {
+
+	if( !this.validate( params ) ) {
+		state.game.log.error( 'Could not create a Triangle GameObject. Parameters passed were not valid.' );
+		return null;
+	}
+	
+	params.state = state;
+
+	/**
+	* x
+	* y
+	* points 
+	* drawFill
+	* drawStroke 
+	* color
+	* strokeColor
+	* strokeWidth
+	* centerOnTransform
+	*/
+	
+	var object = new Kiwi.Plugins.Primitives.Triangle( params );
+
+	parent.addChild( object );
+
+	return object;
+
+};
+
+
+
+/**
+*
+* @method validate
+* @param params {Object} 
+* @return {Boolean}
+* @public
+*/
+Kiwi.Plugins.GamefrootPrimitives.Triangle.validate = function( params ) {
+
+	if( typeof params.x === "undefined" ) {
+		params.x = 0;
+	}
+
+	if( typeof params.y === "undefined" ) {
+		params.y = 0;
+	}
+
+	if( !Kiwi.Utils.Common.isArray(params.points) || params.points.length !== 3 ) {
+		return false;
+	}
+
+	if( typeof params.drawStroke === "undefined" ) {
+		params.drawStroke = false;
+	}
+
+	return true;
+};
+
+
+/**
+* 
+* 
+* @namespace Kiwi.Plugins
+* @class GamefrootParticleGameObject
+* @static
+* 
+*/
+
+//Add the GameObject
+Kiwi.Plugins.GamefrootPrimitives.kiwifrootPlugins.push( 
+	{
+		type: Kiwifroot.Plugins.GAMEOBJECT,
+		name: 'triangle',
+		namespace: Kiwi.Plugins.GamefrootPrimitives.Triangle
+	} 
+);
+
+
+/**
+* Primitive Gameobjects plugin, providing geometric objects to the designer.
+*
+* @module Kiwi
+* @submodule Plugins
+* @namespace Kiwi.Plugins
+* @class Primitives
+*/
+Kiwi.Plugins.Primitives = {
+
+	/**
+	* The name of this plugin.
+	* @property name
+	* @type String
+	* @default "Primitives"
+	* @public
+	*/
+	name:"Primitives",
+
+	/**
+	* The version of this plugin.
+	* @property version
+	* @type String
+	* @public
+	*/
+	version:"1.0.4",
+
+	minimumKiwiVersion:"1.3.0"
+
+};
+
+/**
+* Registers this plugin with the Global Kiwi Plugins Manager if it is avaiable.
+* 
+*/
+Kiwi.PluginManager.register(Kiwi.Plugins.Primitives);
+
+/**
+* This create method is executed when Kiwi Game that has been told to
+* use this plugin reaches the boot stage of the game loop.
+* @method create
+* @param game{Kiwi.Game} The game that is current in the boot stage.
+* @private 
+*/
+Kiwi.Plugins.Primitives.create = function(game) {
+	
+};
+
+
+
+/**
+* Polygon Gameobject
+* <br><br>
+* This is the master system which handles all primitives. When you create
+* another primitive (Ellipse, Line, Rectangle, Star or Triangle) you are
+* really creating a Polygon with some options pre-set. All primitives
+* inherit parameters and methods from Polygon.
+* <br><br>
+* Polygons are defined with a params object. This must contain the non-optional
+* parameter "state", which is a reference to the current state. It also contains
+* optional transform and style information.
+* <br><br>
+* You may specify common transform options in the params of any primitive.
+* This includes alpha, visible, x, y, rotation, scale, scaleX, scaleY,
+* anchorPointX, and anchorPointY. If not specified, these default to alpha = 1,
+* visible = true, x = 0, y = 0, rotation = 0, scale = 1, and the anchorPoint
+* defaults to the geometric center of the object.
+* <br><br>
+* All primitives contain both a fill and a stroke. You may style these
+* separately and enable or disable rendering of either. Available style options
+* include color (the color with which the primitive is filled; an array of 3
+* normalized values, from black [ 0, 0, 0 ] to white [ 1, 1, 1 ] ), drawFill
+* (whether to render the fill), strokeColor (as color, but for the stroke),
+* drawStroke (whether to render the stroke), and strokeWidth (the width of the
+* stroke line, in pixels).
+* <br><br>
+* If the default primitives do not meet your requirements, you can define your
+* own by using the Polygon. You will need to provide the params object with
+* arrays of vertices, indices, and strokeIndices.
+* <br><br>
+* new Kiwi.Plugins.Primitives.Polygon( {<br>
+*	state: MyGame.state,<br>
+*	indices: [ 0, 1, 2, 3 ],<br>
+*	vertices: [[ 0, 0 ], [ 100, 100 ], [ 200, 0 ], [ 300, 100 ] ],<br>
+*	strokeIndices: [ 0, 1, 2, 0 ]<br>
+* } );
+* <br><br>
+* All three arrays are processed to create new internal representations.
+* Two Polygons created from the same arrays will not contain the same data.
+* This prevents unexpected modifications from one object affecting another.
+* <br><br>
+* The "vertices" param is a list of points, each defined as an array of two
+* points. The order of vertices does not matter for rendering, but you must be
+* aware of it. A simple vertices array might read [ [ 0, 0 ], [ 100, 100 ],
+* [ 200, 0 ], [ 300, 100 ] ]. Each is an XY coordinate.
+* <br><br>
+* The "indices" param is a list of references to vertices. It is processed
+* using a TRIANGLE_STRIP procedure. This means that every three consecutive
+* values on the list define a new triangle. You can add new triangles simply
+* by appending a single new index. Each index is the array position of a vertex.
+* For example, to draw a single triangle you could pass [ 0, 1, 2 ]. To draw two
+* triangles, you could pass [ 0, 1, 2, 3 ].
+* <br><br>
+* The TRIANGLE_STRIP procedure is very succinct, but it doesn't allow for every
+* desirable form of geometry. If you need to stop positioning triangles in one
+* place and start adding them elsewhere, you can't skip over empty space.
+* Fortunately, you can use a concept called "degenerate triangles" to cheat.
+* <br><br>
+* A degenerate triangle is one with zero area. It is formed when a triangle has
+* two or three vertices in the same place. It is very easy to simply not draw a
+* degenerate triangle. We can use these to connect disparate triangles. (In
+* fact, the renderer uses these behind the scenes to efficiently render numerous
+* primitives at once.)
+* <br><br>
+* To create degenerate triangles, just double up an index on either side of the
+* gap. For example, if you want to draw triangles at indices [ 0, 1, 2 ] and
+* [ 8, 9, 10 ], you can combine them into one with the indices
+* [ 0, 1, 2, 2, 8, 8, 9, 10 ]. This creates the degenerate triangles
+* [ 1, 2, 2 ], [ 2, 2, 8 ], [ 2, 8, 8 ] and [ 8, 8, 9 ]. Although this
+* introduces some overhead, it is often quicker than rendering them as separate
+* objects.
+* <br><br>
+* You may reduce the degenerate data to a single index if you know what you're
+* doing with winding orders. This is left as an exercise for the user.
+* <br><br>
+* The "strokeIndices" param is used to create a stroke. This is usually a line
+* around the edge of a polygon, but it can be any sort of line. It is, like the
+* indices param, a list of array positions in the vertices param. Unlike
+* indices, strokeIndices does not use TRIANGLE_STRIP. It just connects points in
+* order.
+* <br><br>
+* Technically, the stroke is itself a series of triangles, a sort of
+* mini-polygon. It will usually have more triangles than the fill. For this
+* reason, you should be careful about overusing stroke.
+* <br><br>
+* You may also construct polygons by building several objects and combining
+* them using the ".combine()" method. This may not be as efficient as
+* defining a polygon by hand, and will introduce several degenerate triangles,
+* but for large-scale constructions it is very convenient.
+*
+* @class Polygon
+* @constructor
+* @namespace Kiwi.Plugins.Primitives
+* @extends Kiwi.Entity
+* @param params {Object} The parameter object.
+* @param params.state {Kiwi.State} Context state
+*	@param [params.color=[0.5,0.5,0.5]] {array} RGB normalized color
+*	@param [params.drawFill=true] {boolean} Whether to fill the polygon
+*	@param [params.drawStroke=true] {boolean} Whether to draw the stroke
+*	@param [params.enableInput=false] {Boolean} Whether to enable input
+*	@param [params.indices] {array} Array of vertices for triangle strips
+*	@param [params.strokeColor=[0.5,0.5,0.5]] {array} RGB normalized color
+*	@param [params.strokeWidth=1] {number} Width of stroke in pixels
+*	@param [params.strokeIndices] {array} Array of vertices for strokes
+*	@param [params.vertices] {array} Array of vertex coordinates
+*		array pairs ([ [ x1, y1 ], [x2, y2 ] ] etc).
+* @since 0.1.0
+*/
+Kiwi.Plugins.Primitives.Polygon = function( params ) {
+
+	var state = params.state;
+
+	this._initProperties();
+
+	// Super
+	Kiwi.Entity.call( this, state, 0, 0 );
+
+	this.parseParams( params );
+
+	// Create WebGL renderer
+	if (this.game.renderOption === Kiwi.RENDERER_WEBGL) {
+		this.glRenderer =
+			this.game.renderer.requestSharedRenderer( "PrimitiveRenderer" );
+		this.atlas = this.glRenderer.getAtlas();
+	}
+
+	this.rebuildBounds();
+};
+Kiwi.extend( Kiwi.Plugins.Primitives.Polygon, Kiwi.Entity );
+
+/**
+* Index of pointers to vertices. The sequence of points
+* which constructs the poly.
+* @property indices
+* @type {array}
+* @public
+* @since 0.3.0
+*/
+Object.defineProperty( Kiwi.Plugins.Primitives.Polygon.prototype, "indices", {
+	get: function() {
+		return this._indices;
+	},
+	set: function( value ) {
+		var i;
+		this._indices = [];
+
+		if ( value.length > 2 ) {
+			for ( i = 0; i < value.length; i++ ) {
+				this._indices.push( value[ i ] );
+			}
+		}
+	}
+} );
+
+/**
+* Index of vertices.
+* @property vertices
+* @type {array}
+* @public
+* @since 0.3.0
+*/
+Object.defineProperty( Kiwi.Plugins.Primitives.Polygon.prototype, "vertices", {
+	get: function() {
+		return this._vertices;
+	},
+	set: function( value ) {
+		var i;
+		this._vertices = [];
+		for ( i = 0; i < value.length; i++ ) {
+			this._vertices.push( [
+				value[ i ][ 0 ],
+				value[ i ][ 1 ]
+			] );
+		}
+	}
+} );
+
+/**
+* Index of pointers to vertices. The sequence of points which
+* constructs the stroke. To be distinguished from the strokePolyIndices,
+* which define the actual shape of the stroke.
+* @property strokeIndices
+* @type {array}
+* @public
+* @since 0.3.0
+*/
+Object.defineProperty(
+		Kiwi.Plugins.Primitives.Polygon.prototype, "strokeIndices", {
+	get: function() {
+		return this._strokeIndices;
+	},
+	set: function( value ) {
+		var i;
+		this._strokeIndices = [];
+
+		if ( value.length > 1 ) {
+			for ( i = 0; i < value.length; i++ ) {
+				this._strokeIndices.push( value[ i ] );
+			}
+			this.createstroke( this._strokeIndices, this._vertices );
+		}
+	}
+} );
+
+/**
+* Index of pointers to vertices. The sequence of points which
+* make up the stroke. To be distinguished from the strokeIndices,
+* which define the construction of the stroke.
+* @property strokePolyIndices
+* @type {array}
+* @public
+* @since 0.3.0
+*/
+Object.defineProperty(
+		Kiwi.Plugins.Primitives.Polygon.prototype, "strokePolyIndices", {
+	get: function() {
+		return this._strokePolyIndices;
+	},
+	set: function( value ) {
+		var i;
+		this._strokePolyIndices = [];
+
+		if ( value.length > 2 ) {
+
+			// Double up the first index to prevent strip connexion
+			if ( value.length === 3 ) {
+				this._strokePolyIndices.push( value[ 0 ] );
+			}
+
+			for ( i = 0; i < value.length; i++ ) {
+				this._strokePolyIndices.push( value[ i ] );
+			}
+		}
+	}
+} );
+
+/**
+* Index of vertices for stroke shape.
+* @property strokePolyVertices
+* @type {array}
+* @public
+* @since 0.3.0
+*/
+Object.defineProperty(
+		Kiwi.Plugins.Primitives.Polygon.prototype, "strokePolyVertices", {
+	get: function() {
+		return this._strokePolyVertices;
+	},
+	set: function( value ) {
+		var i;
+		this._strokePolyVertices = [];
+		for ( i = 0; i < value.length; i++ ) {
+			this._strokePolyVertices.push( [
+				value[ i ][ 0 ],
+				value[ i ][ 1 ]
+			] );
+		}
+	}
+} );
+
+/**
+* Constructs a miter, a building block for strokes.
+* Miters sit atop vertices and form the endpoints for two stroke segments.
+* @method _buildMiter
+* @param line1 {Array} The first line, an array of 2 Points
+* @param line2 {Array} The second line, an array of 2 Points;
+* the first point on line2 is the actual position of the miter
+* @return {object}
+* @private
+* @since 0.3.0
+*/
+Kiwi.Plugins.Primitives.Polygon.prototype._buildMiter =
+		function( line1, line2) {
+	var angle, angleDiffHalf, dx, dy, innerDist, line1Angle, line2Angle,
+		line1Length, line2Length, lineMinLength, pointA, pointB,
+		indices = [],
+		vertices = [],
+		pointN = line2[ 0 ];
+
+	// Compute the length of the two lines
+	line1Length = line1[0].distanceTo( line1[1] );
+	line2Length = line2[0].distanceTo( line2[1] );
+	lineMinLength = Math.min( line1Length, line2Length );
+
+	// Compute the angles of the two lines
+	line1Angle = Math.atan2(
+		line1[ 1 ].y - line1[ 0 ].y,
+		line1[ 1 ].x - line1[ 0 ].x );
+	line2Angle = Math.atan2(
+		line2[ 1 ].y - line2[ 0 ].y,
+		line2[ 1 ].x - line2[ 0 ].x );
+	line1Angle = Kiwi.Utils.GameMath.normalizeAngle( line1Angle );
+	line2Angle = Kiwi.Utils.GameMath.normalizeAngle( line2Angle );
+
+	// Compute the angle between the lines, then halve it for future use
+	angleDiffHalf = line2Angle - line1Angle;
+	if ( angleDiffHalf > Math.PI ) {
+		angleDiffHalf = Math.PI * 2 - angleDiffHalf;
+	} else if ( angleDiffHalf < -Math.PI ) {
+		angleDiffHalf = -Math.PI * 2 - angleDiffHalf;
+	}
+	angleDiffHalf *= 0.5;
+
+	// Compute the average angle of the two lines
+	if ( Math.abs( line1Angle - line2Angle ) > Math.PI ) {
+		if ( line1Angle < line2Angle ) {
+			line1Angle += Math.PI * 2;
+		} else {
+			line2Angle += Math.PI * 2;
+		}
+	}
+	angle = Kiwi.Utils.GameMath.normalizeAngle(
+		( line1Angle + line2Angle ) * 0.5 );
+
+	// Cache some trig
+	dx = Math.cos( angle );
+	dy = -Math.sin( angle );
+
+	// Compute the distance to the inner corner, where two miter points overlap
+	innerDist = this.strokeWidth / ( 2 * Math.cos( angleDiffHalf ) );
+	if ( innerDist > lineMinLength ) {
+		innerDist = lineMinLength;
+	}
+
+	// Create sharp miters
+	pointA = new Kiwi.Geom.Point(
+		dy * innerDist,
+		dx * innerDist
+	);
+	pointB = new Kiwi.Geom.Point(
+		dy * -innerDist,
+		dx * -innerDist
+	);
+	pointA.x += pointN.x;
+	pointA.y += pointN.y;
+	pointB.x += pointN.x;
+	pointB.y += pointN.y;
+
+	indices = [ 0, 1, 0, 1 ];
+	vertices = [ [ pointA.x, pointA.y ], [ pointB.x, pointB.y ] ];
+
+	return { indices: indices, vertices: vertices };
+};
+
+/**
+* Construct a stroke by tracing a connection through all vertices.
+* @method _buildStroke
+* @param srcIndices {array} List of points to connect in order.
+* @param srcVertices {array} Definition of points.
+* @private
+* @since 0.3.0
+*/
+Kiwi.Plugins.Primitives.Polygon.prototype._buildStroke =
+		function( srcIndices, srcVertices ) {
+	var dx, dy, end, i, j, miter, point1, point2, point3,
+		inds = [],
+		offset = 0,
+		vertLen = srcIndices.length,
+		verts = [];
+
+	if ( vertLen > 1 ) {
+
+		// Begin with a double-up on vertex 0
+		point1 = new Kiwi.Geom.Point(
+			srcVertices[ srcIndices[ 0 ] ][ 0 ],
+			srcVertices[ srcIndices[ 0 ] ][ 1 ]
+		);
+		point2 = new Kiwi.Geom.Point(
+			srcVertices[ srcIndices[ 1 ] ][ 0 ],
+			srcVertices[ srcIndices[ 1 ] ][ 1 ]
+		);
+		miter = this._buildMiter( [ point1, point2 ], [ point1, point2 ] );
+		inds = inds.concat( miter.indices );
+		verts = verts.concat( miter.vertices );
+		offset += miter.vertices.length;
+
+		// Connect all additional vertices
+		for ( i = 1; i < vertLen - 1; i++ ) {
+			point1 = new Kiwi.Geom.Point(
+				srcVertices[ srcIndices[ i - 1 ] ][ 0 ],
+				srcVertices[ srcIndices[ i - 1 ] ][ 1 ]
+			);
+			point2 = new Kiwi.Geom.Point(
+				srcVertices[ srcIndices[ i ] ][ 0 ],
+				srcVertices[ srcIndices[ i ] ][ 1 ]
+			);
+			point3 = new Kiwi.Geom.Point(
+				srcVertices[ srcIndices[ i + 1 ] ][ 0 ],
+				srcVertices[ srcIndices[ i + 1 ] ][ 1 ]
+			);
+			miter = this._buildMiter( [ point1, point2 ], [ point2, point3 ] );
+			for ( j = 0; j < miter.indices.length; j++ ) {
+				miter.indices[ j ] += offset;
+			}
+			inds = inds.concat( miter.indices );
+			verts = verts.concat( miter.vertices );
+			offset += miter.vertices.length;
+		}
+
+		// Finish with a double-up on the last vertex
+		// We must first construct an extension of the last line segment
+		end = srcIndices.length - 1;
+		dx = srcVertices[ srcIndices[ end ] ][ 0 ] -
+			srcVertices[ srcIndices[ end - 1 ] ][ 0 ];
+		dy = srcVertices[ srcIndices[ end ] ][ 1 ] -
+			srcVertices[ srcIndices[ end - 1 ] ][ 1 ];
+		point1 = new Kiwi.Geom.Point(
+			srcVertices[ srcIndices[ end ] ][ 0 ],
+			srcVertices[ srcIndices[ end ] ][ 1 ]
+		);
+		point2 = new Kiwi.Geom.Point(
+			srcVertices[ srcIndices[ end ] ][ 0 ] + dx,
+			srcVertices[ srcIndices[ end ] ][ 1 ] + dy
+		);
+		miter = this._buildMiter( [ point1, point2 ], [ point1, point2 ] );
+		for ( j = 0; j < miter.indices.length; j++ ) {
+			miter.indices[ j ] += offset;
+		}
+		inds = inds.concat( miter.indices );
+		verts = verts.concat( miter.vertices );
+
+		return { indices: inds, vertices: verts };
+	}
+
+	return null;
+};
+
+/**
+* Creates a copy of this polygon.
+* @method clone
+* @return {Kiwi.Plugins.Primitives.Polygon}
+* @public
+* @since 0.3.0
+*/
+Kiwi.Plugins.Primitives.Polygon.prototype.clone = function() {
+	var params = {
+			color: this.color,
+			indices: this._indices,
+			state: this.state,
+			strokeColor: this.strokeColor,
+			strokeIndices: this._strokeIndices,
+			vertices: this._vertices,
+
+			x: this.x,
+			y: this.y,
+			rotation: this.rotation,
+			scaleX: this.scaleX,
+			scaleY: this.scaleY,
+			anchorPointX: this.anchorPointX,
+			anchorPointY: this.anchorPointY,
+			alpha: this.alpha,
+			visible: this.visible
+		};
+
+	return (new Kiwi.Plugins.Primitives.Polygon( params ) );
+};
+
+/**
+* Determines the min and max x and y coordinates from an array.
+* @method computeMinMaxXY
+* @param array {array} Array of points, defined as arrays [ x, y ]
+* @return object
+* @public
+* @since 0.1.0
+*/
+Kiwi.Plugins.Primitives.Polygon.prototype.computeMinMaxXY = function( array ) {
+	var i, vert,
+		vertLen = array.length,
+		maxX = 0,
+		maxY = 0,
+		minX = 0,
+		minY = 0;
+
+	for ( i = 0; i < vertLen; i++ ) {
+		vert = array[ i ];
+		if ( vert[0] < minX ) {
+			minX = vert[0];
+		}
+		if ( vert[0] > maxX ) {
+			maxX = vert[0];
+		}
+		if ( vert[1] < minY ) {
+			minY = vert[1];
+		}
+		if ( vert[1] > maxY ) {
+			maxY = vert[1];
+		}
+	}
+
+	return {
+		maxX: maxX,
+		maxY: maxY,
+		minX: minX,
+		minY: minY
+	};
+};
+
+/**
+* Adds another poly to this.
+* @method combine
+* @param poly {Kiwi.Plugins.Primitives.Polygon} Primitive to combine.
+* @param [discard=true] {boolean} Discard the combination source?
+* @return {boolean}
+* @public
+* @since 0.3.0
+*/
+Kiwi.Plugins.Primitives.Polygon.prototype.combine = function( poly, discard ) {
+	if ( typeof discard === "undefined" ) {
+		discard = true;
+	}
+
+	// Do not self-combine
+	if ( this.poly === this ) {
+		return false;
+	}
+
+	var indexOffset,
+		inverseMatrix = this.transform.getConcatenatedMatrix().invert(),
+		matrix = poly.transform.getConcatenatedMatrix(),
+		point = new Kiwi.Geom.Point( 0, 0 ),
+		polyIndicesLen = poly.indices.length,
+		polyVerticesLen = poly.vertices.length,
+		polyStrokeIndicesLen = poly.strokePolyIndices.length,
+		polyStrokeVerticesLen = poly.strokePolyVertices.length;
+
+
+	// Attach fill
+	if ( polyIndicesLen > 2 ) {
+		indexOffset = this._vertices.length;
+
+		// Create degenerate attachment
+		if ( this._indices.length > 0 ) {
+			this._indices.push( this._indices[ this._indices.length - 1 ] );
+			this._indices.push( poly.indices[ 0 ] + indexOffset );
+		}
+
+		// Add vertices and indices
+		for ( i = 0; i < polyIndicesLen; i++ ) {
+			this._indices.push( poly.indices[ i ] + indexOffset );
+		}
+		for ( i = 0; i < polyVerticesLen; i++ ) {
+			point.setTo(
+				poly.vertices[ i ][ 0 ] - poly.anchorPointX,
+				poly.vertices[ i ][ 1 ] - poly.anchorPointY
+			);
+
+			point = matrix.transformPoint( point );
+			point = inverseMatrix.transformPoint( point );
+
+			this._vertices.push( [
+				point.x + this.anchorPointX,
+				point.y + this.anchorPointY
+			] );
+		}
+	}
+	
+
+	// Attach stroke
+	if ( polyStrokeIndicesLen > 2 ) {
+		indexOffset = this._strokePolyVertices.length;
+
+		// Create degenerate attachment
+		if ( this._strokePolyIndices.length > 0 ) {
+			this._strokePolyIndices.push(
+				this._strokePolyIndices[ this._strokePolyIndices.length - 1 ] );
+			this._strokePolyIndices.push(
+				poly.strokePolyIndices[ 0 ] + indexOffset );
+		}
+
+		// Add vertices and indices
+		for ( i = 0; i < polyStrokeIndicesLen; i++ ) {
+			this._strokePolyIndices.push(
+				poly.strokePolyIndices[ i ] + indexOffset );
+		}
+		for ( i = 0; i < polyStrokeVerticesLen; i++ ) {
+			point.setTo(
+				poly.strokePolyVertices[ i ][ 0 ] - poly.anchorPointX,
+				poly.strokePolyVertices[ i ][ 1 ] - poly.anchorPointY
+			);
+
+			point = matrix.transformPoint( point );
+			point = inverseMatrix.transformPoint( point );
+
+			this._strokePolyVertices.push( [
+				point.x + this.anchorPointX,
+				point.y + this.anchorPointY
+			] );
+		}
+	}
+
+	// Discard source
+	if ( discard ) {
+		poly.destroy();
+	}
+
+	return true;
+};
+
+/**
+* Reports an error message.
+* @method complain
+* @param string {string} Text to report
+* @public
+* @since 0.4.0
+*/
+Kiwi.Plugins.Primitives.Polygon.prototype.complain = function( string ) {
+	Kiwi.Log.log(
+		"#primitive",
+		"Primitive Error encountered:",
+		string
+	);
+};
+
+/**
+* Put a stroke on this Polygon, following the strokeIndices vertex list.
+* You should not need to do this manually.
+* @method createstroke
+* @public
+* @return boolean
+* @since 0.3.0
+*/
+Kiwi.Plugins.Primitives.Polygon.prototype.createstroke = function() {
+	var strokeData = this._buildStroke( this.strokeIndices, this.vertices );
+
+	if ( strokeData ) {
+		this.strokePolyIndices = strokeData.indices;
+		this.strokePolyVertices = strokeData.vertices;
+	}
+};
+
+/**
+* Initialise internal properties
+* @method _initProperties
+* @private
+* @since 0.1.0
+*/
+Kiwi.Plugins.Primitives.Polygon.prototype._initProperties = function() {
+	/**
+	* Part of the WebGL rendering pipeline
+	* @property glRenderer
+	* @type Kiwi.Renderers.Renderer
+	* @public
+	* @since 0.1.0
+	*/
+	this.glRenderer = undefined;
+
+	// Mirror properties: private data accessed by getters/setters
+	this._indices = null;
+	this._vertices = null;
+	this._strokeIndices = null;
+	this._strokePolyIndices = null;
+	this._strokePolyVertices = null;
+
+	/**
+	* Geometry point used in rendering.
+	*
+	* @property _p0
+	* @type Kiwi.Geom.Point
+	* @private
+	* @since 1.0.3
+	*/
+	this._p0 = new Kiwi.Geom.Point( 0, 0 );
+
+	/**
+	* Geometry point used in rendering.
+	*
+	* @property _p1
+	* @type Kiwi.Geom.Point
+	* @private
+	* @since 1.0.3
+	*/
+	this._p1 = new Kiwi.Geom.Point( 0, 0 );
+
+	/**
+	* Geometry point used in rendering.
+	*
+	* @property _p2
+	* @type Kiwi.Geom.Point
+	* @private
+	* @since 1.0.3
+	*/
+	this._p2 = new Kiwi.Geom.Point( 0, 0 );
+
+	/**
+	* Color Utility. 
+	* 
+	* @property _color
+	* @type Kiwi.Utils.Color
+	* @private
+	* @since 1.0.4
+	*/
+	this._color = new Kiwi.Utils.Color();
+
+	/**
+	* Stroke color utility. 
+	* 
+	* @property _strokeColor
+	* @type Kiwi.Utils.Color
+	* @private
+	* @since 1.0.4
+	*/
+	this._strokeColor = new Kiwi.Utils.Color();
+};
+
+/**
+* Returns the type of object that this is.
+* @method objType
+* @return {string}
+* @public
+*/
+Kiwi.Plugins.Primitives.Polygon.prototype.objType = function() {
+	return "Primitive Polygon";
+};
+
+
+/**
+* RGB color triplet, normalized to the range 0-1
+* @property color
+* @type {array} 
+* @public
+*/
+Object.defineProperty(Kiwi.Plugins.Primitives.Polygon.prototype, "color", {
+	get: function() {
+		return [ this._color.rNorm, this._color.gNorm, this._color.bNorm ];
+	},
+	set: function( val ) {
+		this._color.set.apply( this._color, val );
+	}
+});
+
+
+/**
+* RGB color triplet, normalized to the range 0-1
+* @property strokeColor
+* @type {array}
+* @public
+*/
+Object.defineProperty(Kiwi.Plugins.Primitives.Polygon.prototype, "strokeColor", {
+	get: function() {
+		return [ this._strokeColor.rNorm, this._strokeColor.gNorm, this._strokeColor.bNorm ];
+	},
+	set: function( val ) {
+		this._strokeColor.set.apply( this._strokeColor, val );
+	}
+});
+
+
+/**
+* Sets default parameters on primitive. Note that this will redefine the
+* entire primitive. If you call parseParams after creation, you will have to
+* take steps to preserve any shape, style, or transform data you wish to keep.
+* @method parseParams
+* @param params {object} The param objects
+* @return boolean
+* @public
+* @since 0.1.0
+*/
+Kiwi.Plugins.Primitives.Polygon.prototype.parseParams = function( params ) {
+
+	if( typeof params.color !== "undefined" ) {
+		
+		if( Kiwi.Utils.Common.isArray( params.color ) ) {
+			this.color = params.color;
+		} else {
+			this._color.set( params.color );
+		}
+
+	} else {
+		this.color = [ 0.5, 0.5, 0.5 ];
+	}
+
+	/**
+	* Whether the fill will draw
+	* @property drawFill
+	* @type {boolean}
+	* @public
+	*/
+	this.drawFill = ( typeof params.drawFill !== "undefined" ) ?
+		params.drawFill :
+		true;
+
+	/**
+	* Whether the stroke will draw
+	* @property drawFill
+	* @type {boolean}
+	* @public
+	*/
+	this.drawStroke = ( typeof params.drawStroke !== "undefined" ) ?
+		params.drawStroke :
+		true;
+
+	/**
+	* Whether to enable input
+	* @property enableInput
+	* @type {Boolean}
+	* @public
+	* @since 1.0.1
+	*/
+	this.enableInput = params.enableInput === true;
+
+	this.indices = params.indices || [];
+	this.vertices = params.vertices || [];
+
+	// These stroke properties must be defined
+	// after base vertices and in unique order
+
+	if( typeof params.strokeColor !== "undefined" ) {
+		
+		if( Kiwi.Utils.Common.isArray( params.strokeColor ) ) {
+			this.strokeColor = params.strokeColor;
+		} else {
+			this._strokeColor.set( params.strokeColor );
+		}
+
+	} else {
+		this.strokeColor = [ 0, 0, 0 ];
+	}
+
+	/**
+	* Width of the stroke, in pixels. If the primitive is scaled, the stroke
+	* will also change size.
+	* @property strokeWidth
+	* @type {number}
+	* @public
+	*/
+	this.strokeWidth = typeof params.strokeWidth === "number" ?
+		params.strokeWidth : 1;
+
+	this.strokeIndices = params.strokeIndices || [];
+	this.strokePolyIndices = this._strokePolyIndices || [];
+	this.strokePolyVertices = this._strokePolyVertices || [];
+
+	// Universal entity params
+	this.alpha = typeof params.alpha === "number" ?
+		params.alpha : 1;
+	this.anchorPointX = typeof params.anchorPointX === "number" ?
+		params.anchorPointX : undefined;
+	this.anchorPointY = typeof params.anchorPointY === "number" ?
+		params.anchorPointY : undefined;
+	this.rotation = typeof params.rotation === "number" ?
+		params.rotation : 0;
+	if (
+			typeof params.scaleX === "undefined" &&
+			typeof params.scaleY === "undefined" ) {
+		this.scale = typeof params.scale === "number" ?
+			params.scale : 1;
+	} else {
+		this.scaleX = typeof params.scaleX === "number" ?
+			params.scaleX : 1;
+		this.scaleY = typeof params.scaleY === "number" ?
+			params.scaleY : 1;
+	}
+	this.visible = typeof params.visible === "boolean" ?
+		params.visible : true;
+	this.x = typeof params.x === "number" ?
+		params.x : 0;
+	this.y = typeof params.y === "number" ?
+		params.y : 0;
+
+	return this.parseStrict();
+};
+
+/**
+* Perform a strict compliance check on data. If this fails,
+* it's because somebody passed bad data.
+* @method parseStrict
+* @return boolean
+* @public
+* @since 0.4.0
+*/
+Kiwi.Plugins.Primitives.Polygon.prototype.parseStrict = function() {
+	var i;
+
+	// Check stroke width
+	if ( isNaN( this.strokeWidth ) ) {
+		this.complain( "strokeWidth is not a number" );
+		return false;
+	}
+
+	// Check indices
+	if ( Kiwi.Utils.Common.isArray( this.indices ) ) {
+		for ( i = 0; i < this.indices.length; i++ ) {
+			if ( isNaN( this.indices[ i ] ) ) {
+				this.complain( "Index " + i + " is not a number" );
+				return false;
+			}
+			if ( this.indices[ i ] % 1 !== 0 ) {
+				this.complain( "Index" + i + " is not an integer" );
+				return false;
+			}
+		}
+	} else {
+		this.complain( "Could not parse indices: Not an array" );
+		return false;
+	}
+
+	// Check stroke indices
+	if ( Kiwi.Utils.Common.isArray( this.strokeIndices ) ) {
+		for ( i = 0; i < this.strokeIndices.length; i++ ) {
+			if ( isNaN( this.strokeIndices[ i ] ) ) {
+				this.complain( "Stroke Index " + i + " is not a number" );
+				return false;
+			}
+			if ( this.strokeIndices[ i ] % 1 !== 0 ) {
+				this.complain( "Stroke Index" + i + " is not an integer" );
+				return false;
+			}
+		}
+	} else {
+		this.complain( "Could not parse strokeIndices: Not an array" );
+		return false;
+	}
+
+	// Check vertices
+	if ( Kiwi.Utils.Common.isArray( this.vertices ) ) {
+		for ( i = 0; i < this.vertices.length; i++ ) {
+			if ( Kiwi.Utils.Common.isArray( this.vertices[ i ] ) ) {
+				if ( isNaN( this.vertices[ i ][ 0 ] ) ) {
+					this.complain( "Vertex " + i + ".x is not a number" );
+					return false;
+				}
+				if ( isNaN( this.vertices[ i ][ 1 ] ) ) {
+					this.complain( "Vertex " + i + ".y is not a number" );
+					return false;
+				}
+			} else {
+				this.complain( "Vertex " + i + " is not an array" );
+				return false;
+			}
+		}
+	} else {
+		this.complain( "Could not parse indices: Not an array" );
+		return false;
+	}
+
+	// We can't find anything wrong with it
+	return true;
+};
+
+/**
+* Compute width, height, box, anchor points etc
+* @method rebuildBounds
+* @public
+* @since 0.1.0
+*/
+Kiwi.Plugins.Primitives.Polygon.prototype.rebuildBounds = function() {
+
+	// Compute width, height, and anchor points
+	var bounds = this.computeMinMaxXY( this._vertices );
+	this.width = bounds.maxX - bounds.minX;
+	this.height = bounds.maxY - bounds.minY;
+	if ( typeof this.anchorPointX === "undefined" ) {
+		this.anchorPointX = bounds.maxX - 0.5 * this.width;
+	}
+	if ( typeof this.anchorPointY === "undefined" ) {
+		this.anchorPointY = bounds.maxY - 0.5 * this.height;
+	}
+
+	// Compute box
+	this.box = this.components.add( new Kiwi.Components.Box(
+		this, this.x + bounds.minX, this.x + bounds.minY,
+		this.width, this.height ) );
+	this.box.hitbox = new Kiwi.Geom.Rectangle( 
+		bounds.minX, 
+		bounds.minY, 
+		this.width, 
+		this.height );
+
+	// Create input
+	this.input = this.components.add( new Kiwi.Components.Input(
+		this, this.box, this.enableInput ) );
+
+	// Set dummy cell data for use in hitboxes
+	if ( this.atlas ) {
+		this.atlas.cells[0].hitboxes[0] = {
+			x: 0,
+			y: 0,
+			w: this.width,
+			h: this.height
+		};
+	}
+};
+
+/**
+* Software rendering method
+* @method render
+* @param {Kiwi.Camera} camera
+* @public
+*/
+Kiwi.Plugins.Primitives.Polygon.prototype.render = function( camera ) {
+
+	var ctx, i, pTemp,
+		indicesLen = this._indices.length;
+
+	Kiwi.Entity.prototype.render.call( this, camera );
+	if ( this.alpha > 0 ) {
+		ctx = this.game.stage.ctx;
+		ctx.save();
+
+		if ( this.alpha <= 1 ) {
+			ctx.globalAlpha = this.alpha;
+		}
+
+		var t = this.transform;
+		var m = t.getConcatenatedMatrix();
+		ctx.transform( m.a, m.b, m.c, m.d, m.tx, m.ty );
+
+
+		// Draw fill
+		if ( this.drawFill && this._indices.length > 2 ) {
+			ctx.fillStyle =
+				"rgb(" +
+				this._color.r255 + "," +
+				this._color.g255 + "," +
+				this._color.b255 + ")";
+
+			this._p1.setTo(
+				this._vertices[ this._indices[ 1 ] ][ 0 ] - t.anchorPointX,
+				this._vertices[ this._indices[ 1 ] ][ 1 ] - t.anchorPointY
+			);
+			this._p2.setTo(
+				this._vertices[ this._indices[ 0 ] ][ 0 ] - t.anchorPointX,
+				this._vertices[ this._indices[ 0 ] ][ 1 ] - t.anchorPointY
+			);
+
+			ctx.beginPath();
+
+			for ( i = 2; i < indicesLen; i++ ) {
+
+				// Overwrite start point
+				this._p0.setTo(
+					this._vertices[ this._indices[ i ] ][ 0 ] - t.anchorPointX,
+					this._vertices[ this._indices[ i ] ][ 1 ] - t.anchorPointY
+				);
+
+				// Draw
+				ctx.moveTo( this._p0.x, this._p0.y );
+				ctx.lineTo( this._p1.x, this._p1.y );
+				ctx.lineTo( this._p2.x, this._p2.y );
+
+				// Cycle points
+				pTemp = this._p2;
+				this._p2 = this._p1;
+				this._p1 = this._p0;
+				this._p0 = pTemp;
+			}
+
+			ctx.closePath();
+			ctx.fill();
+		}
+
+
+		// Draw stroke
+		if ( this.drawStroke && this._strokePolyIndices.length > 2 ) {
+			indicesLen = this._strokePolyIndices.length;
+
+			ctx.fillStyle =
+				"rgb(" +
+				this._strokeColor.r255 + "," +
+				this._strokeColor.g255 + "," +
+				this._strokeColor.b255 + ")";
+
+			this._p1.setTo(
+				this._strokePolyVertices[
+					this._strokePolyIndices[ 1 ] ][ 0 ] - t.anchorPointX,
+				this._strokePolyVertices[
+					this._strokePolyIndices[ 1 ] ][ 1 ] - t.anchorPointY
+			);
+			this._p2.setTo(
+				this._strokePolyVertices[
+					this._strokePolyIndices[ 0 ] ][ 0 ] - t.anchorPointX,
+				this._strokePolyVertices[
+					this._strokePolyIndices[ 0 ] ][ 1 ] - t.anchorPointY
+			);
+
+			ctx.beginPath();
+
+			for ( i = 2; i < indicesLen; i++ ) {
+
+				// Overwrite start point
+				this._p0.setTo(
+					this._strokePolyVertices[
+						this._strokePolyIndices[ i ] ][ 0 ] - t.anchorPointX,
+					this._strokePolyVertices[
+						this._strokePolyIndices[ i ] ][ 1 ] - t.anchorPointY
+				);
+
+				// Draw
+				ctx.moveTo( this._p0.x, this._p0.y );
+				ctx.lineTo( this._p1.x, this._p1.y );
+				ctx.lineTo( this._p2.x, this._p2.y );
+
+				// Cycle points
+				pTemp = this._p2;
+				this._p2 = this._p1;
+				this._p1 = this._p0;
+				this._p0 = pTemp;
+			}
+
+			ctx.closePath();
+			ctx.fill();
+		}
+
+
+		// Clean up context
+		ctx.restore();
+	}
+};
+
+
+
+/**
+* Hardware rendering method using WebGL
+* @method renderGL
+* @param gl {WebGLRenderingContext}
+* @param camera {Kiwi.Camera}
+* @param params {object}
+*/
+Kiwi.Plugins.Primitives.Polygon.prototype.renderGL =
+		function( gl ) {
+	if ( this.alpha > 0 ) {
+		if ( this.drawFill ) {
+			this.glRenderer.addToBatch( gl, this,
+				this._indices, this._vertices, this.color
+			);
+		}
+		if ( this.drawStroke ) {
+			this.glRenderer.addToBatch( gl, this,
+				this._strokePolyIndices, this._strokePolyVertices,
+				this.strokeColor
+			);
+		}
+	}
+};
+
+/**
+* Decompose a polygon into its constituent triangles.
+* This will destroy the original polygon and substitute a group
+* containing the triangles.
+* @method shatter
+* @return {Kiwi.Group}
+* @public
+* @since 0.3.0
+*/
+Kiwi.Plugins.Primitives.Polygon.prototype.shatter = function() {
+	var dVert12, dVert13, dVert23, i, params, tri, vert1, vert2, vert3,
+		indices = [ 0, 1, 2 ],
+		group = new Kiwi.Group( this.state );
+
+	for ( i = 0; i < this._indices.length - 2; i++ ) {
+
+		vert1 = this._vertices[ this._indices[ i ] ];
+		vert2 = this._vertices[ this._indices[ i + 1 ] ];
+		vert3 = this._vertices[ this._indices[ i + 2 ] ];
+
+		dVert12 = Math.sqrt(
+			Math.pow( vert1[ 0 ] - vert2[ 0 ], 2 ) +
+			Math.pow( vert1[ 1 ] - vert2[ 1 ], 2 )
+		);
+		dVert13 = Math.sqrt(
+			Math.pow( vert1[ 0 ] - vert3[ 0 ], 2 ) +
+			Math.pow( vert1[ 1 ] - vert3[ 1 ], 2 )
+		);
+		dVert23 = Math.sqrt(
+			Math.pow( vert2[ 0 ] - vert3[ 0 ], 2 ) +
+			Math.pow( vert2[ 1 ] - vert3[ 1 ], 2 )
+		);
+
+		// Avoid degenerate triangles
+		if ( dVert12 !== 0 && dVert13 !== 0 && dVert23 !== 0 ) {
+			params = {
+				indices: indices,
+				vertices: [ vert1, vert2, vert3 ],
+				state: this.state,
+				color: this.color,
+				x: this.x,
+				y: this.y,
+				rotation: this.rotation,
+				scaleX: this.scaleX,
+				scaleY: this.scaleY,
+				anchorPointX: this.anchorPointX,
+				anchorPointY: this.anchorPointY
+			};
+			tri = (new Kiwi.Plugins.Primitives.Polygon( params ) ).clone();
+			group.addChild( tri );
+		}
+	}
+
+	// Eliminate original
+	if ( this.parent ) {
+		this.parent.addChildBefore( group, this );
+	}
+	this.destroy();
+
+	return group;
+};
+
+
+/**
+* Automatically called once per update loop.
+* Handles input. If you override this, make sure to call the prototype:
+* <code>Kiwi.Plugins.prototype.update.calL( this );</code>
+* @method update
+* @public
+* @since 1.0.1
+*/
+Kiwi.Plugins.Primitives.Polygon.prototype.update = function() {
+	Kiwi.Entity.prototype.update.call( this );
+
+	this.input.update();
+};
+
+
+
+/**
+* Ellipse Primitive
+* <br><br>
+* Create a ellipse primitive. Define a params object including a reference
+* to the current state. You may also add style parameters from the Polygon.
+* <br><br>
+* You may draw regular polygons by reducing the segments. For example,
+* to draw a hexagon:
+* <br><br>
+* new Kiwi.Plugins.Primitives.Ellipse( {<br>
+*	drawStroke: false,<br>
+*	radius: 32,<br>
+*	state: MyGame.state,<br>
+*	segments: 6<br>
+* } );
+* @class Ellipse
+* @constructor
+* @extends Kiwi.Plugins.Primitives.Polygon
+* @namespace Kiwi.Plugins.Primitives
+* @param params {object} Parameter object
+* @param params.state {Kiwi.State} Current state
+* @param [params.centerOnTransform=false] {boolean} If true, ellipse is centered
+*	on transform; if false, ellipse has top left corner on transform
+* @param [params.height=8] {number} Height of the ellipse
+* @param [params.radius] {number} Radius of a circle; overide width and height
+* @param [params.radiusPointer=false] {boolean} Whether to draw the radius,
+*	useful for debugging rotation on circles.
+* @param [params.segments=32] {number} Number of radial segments; detail.
+* @param [params.width=8] {number} Width of the ellipse
+* @since 0.4.0
+*/
+Kiwi.Plugins.Primitives.Ellipse = function( params ) {
+	var angle, i,
+		defaultDimension = 8,
+		offsetX = 0,
+		offsetY = 0;
+
+	// Create elliptical geometry data
+	if ( typeof params.segments === "undefined" ) {
+		params.segments = 32;
+	}
+	if ( typeof params.radius !== "undefined" ) {
+		params.width = params.radius * 2;
+		params.height = params.radius * 2;
+	}
+	if ( typeof params.width !== "number" ) {
+		params.width = defaultDimension;
+	}
+	if ( typeof params.height !== "number" ) {
+		params.height = defaultDimension;
+	}
+	if ( !params.centerOnTransform ) {
+		offsetX = params.width * 0.5;
+		offsetY = params.height * 0.5;
+	}
+	params.indices = [];
+	params.vertices = [];
+	params.strokeIndices = [];
+	for ( i = 0; i < params.segments; i++ ) {
+
+		// Define indices, looping from the middle
+		params.indices.push( i );
+		params.indices.push( params.segments );
+		params.indices.push( ( i + 1 ) % params.segments );
+
+		// Define vertices
+		angle = Math.PI * 2 * i / params.segments;
+		params.vertices.push( [
+			params.width * 0.5 * Math.cos( angle ) + offsetX,
+			params.height * 0.5 * Math.sin( angle ) + offsetY
+		] );
+
+		// Define stroke
+		params.strokeIndices.push( i );
+	}
+
+	// Define central vertex
+	params.vertices.push( [ offsetX, offsetY ] );
+
+	// Complete stroke
+	params.strokeIndices.push( 0 );
+
+	// Add radius pointer
+	if ( params.radiusPointer ) {
+		params.strokeIndices.push( params.segments );
+	}
+
+	Kiwi.Plugins.Primitives.Polygon.call( this, params );
+};
+Kiwi.extend( Kiwi.Plugins.Primitives.Ellipse,
+	Kiwi.Plugins.Primitives.Polygon );
+
+
+/**
+* Line Primitive
+* <br><br>
+* Create a line primitive. Define a params object including a reference
+* to the current state. You may also add style parameters from the Polygon.
+* For example:
+* <br><br>
+* new Kiwi.Plugins.Primitives.Line( {<br>
+*	points: [ [ 0, 0 ], [ 100, 100 ], [ 200, 0 ] ],<br>
+*	state: MyGame.state,<br>
+*	strokeColor: [ 1, 0.1, 1 ],<br>
+*	strokeWidth: 4<br>
+* } );
+* @class Line
+* @constructor
+* @extends Kiwi.Plugins.Primitives.Polygon
+* @namespace Kiwi.Plugins.Primitives
+* @param params {object} Parameter object
+* @param params.state {Kiwi.State} Current state
+* @param [params.points] {array} Array of x,y points to connect with lines
+* @since 0.4.0
+*/
+Kiwi.Plugins.Primitives.Line = function( params ) {
+	var i;
+
+	params.vertices = [];
+	params.strokeIndices = [];
+	params.drawFill = false;
+	params.drawStroke = true;
+	if ( params.points ) {
+		for ( i = 0; i < params.points.length; i++ ) {
+			params.vertices.push( params.points[ i ] );
+			params.strokeIndices.push( i );
+		}
+	}
+
+	Kiwi.Plugins.Primitives.Polygon.call( this, params );
+};
+Kiwi.extend( Kiwi.Plugins.Primitives.Line,
+	Kiwi.Plugins.Primitives.Polygon );
+
+
+
+/**
+* Null Texture Atlas interfaces with KiwiJS rendering system
+* which expects a texture atlas, and provides it with an atlas
+* that has no texture.
+*
+* @class NullAtlas
+* @constructor
+* @namespace Kiwi.Plugins.Primitives
+* @since 0.1.0
+*/
+Kiwi.Plugins.Primitives.NullAtlas = function() {
+	this.cells = [ { hitboxes: [] } ];
+};
+
+/** Dummy texture enable method, doing the bare minimum to satisfy the
+* texture manager requirements. Parameters don't matter.
+* @method enableGL
+* @public
+* @since 0.1.0
+*/
+Kiwi.Plugins.Primitives.NullAtlas.prototype.enableGL = function() {};
+
+
+
+/**
+* Rectangle Primitive
+* <br><br>
+* Create a rectangular primitive. Define a params object including a reference
+* to the current state. You may also add style parameters from the Polygon.
+* For example:
+* <br><br>
+* new Kiwi.Plugins.Primitives.Rectangle( {<br>
+*	state: MyGame.state,<br>
+*	color: [ 0.9, 0.3, 0.7 ],<br>
+*	strokeWidth: 4,<br>
+*	width: 32,<br>
+*	height: 16<br>
+* } );
+* @class Rectangle
+* @constructor
+* @extends Kiwi.Plugins.Primitives.Polygon
+* @namespace Kiwi.Plugins.Primitives
+* @param params {object} Parameter object
+* @param params.state {Kiwi.State} Current state
+* @param [params.centerOnTransform=true] {boolean} If true, rectangle is centered
+*	on transform; if false, rectangle has top left corner on transform
+* @param [params.height=8] {number} Height of the rectangle
+* @param [params.width=8] {number} Width of the rectangle
+* @since 0.4.0
+*/
+Kiwi.Plugins.Primitives.Rectangle = function( params ) {
+	var defaultDimension = 8;
+
+	// Create rectangle geometry data
+	params.indices = [ 0, 1, 2, 3 ];
+	params.strokeIndices = [ 0, 1, 3, 2, 0 ];
+	if ( typeof params.width === "undefined" ) {
+		params.width = defaultDimension;
+	}
+	if ( typeof params.height === "undefined" ) {
+		params.height = defaultDimension;
+	}
+
+	// Position rectangle relative to transform
+	if ( params.centerOnTransform ) {
+		params.vertices = [
+			[ -params.width * 0.5, -params.height * 0.5 ],
+			[ params.width * 0.5, -params.height * 0.5 ],
+			[ -params.width * 0.5, params.height * 0.5 ],
+			[ params.width * 0.5, params.height * 0.5 ]
+		];
+	} else {
+		params.vertices = [
+			[ 0, 0 ],
+			[ params.width, 0 ],
+			[ 0, params.height ],
+			[ params.width, params.height ]
+		];
+	}
+
+	Kiwi.Plugins.Primitives.Polygon.call ( this, params );
+};
+Kiwi.extend( Kiwi.Plugins.Primitives.Rectangle,
+	Kiwi.Plugins.Primitives.Polygon );
+
+
+
+
+/**
+* Primitive Renderer
+* <br><br>
+* This renders primitives using triangle strips.
+* @class PrimitiveRenderer
+* @constructor
+* @namespace Kiwi.Renderers
+* @param gl {WebGLRenderingContext} The WebGL rendering context in use.
+* @param shaderManager {Kiwi.Renderers.ShaderManager} The Kiwi shader manager.
+* @since 0.1.0
+*/
+Kiwi.Renderers.PrimitiveRenderer = function( gl, shaderManager ) {
+	this.bufferItemSize = 6;
+	this.indices = [];
+	this.nullAtlas = new Kiwi.Plugins.Primitives.NullAtlas();
+	this._tempPoint = new Kiwi.Geom.Point( 0, 0 );
+	this._maxItems = 1000;
+	this._vertexBuffer =
+		new Kiwi.Renderers.GLArrayBuffer( gl, this.bufferItemSize );
+	this._indexBuffer = new Kiwi.Renderers.GLElementArrayBuffer( gl, 1, [] );
+
+	// Perform super functionality
+	Kiwi.Renderers.Renderer.call( this, gl, shaderManager, true );
+
+	this.setShaderPair( "PrimitiveShader" );
+};
+Kiwi.extend( Kiwi.Renderers.PrimitiveRenderer, Kiwi.Renderers.Renderer );
+
+/**
+* Returns a null atlas so that all primitives share a texture object.
+* @method getAtlas
+* @return Kiwi.Plugins.Primitives.NullAtlas
+* @public
+* @since 0.3.0
+*/
+Kiwi.Renderers.PrimitiveRenderer.prototype.getAtlas = function() {
+	return this.nullAtlas;
+};
+
+/**
+* Enables the renderer for drawing
+* @method enable
+* @param gl {WebGLRenderingContext}
+* @param [params=null] {object}
+* @public
+*/
+Kiwi.Renderers.PrimitiveRenderer.prototype.enable = function( gl, params ) {
+	// Boilerplate extension
+	Kiwi.Renderers.Renderer.
+		prototype.enable.call( this, gl, params );
+
+	this.shaderPair = this.shaderManager.requestShader(gl,
+		this._shaderPairName, true);
+
+	gl.uniform2fv( this.shaderPair.uniforms.uResolution.location,
+		params.stageResolution );
+	gl.uniformMatrix3fv( this.shaderPair.uniforms.uCamMatrix.location,
+		false, params.camMatrix );
+};
+
+/**
+* Disables the renderer
+* @method disable
+* @param gl {WebGLRenderingContext}
+* @public
+*/
+Kiwi.Renderers.PrimitiveRenderer.prototype.disable = function( gl ) {
+	gl.disableVertexAttribArray( this.shaderPair.attributes.aXY );
+	gl.disableVertexAttribArray( this.shaderPair.attributes.aRGBA );
+};
+
+/**
+* Clears the vertex buffer
+* @method clear
+* @param gl {WebGLRenderingContext}
+* @public
+*/
+Kiwi.Renderers.PrimitiveRenderer.prototype.clear = function( gl, params ) {
+	this._vertexBuffer.clear();
+	gl.uniformMatrix3fv( this.shaderPair.uniforms.uCamMatrix.location,
+		false, params.camMatrix );
+};
+
+/**
+* Updates the stage resolution uniforms
+* @method updateStageResolution
+* @param gl {WebGLRenderingContext}
+* @param res {Float32Array}
+* @public
+*/
+Kiwi.Renderers.PrimitiveRenderer.prototype.updateStageResolution =
+		function( gl, res ) {
+	gl.uniform2fv(this.shaderPair.uniforms.uResolution.location, res);
+};
+
+/**
+* Sets shader pair by name
+* @method setShaderPair
+* @param shaderPair {String}
+* @public
+*/
+Kiwi.Renderers.PrimitiveRenderer.prototype.setShaderPair =
+		function( shaderPair ) {
+	if ( typeof shaderPair === "string" ) {
+		this._shaderPairName = shaderPair;
+	}
+};
+
+/**
+* Collates all xy and uv coordinates into a buffer
+* ready for upload to video memory
+* @method _collateVertexAttributeArrays
+* @param gl {WebGLRenderingContext}
+* @param entity {Kiwi.Entity}
+* @param camera {Camera}
+* @public
+*/
+Kiwi.Renderers.PrimitiveRenderer.prototype.addToBatch =
+		function( gl, entity, indices, vertices, color ) {
+
+	var i,
+		indexLen = indices.length,
+		indexOffset = this._vertexBuffer.items.length / this.bufferItemSize,
+		vertLen = vertices.length;
+
+	var t = entity.transform;
+	var m = t.getConcatenatedMatrix();
+	var a = entity.alpha;
+	var r = color[ 0 ] * a;
+	var g = color[ 1 ] * a;
+	var b = color[ 2 ] * a;
+
+	for ( i = 0; i < vertLen; i++ ) {
+		this._tempPoint.setTo(
+			vertices[ i ][ 0 ] - t.anchorPointX,
+			vertices[ i ][ 1 ] - t.anchorPointY );
+
+		this._tempPoint = m.transformPoint( this._tempPoint );
+
+		this._vertexBuffer.items.push(
+			this._tempPoint.x, this._tempPoint.y, r, g, b, a
+		);
+	}
+
+	// Append indices
+
+	// Because we cannot guarantee winding order, we must always assume
+	// that we will require two connectors, except for the first triangle.
+	if ( this.indices.length > 0 ) {
+		this.indices.push( this.indices[ this.indices.length - 1 ] );
+		this.indices.push( indices[ 0 ] + indexOffset );
+	}
+
+	for ( i = 0; i < indexLen; i++ ) {
+		this.indices.push( indices[ i ] + indexOffset );
+	}
+};
+
+/**
+* Makes a draw call. This is where things actually
+* get rendered to the draw buffer (or a framebuffer).
+* @method draw
+* @param gl {WebGLRenderingContext}
+* @public
+*/
+Kiwi.Renderers.PrimitiveRenderer.prototype.draw = function( gl ) {
+	var byteHead = 0,
+		bytesPerF32 = 4,
+		bytes = this.bufferItemSize * bytesPerF32;
+
+	this._vertexBuffer.uploadBuffer( gl, this._vertexBuffer.items );
+
+	gl.enableVertexAttribArray( this.shaderPair.attributes.aXY );
+	gl.vertexAttribPointer( this.shaderPair.attributes.aXY,
+		bytesPerF32, gl.FLOAT, false, bytes, byteHead );
+	byteHead += 2 * bytesPerF32;
+
+	gl.enableVertexAttribArray( this.shaderPair.attributes.aRGBA );
+	gl.vertexAttribPointer( this.shaderPair.attributes.aRGBA,
+		bytesPerF32, gl.FLOAT, false, bytes, byteHead );
+	// byteHead += 4 * bytesPerF32;
+
+	// Generate vertex index strip
+	this._indexBuffer.indices = this.indices;
+	this._indexBuffer.refresh( gl );
+
+	// Render
+	gl.bindBuffer( gl.ELEMENT_ARRAY_BUFFER, this._indexBuffer.buffer );
+	gl.drawElements( gl.TRIANGLE_STRIP,
+		this._indexBuffer.numItems,
+		gl.UNSIGNED_SHORT, 0 );
+
+	// Clear index buffer
+	this.indices = [];
+};
+
+
+
+/**
+* Primitive Shader Pair
+* @class PrimitiveShader
+* @constructor
+* @namespace Kiwi.Shaders
+* @since 0.1.0
+*/
+Kiwi.Shaders.PrimitiveShader = function() {
+
+	// Super call
+	Kiwi.Shaders.ShaderPair.call( this );
+
+	// Extended functionality
+	this.attributes = {
+		aXY: null,
+		aRGBA: null
+	};
+
+	// Configure uniforms
+	this.uniforms = {
+		uCamMatrix: {
+			type: "mat3",
+		},
+		uResolution: {
+			type: "2fv",
+		}
+	};
+
+	// Declare shaders
+	this.vertSource = [
+		"attribute vec2 aXY;",
+		"attribute vec4 aRGBA;",
+		"uniform mat3 uCamMatrix;",
+		"uniform vec2 uResolution;",
+		"varying vec4 vRGBA;",
+		"void main(void) {",
+		"	vec2 pos = ( uCamMatrix * vec3( aXY, 1 ) ).xy; ",
+		"	gl_Position = vec4( ( pos / uResolution * 2.0 - 1.0 ) *",
+		"		vec2(1 , -1 ), 0, 1 );",
+		"	vRGBA = aRGBA;",
+		"}"
+	];
+
+	this.fragSource = [
+		"precision mediump float;",
+		"varying vec4 vRGBA;",
+		"void main(void) {",
+		"  gl_FragColor = vRGBA;",
+		"}"
+	];
+};
+Kiwi.extend( Kiwi.Shaders.PrimitiveShader, Kiwi.Shaders.ShaderPair );
+
+Kiwi.Shaders.PrimitiveShader.prototype.init = function( gl ) {
+	Kiwi.Shaders.ShaderPair.prototype.init.call( this, gl );
+
+	this.attributes.aXY = gl.getAttribLocation(this.shaderProgram, "aXY");
+	this.attributes.aRGBA = gl.getAttribLocation(this.shaderProgram, "aRGBA");
+
+	this.initUniforms(gl);
+};
+
+
+/**
+* Star Primitive
+* <br><br>
+* Create a star primitive. Define a params object including a reference
+* to the current state. You may also add style parameters from the Polygon.
+* <br><br>
+* You may draw semi-random stars. For example, to draw a cartoon impact flare:
+* <br><br>
+* new Kiwi.Plugins.Primitives.Star( {<br>
+*	centerOnTransform: true,<br>
+*	color: [ 1, 0.01, 1 ],<br>
+*	drawStroke: false,<br>
+*	radius: 32,<br>
+*	spikeRandom: 1,<br>
+*	state: MyGame.state,<br>
+*	segments: 16<br>
+* } );
+* @class Star
+* @constructor
+* @extends Kiwi.Plugins.Primitives.Polygon
+* @namespace Kiwi.Plugins.Primitives
+* @param params {object} Parameter object
+* @param params.state {Kiwi.State} Current state
+* @param [params.centerOnTransform=false] {boolean} If true, star is centered
+*	on transform; if false star has top left corner on transform
+* @param [params.height=8] {number} Height of the star
+* @param [params.spikeLength=1] {number} Length of spikes relative to radius
+* @param [params.spikeRandom=0] {number} Randomness of star spikes, where 0 is
+*	no randomness and 1 will make some spikes up to twice as long;
+*	there is no cap.
+* @param [params.radius] {number} Radius of a star; overide width and height
+* @param [params.segments=32] {number} Number of points
+* @param [params.width=8] {number} Width of the star
+* @since 0.4.0
+*/
+Kiwi.Plugins.Primitives.Star = function( params ) {
+	var angle, i, spikiness,
+		defaultDimension = 8,
+		offsetX = 0,
+		offsetY = 0;
+
+	// Create stellar geometry data
+	if ( typeof params.segments === "undefined" ) {
+		params.segments = 32;
+	}
+	if ( typeof params.radius !== "undefined" ) {
+		params.width = params.radius * 2;
+		params.height = params.radius * 2;
+	}
+	if ( typeof params.width !== "number" ) {
+		params.width = defaultDimension;
+	}
+	if ( typeof params.height !== "number" ) {
+		params.height = defaultDimension;
+	}
+	if ( !params.centerOnTransform ) {
+		offsetX = params.width * 0.5;
+		offsetY = params.height * 0.5;
+	}
+	if( typeof params.spikeLength !== "number" ) {
+		params.spikeLength = 1;
+	}
+	if( typeof params.spikeRandom !== "number" ) {
+		params.spikeRandom = 0;
+	}
+
+
+	params.indices = [];
+	params.vertices = [];
+	params.strokeIndices = [];
+
+	for ( i = 0; i < params.segments; i++ ) {
+
+		// Define indices, looping from the middle
+		params.indices.push( i );
+		params.indices.push( params.segments );
+		params.indices.push( ( i + 1 ) % params.segments );
+
+		// Define vertices
+		angle = Math.PI * 2 * i / params.segments;
+		params.vertices.push( [
+			params.width * 0.5 * Math.cos( angle ) + offsetX,
+			params.height * 0.5 * Math.sin( angle ) + offsetY
+		] );
+
+		// Define stroke
+		params.strokeIndices.push( i, i + 1 + params.segments );
+	}
+
+	// Define central vertex
+	params.vertices.push( [ offsetX, offsetY ] );
+
+	// Define stellar spikes
+	for ( i = 0; i < params.segments; i++ ) {
+		params.indices.push( i );
+		params.indices.push( params.segments + i + 1 );
+		params.indices.push( ( i + 1) % params.segments );
+
+		// Define vertices
+		angle = Math.PI * 2 * ( i + 0.5 ) / params.segments;
+		spikiness = ( 1 + Math.random() * params.spikeRandom ) *
+			( params.spikeLength + 1 ) * 0.5;
+		params.vertices.push( [
+			params.width * Math.cos( angle ) * spikiness + offsetX,
+			params.height * Math.sin( angle ) * spikiness + offsetY
+		] );
+	}
+
+	// Complete stroke
+	params.strokeIndices.push( 0 );
+
+
+	Kiwi.Plugins.Primitives.Polygon.call( this, params );
+
+
+	// Reset anchor point to middle of core circle.
+	// This compensates for random spike lengths.
+	this.anchorPointX = params.anchorPointX || offsetX;
+	this.anchorPointY = params.anchorPointY || offsetY;
+};
+Kiwi.extend( Kiwi.Plugins.Primitives.Star,
+	Kiwi.Plugins.Primitives.Polygon );
+
+
+
+/**
+* Triangle Primitive
+* <br><br>
+* Create a triangle primitive. Define a params object including a reference
+* to the current state. You may also add style parameters from the Polygon.
+* For example:
+* <br><br>
+* new Kiwi.Plugins.Primitives.Triangle( {<br>
+*	points: [ [ 0, 0 ], [ 100, 100 ], [ 200, 0 ] ],<br>
+*	state: MyGame.state,<br>
+*	x: 10,<br>
+*	y: 10,<br>
+*	scale: 2<br>
+* } );
+* <br><br>
+* If you do not specify points in the param object, the Triangle will default to
+* [ [ 0, 0 ], [ 0, 8 ], [ 8, 0 ] ]
+* @class Triangle
+* @constructor
+* @extends Kiwi.Plugins.Primitives.Polygon
+* @namespace Kiwi.Plugins.Primitives
+* @param params {object} Parameter object
+* @param params.state {Kiwi.State} Current state
+* @param [params.points] {array} Array of x,y pairs to form triangle's corners.
+* @since 0.4.0
+*/
+Kiwi.Plugins.Primitives.Triangle = function( params ) {
+	var i,
+		defaultDimension = 8;
+
+	params.indices = [ 0, 1, 2 ];
+	params.strokeIndices = [ 0, 1, 2, 0 ];
+	params.vertices = [];
+	
+	// Create triangle geometry data
+	if ( params.points ) {
+		for ( i = 0; i < 3; i++ ) {
+			if ( params.points[ i ] ) {
+				params.vertices.push( params.points[ i ] );
+			} else {
+				params.vertices.push( [ 0, 0 ] );
+			}
+		}
+	} else {
+		params.vertices.push(
+			[ 0, 0 ],
+			[ 0, defaultDimension ],
+			[ defaultDimension, 0 ]
+		);
+	}
+	
+	Kiwi.Plugins.Primitives.Polygon.call( this, params );
+};
+Kiwi.extend( Kiwi.Plugins.Primitives.Triangle,
+	Kiwi.Plugins.Primitives.Polygon );
+
