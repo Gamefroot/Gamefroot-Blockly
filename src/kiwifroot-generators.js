@@ -185,3 +185,27 @@ Blockly.Kiwifroot[ "kiwi_get_editor_sounds" ] = function ( block ) {
 
   return [ code, Blockly.Kiwifroot.ORDER_ATOMIC ];
 };
+
+
+// Override textfield creation to add anchor point defaults.
+Blockly.Kiwifroot['kiwi_text_create'] = function(block) {
+
+  var value_text = Blockly.Kiwifroot.valueToCode( block, 'TEXT', Blockly.Kiwifroot.ORDER_ATOMIC ) || "''";
+  var variable0 = Blockly.Kiwifroot.variableDB_.getName( block.getFieldValue('VAR'), Blockly.Variables.NAME_TYPE );
+
+  var t = Blockly.Kiwifroot.INDENT;
+  var code  = 'this.' + variable0 + ' = this.state.objects.create( {\n';
+  code += t + '"type": "multiline-text",\n';
+  code += t + '"x": 0,\n';
+  code += t + '"y": 0,\n';
+  code += t + '"maxWidth": Infinity,\n';
+  code += t + '"text": ' + value_text.replace(/\\\\n/g, "\\n") + '\n';
+  code += '}, this.owner.parent, true);\n';
+  code += "// Render text so width and height are defined."
+  code += "this." + variable0 + ".renderText();\n";
+  code += "this." + variable0 + ".anchorPointX = this.state.game.info.data.anchorDefault.x * this." + variable0 + ".width;\n";
+  code += "this." + variable0 + ".anchorPointY = this.state.game.info.data.anchorDefault.y * this." + variable0 + ".height;\n";
+  code += "\n";
+
+  return code;
+};
