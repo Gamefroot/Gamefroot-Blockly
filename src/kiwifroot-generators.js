@@ -209,3 +209,39 @@ Blockly.Kiwifroot['kiwi_text_create'] = function(block) {
 
   return code;
 };
+
+
+
+// Phaserfroot-only generator stubs
+Blockly.Kiwifroot[ "phaserfroot_create_video_element" ] = function( block ) {
+  var msg = "`phaserfroot_create_video_element` block will only work in the Phaser engine. Please disable this block or switch to Phaser.";
+  return "this.scene.game.reportError( " + msg + ", " + msg + ", \"SCRIPT ERROR\" );\n";
+};
+Blockly.Kiwifroot[ "phaserfroot_create_particle_manager" ] = function( block ) {
+  var msg = "`phaserfroot_create_particle_manager` block will only work in the Phaser engine. Please disable this block or switch to Phaser.";
+  return "this.scene.game.reportError( " + msg + ", " + msg + ", \"SCRIPT ERROR\" );\n";
+};
+Blockly.Kiwifroot[ "phaserfroot_create_set_blend" ] = function( block ) {
+  var msg = "`phaserfroot_create_set_blend` block will only work in the Phaser engine. Please disable this block or switch to Phaser.";
+  return "this.scene.game.reportError( " + msg + ", " + msg + ", \"SCRIPT ERROR\" );\n";
+};
+Blockly.Kiwifroot[ "phaserfroot_create_set_numeric" ] = function( block ) {
+  var msg = "`phaserfroot_create_set_numeric` block will only work in the Phaser engine. Please disable this block or switch to Phaser.";
+  return "this.scene.game.reportError( " + msg + ", " + msg + ", \"SCRIPT ERROR\" );\n";
+};
+Blockly.Kiwifroot[ "phaserfroot_camera_effects_extended" ] = function( block ) {
+  var msg = "`phaserfroot_camera_effects_extended` block will only work in the Phaser engine. Please disable this block or switch to Phaser.";
+  return "this.scene.game.reportError( " + msg + ", " + msg + ", \"SCRIPT ERROR\" );\n";
+};
+Blockly.Kiwifroot[ "phaserfroot_camera_grayscale_filter" ] = function( block ) {
+  var msg = "`phaserfroot_camera_grayscale_filter` block will only work in the Phaser engine. Please disable this block or switch to Phaser.";
+  return "this.scene.game.reportError( " + msg + ", " + msg + ", \"SCRIPT ERROR\" );\n";
+};
+Blockly.Kiwifroot[ "phaserfroot_camera_spotlight_filter" ] = function( block ) {
+  var msg = "`phaserfroot_camera_spotlight_filter` block will only work in the Phaser engine. Please disable this block or switch to Phaser.";
+  return "this.scene.game.reportError( " + msg + ", " + msg + ", \"SCRIPT ERROR\" );\n";
+};
+Blockly.Kiwifroot[ "phaserfroot_camera_remove_filter" ] = function( block ) {
+  var msg = "`phaserfroot_camera_remove_filter` block will only work in the Phaser engine. Please disable this block or switch to Phaser.";
+  return "this.scene.game.reportError( " + msg + ", " + msg + ", \"SCRIPT ERROR\" );\n";
+};
