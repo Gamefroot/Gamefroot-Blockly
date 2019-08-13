@@ -11,6 +11,9 @@
         <shadow type="math_number">
           <field name="NUM">10</field>
         </shadow>
+        <block type="math_number">
+          <field name="NUM">10</field>
+        </block>
       </value>
     </block>
     <block type="kiwi_scratch_motion_turn_right_by_degree">
@@ -18,6 +21,9 @@
         <shadow type="math_number">
           <field name="NUM">15</field>
         </shadow>
+        <block type="math_number">
+          <field name="NUM">15</field>
+        </block>
       </value>
     </block>
     <block type="kiwi_scratch_motion_turn_left_by_degree">
@@ -25,6 +31,9 @@
         <shadow type="math_number">
           <field name="NUM">15</field>
         </shadow>
+        <block type="math_number">
+          <field name="NUM">15</field>
+        </block>
       </value>
     </block>
     <block type="kiwi_scratch_motion_point_direction">
@@ -32,6 +41,9 @@
         <shadow type="math_number">
           <field name="NUM">90</field>
         </shadow>
+        <block type="math_number">
+          <field name="NUM">90</field>
+        </block>
       </value>
     </block>
     <block type="kiwi_scratch_motion_go_to_xy">
@@ -39,11 +51,17 @@
         <shadow type="math_number">
           <field name="NUM">10</field>
         </shadow>
+        <block type="math_number">
+          <field name="NUM">10</field>
+        </block>
       </value>
       <value name="Y">
         <shadow type="math_number">
           <field name="NUM">10</field>
         </shadow>
+        <block type="math_number">
+          <field name="NUM">10</field>
+        </block>
       </value>
     </block>
 
@@ -52,6 +70,7 @@
     <block type="kiwi_game_stage_set_colour">
       <value name="VALUE">
         <shadow type="colour_picker"></shadow>
+        <block type="colour_picker"></block>
       </value>
     </block>
 
@@ -61,11 +80,13 @@
     <block type="kiwi_event_key_input">
       <value name="KEY">
         <shadow type="kiwi_key_special"></shadow>
+        <block type="kiwi_key_special"></block>
       </value>
     </block>
     <block type="kiwi_input_key_down">
       <value name="KEY">
         <shadow type="kiwi_key_special"></shadow>
+        <block type="kiwi_key_special"></block>
       </value>
     </block>
     <block type="kiwi_messaging_everyone">
@@ -73,6 +94,9 @@
         <shadow type="text">
           <field name="TEXT">message</field>
         </shadow>
+        <block type="text">
+          <field name="TEXT">message</field>
+        </block>
       </value>
     </block>
 
@@ -83,6 +107,9 @@
         <shadow type="math_number">
           <field name="NUM">1</field>
         </shadow>
+        <block type="math_number">
+          <field name="NUM">1</field>
+        </block>
       </value>
     </block>
     <block type="kiwi_scratch_control_repeat_frames">
@@ -90,6 +117,9 @@
         <shadow type="math_number">
           <field name="NUM">10</field>
         </shadow>
+        <block type="math_number">
+          <field name="NUM">10</field>
+        </block>
       </value>
     </block>
     <block type="kiwi_scratch_control_forever_frames"></block>
@@ -106,6 +136,7 @@
     <block type="kiwi_instance_exists">
       <value name="INST">
         <shadow type="kiwi_instance_self"></shadow>
+        <block type="kiwi_instance_self"></block>
       </value>
     </block>
 
@@ -114,12 +145,16 @@
         <shadow type="text">
           <field name="TEXT">http://make.gamefroot.com/</field>
         </shadow>
+        <block type="text">
+          <field name="TEXT">http://make.gamefroot.com/</field>
+        </block>
       </value>
     </block>
 
     <block type="kiwi_instance_center_anchor_point">
       <value name="INST">
         <shadow type="kiwi_instance_self"></shadow>
+        <block type="kiwi_instance_self"></block>
       </value>
     </block>
 
@@ -128,25 +163,31 @@
         <shadow type="math_number">
           <field name="NUM">1</field>
         </shadow>
+        <block type="math_number">
+          <field name="NUM">1</field>
+        </block>
       </value>
       <value name="AMPLITUDE">
         <shadow type="math_number">
           <field name="NUM">5</field>
         </shadow>
+        <block type="math_number">
+          <field name="NUM">5</field>
+        </block>
       </value>
     </block>
 
     <block type="kiwi_mechanics_easing">
       <value name="VALUE">
-        <shadow type="math_number">
-          <field name="NUM">0</field>
-        </shadow>
+        <shadow type="math_number"></shadow>
+        <block type="math_number"></block>
       </value>
     </block>
 
     <block type="kiwi_input_key_down">
       <value name="KEY">
         <shadow type="kiwi_key_special"></shadow>
+        <block type="kiwi_key_special"></block>
       </value>
     </block>
 
@@ -157,6 +198,9 @@
         <shadow type="math_number">
           <field name="NUM">10</field>
         </shadow>
+        <block type="math_number">
+          <field name="NUM">10</field>
+        </block>
       </value>
     </block>
 
@@ -165,6 +209,9 @@
         <shadow type="math_number">
           <field name="NUM">15</field>
         </shadow>
+        <block type="math_number">
+          <field name="NUM">15</field>
+        </block>
       </value>
     </block>
 
@@ -173,6 +220,9 @@
         <shadow type="math_number">
           <field name="NUM">15</field>
         </shadow>
+        <block type="math_number">
+          <field name="NUM">15</field>
+        </block>
       </value>
     </block>
 
@@ -181,6 +231,9 @@
         <shadow type="math_number">
           <field name="NUM">90</field>
         </shadow>
+        <block type="math_number">
+          <field name="NUM">90</field>
+        </block>
       </value>
     </block>
     
@@ -189,11 +242,17 @@
         <shadow type="math_number">
           <field name="NUM">10</field>
         </shadow>
+        <block type="math_number">
+          <field name="NUM">10</field>
+        </block>
       </value>
       <value name="Y">
         <shadow type="math_number">
           <field name="NUM">10</field>
         </shadow>
+        <block type="math_number">
+          <field name="NUM">10</field>
+        </block>
       </value>
     </block>
 
@@ -208,6 +267,9 @@
           <shadow type="math_number">
             <field name="NUM">100</field>
           </shadow>
+          <block type="math_number">
+            <field name="NUM">100</field>
+          </block>
         </value>
       </block>
       <block type="kiwi_event_create"></block>
@@ -219,6 +281,7 @@
       <block type="kiwi_event_inst_input">
         <value name="INST">
           <shadow type="kiwi_instance_self"></shadow>
+          <block type="kiwi_instance_self"></block>
         </value>
       </block>
 
@@ -227,12 +290,14 @@
     <block type="kiwi_event_key_input">
       <value name="KEY">
         <shadow type="kiwi_key_special"></shadow>
+        <block type="kiwi_key_special"></block>
       </value>
     </block>
 
     <block type="kiwi_input_key_down">
       <value name="KEY">
         <shadow type="kiwi_key_special"></shadow>
+        <block type="kiwi_key_special"></block>
       </value>
     </block>
 
@@ -245,6 +310,9 @@
           <shadow type="text">
             <field name="TEXT">name</field>
           </shadow>
+          <block type="text">
+            <field name="TEXT">name</field>
+          </block>
         </value>
       </block>
       <block type="kiwi_instance_properties_set">
@@ -252,6 +320,9 @@
           <shadow type="text">
             <field name="TEXT">name</field>
           </shadow>
+          <block type="text">
+            <field name="TEXT">name</field>
+          </block>
         </value>
         <value name="VALUE">
           <shadow type="logic_null"></shadow>
@@ -259,6 +330,7 @@
         </value>
         <value name="INST">
           <shadow type="kiwi_instance_self"></shadow>
+          <block type="kiwi_instance_self"></block>
         </value>
       </block>
       <block type="kiwi_instance_properties_get">
@@ -266,9 +338,13 @@
           <shadow type="text">
             <field name="TEXT">name</field>
           </shadow>
+          <block type="text">
+            <field name="TEXT">name</field>
+          </block>
         </value>
         <value name="INST">
           <shadow type="kiwi_instance_self"></shadow>
+          <block type="kiwi_instance_self"></block>
         </value>
       </block>
 
@@ -278,6 +354,9 @@
           <shadow type="text">
             <field name="TEXT">message</field>
           </shadow>
+          <block type="text">
+            <field name="TEXT">message</field>
+          </block>
         </value>
       </block>
 
@@ -286,6 +365,9 @@
           <shadow type="text">
             <field name="TEXT">message</field>
           </shadow>
+          <block type="text">
+            <field name="TEXT">message</field>
+          </block>
         </value>
       </block>
 
@@ -295,6 +377,9 @@
         <shadow type="text">
           <field name="TEXT">message</field>
         </shadow>
+        <block type="text">
+          <field name="TEXT">message</field>
+        </block>
       </value>
       <value name="INST">
         <shadow type="kiwi_instance_self"></shadow>
@@ -309,6 +394,9 @@
         <shadow type="text">
           <field name="TEXT">message</field>
         </shadow>
+        <block type="text">
+          <field name="TEXT">message</field>
+        </block>
       </value>
       <value name="INST">
         <shadow type="kiwi_instance_self"></shadow>
@@ -317,12 +405,19 @@
           <field name="VAR">Object</field>
         </block>
       </value>
+      <value name="VALUE">
+        <shadow type="kiwi_instance_self"></shadow>
+        <block type="kiwi_instance_self"></block>
+      </value>
     </block>
     <block type="kiwi_messaging_everyone">
       <value name="MESSAGE">
         <shadow type="text">
           <field name="TEXT">message</field>
         </shadow>
+        <block type="text">
+          <field name="TEXT">message</field>
+        </block>
       </value>
     </block>
     <block type="kiwi_messaging_everyone_value">
@@ -330,6 +425,13 @@
         <shadow type="text">
           <field name="TEXT">message</field>
         </shadow>
+        <block type="text">
+          <field name="TEXT">message</field>
+        </block>
+      </value>
+      <value name="VALUE">
+        <shadow type="kiwi_instance_self"></shadow>
+        <block type="kiwi_instance_self"></block>
       </value>
     </block>
     <block type="kiwi_messaging_list">
@@ -337,6 +439,9 @@
         <shadow type="text">
           <field name="TEXT">message</field>
         </shadow>
+        <block type="text">
+          <field name="TEXT">message</field>
+        </block>
       </value>
       <value name="LIST">
         <shadow type="lists_create_empty"></shadow>
@@ -364,6 +469,7 @@
     <block type="kiwi_instance_death">
       <value name="INST">
         <shadow type="kiwi_instance_self"></shadow>
+        <block type="kiwi_instance_self"></block>
       </value>
     </block>
 
@@ -376,6 +482,9 @@
           <shadow type="math_number">
             <field name="NUM">10</field>
           </shadow>
+          <block type="math_number">
+            <field name="NUM">10</field>
+          </block>
         </value>
       </block>
       <block type="kiwi_scratch_control_repeat_frames">
@@ -383,6 +492,9 @@
           <shadow type="math_number">
             <field name="NUM">10</field>
           </shadow>
+          <block type="math_number">
+            <field name="NUM">10</field>
+          </block>
         </value>
       </block>
       <block type="kiwi_scratch_control_forever_frames"></block>
@@ -392,16 +504,25 @@
           <shadow type="math_number">
             <field name="NUM">1</field>
           </shadow>
+          <block type="math_number">
+            <field name="NUM">1</field>
+          </block>
         </value>
         <value name="TO">
           <shadow type="math_number">
             <field name="NUM">10</field>
           </shadow>
+          <block type="math_number">
+            <field name="NUM">10</field>
+          </block>
         </value>
         <value name="BY">
           <shadow type="math_number">
             <field name="NUM">1</field>
           </shadow>
+          <block type="math_number">
+            <field name="NUM">1</field>
+          </block>
         </value>
       </block>
 
@@ -416,6 +537,9 @@
         <shadow type="math_number">
           <field name="NUM">100</field>
         </shadow>
+        <block type="math_number">
+          <field name="NUM">100</field>
+        </block>
       </value>
     </block>
 
@@ -428,6 +552,9 @@
         <shadow type="text">
           <field name="TEXT">http://make.gamefroot.com/</field>
         </shadow>
+        <block type="text">
+          <field name="TEXT">http://make.gamefroot.com/</field>
+        </block>
       </value>
     </block>
 
@@ -438,12 +565,31 @@
       <block type="kiwi_set_debug_mode">
         <value name="SET_DEBUG">
           <shadow type="logic_boolean"></shadow>
+          <block type="logic_boolean"></block>
         </value>
       </block>
 
       <block type="kiwi_get_debug_mode"></block>
-      <block type="kiwi_log"></block>
-      <block type="text_print"></block>
+      <block type="kiwi_log">
+        <value name="LOG">
+          <shadow type="text">
+            <field name="TEXT">to debug console</field>
+          </shadow>
+          <block type="text">
+            <field name="TEXT">to debug console</field>
+          </block>
+        </value>
+      </block>
+      <block type="text_print">
+        <value name="TEXT">
+          <shadow type="text">
+            <field name="TEXT">an alert box</field>
+          </shadow>
+          <block type="text">
+            <field name="TEXT">an alert box</field>
+          </block>
+        </value>
+      </block>
   </category>
 
 
@@ -471,6 +617,7 @@
       <block type="kiwi_arcadephysics_set_gravity">
         <value name="VALUE">
           <shadow type="math_number"></shadow>
+          <block type="math_number"></block>
         </value>
       </block>
       <block type="kiwi_arcadephysics_get_gravity"></block>
@@ -479,21 +626,25 @@
       <block type="kiwi_arcadephysics_set_numeric_velocity">
         <value name="VALUE">
           <shadow type="math_number"></shadow>
+          <block type="math_number"></block>
         </value>
       </block>
       <block type="kiwi_arcadephysics_set_numeric_acceleration">
         <value name="VALUE">
           <shadow type="math_number"></shadow>
+          <block type="math_number"></block>
         </value>
       </block>
       <block type="kiwi_arcadephysics_set_numeric_max_velo">
         <value name="VALUE">
           <shadow type="math_number"></shadow>
+          <block type="math_number"></block>
         </value>
       </block>
       <block type="kiwi_arcadephysics_set_numeric_drag">
         <value name="VALUE">
           <shadow type="math_number"></shadow>
+          <block type="math_number"></block>
         </value>
       </block>
       <block type="kiwi_arcadephysics_get_numeric_velocity"></block>
@@ -505,6 +656,7 @@
       <block type="kiwi_arcadephysics_set_collisions">
         <value name="VALUE">
           <shadow type="logic_boolean"></shadow>
+          <block type="logic_boolean"></block>
         </value>
       </block>
       <block type="kiwi_arcadephysics_get_collisions_touching"></block>
@@ -515,20 +667,25 @@
       <block type="kiwi_arcadephysics_probe">
         <value name="X_POS">
           <shadow type="math_number"></shadow>
+          <block type="math_number"></block>
         </value>
         <value name="Y_POS">
           <shadow type="math_number"></shadow>
+          <block type="math_number"></block>
         </value>
       </block>
       <block type="kiwi_arcadephysics_probe_layer">
         <value name="X_POS">
           <shadow type="math_number"></shadow>
+          <block type="math_number"></block>
         </value>
         <value name="Y_POS">
           <shadow type="math_number"></shadow>
+          <block type="math_number"></block>
         </value>
         <value name="LAYER">
           <shadow type="math_number"></shadow>
+          <block type="math_number"></block>
         </value>
       </block>
 
@@ -536,26 +693,31 @@
       <block type="kiwi_arcadephysics_set_boolean_enabled">
         <value name="VALUE">
           <shadow type="logic_boolean"></shadow>
+          <block type="logic_boolean"></block>
         </value>
       </block>
       <block type="kiwi_arcadephysics_set_boolean_moves">
         <value name="VALUE">
           <shadow type="logic_boolean"></shadow>
+          <block type="logic_boolean"></block>
         </value>
       </block>
       <block type="kiwi_arcadephysics_set_boolean_immovable">
         <value name="VALUE">
           <shadow type="logic_boolean"></shadow>
+          <block type="logic_boolean"></block>
         </value>
       </block>
       <block type="kiwi_arcadephysics_set_boolean_gravity">
         <value name="VALUE">
           <shadow type="logic_boolean"></shadow>
+          <block type="logic_boolean"></block>
         </value>
       </block>
       <block type="kiwi_arcadephysics_set_numeric_misc">
         <value name="VALUE">
           <shadow type="math_number"></shadow>
+          <block type="math_number"></block>
         </value>
       </block>
       <block type="kiwi_arcadephysics_get_boolean_enabled"></block>
@@ -571,74 +733,84 @@
       <block type="kiwi_instance_set_position">
         <value name="INST">
           <shadow type="kiwi_instance_self"></shadow>
+          <block type="kiwi_instance_self"></block>
         </value>
         <value name="VALUE">
-          <shadow type="math_number">
-            <field name="NUM">0</field>
-          </shadow>
+          <shadow type="math_number"></shadow>
+          <block type="math_number"></block>
         </value>
       </block>
       <block type="kiwi_instance_set_rotation">
         <value name="INST">
           <shadow type="kiwi_instance_self"></shadow>
+          <block type="kiwi_instance_self"></block>
         </value>
         <value name="VALUE">
-          <shadow type="math_number">
-            <field name="NUM">0</field>
-          </shadow>
+          <shadow type="math_number"></shadow>
+          <block type="math_number"></block>
         </value>
       </block>
       <block type="kiwi_instance_set_scale">
         <value name="INST">
           <shadow type="kiwi_instance_self"></shadow>
+          <block type="kiwi_instance_self"></block>
         </value>
         <value name="VALUE">
           <shadow type="math_number">
-            <field name="NUM">0</field>
+            <field name="NUM">1</field>
           </shadow>
+          <block type="math_number">
+            <field name="NUM">1</field>
+          </block>
         </value>
       </block>
       <block type="kiwi_instance_set_anchor_point">
         <value name="INST">
           <shadow type="kiwi_instance_self"></shadow>
+          <block type="kiwi_instance_self"></block>
         </value>
         <value name="VALUE">
-          <shadow type="math_number">
-            <field name="NUM">0</field>
-          </shadow>
+          <shadow type="math_number"></shadow>
+          <block type="math_number"></block>
         </value>
       </block>
 
       <block type="kiwi_instance_get_position">
         <value name="INST">
           <shadow type="kiwi_instance_self"></shadow>
+          <block type="kiwi_instance_self"></block>
         </value>
       </block>
       <block type="kiwi_instance_get_rotation">
         <value name="INST">
           <shadow type="kiwi_instance_self"></shadow>
+          <block type="kiwi_instance_self"></block>
         </value>
       </block>
       <block type="kiwi_instance_get_scale">
         <value name="INST">
           <shadow type="kiwi_instance_self"></shadow>
+          <block type="kiwi_instance_self"></block>
         </value>
       </block>
       <block type="kiwi_instance_get_anchor_point">
         <value name="INST">
           <shadow type="kiwi_instance_self"></shadow>
+          <block type="kiwi_instance_self"></block>
         </value>
       </block>
 
       <block type="kiwi_instance_center_anchor_point">
         <value name="INST">
           <shadow type="kiwi_instance_self"></shadow>
+          <block type="kiwi_instance_self"></block>
         </value>
       </block>
 
       <block type="kiwi_instance_get_dimensions">
         <value name="INST">
           <shadow type="kiwi_instance_self"></shadow>
+          <block type="kiwi_instance_self"></block>
         </value>
       </block>
 
@@ -647,34 +819,127 @@
       <block type="kiwi_coordinate_create">
         <value name="X">
           <shadow type="math_number"></shadow>
+          <block type="math_number"></block>
         </value>
         <value name="Y">
           <shadow type="math_number"></shadow>
+          <block type="math_number"></block>
         </value>
       </block>
 
       <block type="kiwi_instance_set_position_from_location">
         <value name="INST">
           <shadow type="kiwi_instance_self"></shadow>
+          <block type="kiwi_instance_self"></block>
+        </value>
+        <value name="VALUE">
+          <shadow type="kiwi_coordinate_create">
+            <value name="X">
+              <shadow type="math_number"></shadow>
+            </value>
+            <value name="Y">
+              <shadow type="math_number"></shadow>
+            </value>
+          </shadow>
+          <block type="kiwi_coordinate_create">
+            <value name="X">
+              <shadow type="math_number"></shadow>
+              <block type="math_number"></block>
+            </value>
+            <value name="Y">
+              <shadow type="math_number"></shadow>
+              <block type="math_number"></block>
+            </value>
+          </block>
         </value>
       </block>
 
       <block type="kiwi_coordinate_set">
+        <value name="COORDINATE">
+          <shadow type="kiwi_coordinate_create">
+            <value name="X">
+              <shadow type="math_number"></shadow>
+            </value>
+            <value name="Y">
+              <shadow type="math_number"></shadow>
+            </value>
+          </shadow>
+          <block type="kiwi_coordinate_create">
+            <value name="X">
+              <shadow type="math_number"></shadow>
+              <block type="math_number"></block>
+            </value>
+            <value name="Y">
+              <shadow type="math_number"></shadow>
+              <block type="math_number"></block>
+            </value>
+          </block>
+        </value>
         <value name="VALUE">
           <shadow type="math_number"></shadow>
+          <block type="math_number"></block>
         </value>
       </block>
 
       <block type="kiwi_instance_get_location_from_position">
         <value name="INST">
           <shadow type="kiwi_instance_self"></shadow>
+          <block type="kiwi_instance_self"></block>
         </value>
       </block>
 
       <block type="kiwi_coordinate_get">
+        <value name="COORDINATE">
+          <shadow type="kiwi_coordinate_create">
+            <value name="X">
+              <shadow type="math_number"></shadow>
+            </value>
+            <value name="Y">
+              <shadow type="math_number"></shadow>
+            </value>
+          </shadow>
+          <block type="kiwi_coordinate_create">
+            <value name="X">
+              <shadow type="math_number"></shadow>
+              <block type="math_number"></block>
+            </value>
+            <value name="Y">
+              <shadow type="math_number"></shadow>
+              <block type="math_number"></block>
+            </value>
+          </block>
+        </value>
+        <value name="VALUE">
+          <shadow type="math_number"></shadow>
+          <block type="math_number"></block>
+        </value>
       </block>
 
       <block type="kiwi_coordinate_get_angle">
+        <value name="COORDINATE">
+          <shadow type="kiwi_coordinate_create">
+            <value name="X">
+              <shadow type="math_number"></shadow>
+            </value>
+            <value name="Y">
+              <shadow type="math_number"></shadow>
+            </value>
+          </shadow>
+          <block type="kiwi_coordinate_create">
+            <value name="X">
+              <shadow type="math_number"></shadow>
+              <block type="math_number"></block>
+            </value>
+            <value name="Y">
+              <shadow type="math_number"></shadow>
+              <block type="math_number"></block>
+            </value>
+          </block>
+        </value>
+        <value name="VALUE">
+          <shadow type="math_number"></shadow>
+          <block type="math_number"></block>
+        </value>
       </block>
 
   </category>
@@ -685,6 +950,9 @@
         <shadow type="text">
           <field name="TEXT">name</field>
         </shadow>
+        <block type="text">
+          <field name="TEXT">name</field>
+        </block>
       </value>
     </block>
     <block type="kiwi_animation_play">
@@ -692,6 +960,9 @@
         <shadow type="text">
           <field name="TEXT">name</field>
         </shadow>
+        <block type="text">
+          <field name="TEXT">name</field>
+        </block>
       </value>
     </block>
     <block type="kiwi_animation_frame"></block>
@@ -706,29 +977,33 @@
       <block type="kiwi_instance_set_visible">
         <value name="INST">
           <shadow type="kiwi_instance_self"></shadow>
+          <block type="kiwi_instance_self"></block>
         </value>
         <value name="VISIBLE">
           <shadow type="logic_boolean"></shadow>
+          <block type="logic_boolean"></block>
         </value>
       </block>
       <block type="kiwi_instance_set_alpha">
         <value name="INST">
           <shadow type="kiwi_instance_self"></shadow>
+          <block type="kiwi_instance_self"></block>
         </value>
         <value name="VALUE">
-          <shadow type="math_number">
-            <field name="NUM">0</field>
-          </shadow>
+          <shadow type="math_number"></shadow>
+          <block type="math_number"></block>
         </value>
       </block>
       <block type="kiwi_instance_get_visible">
         <value name="INST">
           <shadow type="kiwi_instance_self"></shadow>
+          <block type="kiwi_instance_self"></block>
         </value>
       </block>
       <block type="kiwi_instance_get_alpha">
         <value name="INST">
           <shadow type="kiwi_instance_self"></shadow>
+          <block type="kiwi_instance_self"></block>
         </value>
       </block>
 
@@ -736,6 +1011,7 @@
     <block type="kiwi_game_stage_set_colour">
       <value name="VALUE">
         <shadow type="colour_picker"></shadow>
+        <block type="colour_picker"></block>
       </value>
     </block>
     <block type="kiwi_game_stage_get_colour"></block>
@@ -744,9 +1020,11 @@
       <block type="kiwi_camera_go_to">
         <value name="X_POS">
           <shadow type="math_number"></shadow>
+          <block type="math_number"></block>
         </value>
         <value name="Y_POS">
           <shadow type="math_number"></shadow>
+          <block type="math_number"></block>
         </value>
       </block>
       <block type="kiwi_camera_set_speed">
@@ -754,6 +1032,9 @@
           <shadow type="math_number">
             <field name="NUM">100</field>
           </shadow>
+          <block type="math_number">
+            <field name="NUM">100</field>
+          </block>
         </value>
       </block>
       <block type="kiwi_camera_set_offset">
@@ -761,6 +1042,9 @@
           <shadow type="math_number">
             <field name="NUM">100</field>
           </shadow>
+          <block type="math_number">
+            <field name="NUM">100</field>
+          </block>
         </value>
       </block>
       <block type="kiwi_camera_scale">
@@ -768,6 +1052,9 @@
           <shadow type="math_number">
             <field name="NUM">1</field>
           </shadow>
+          <block type="math_number">
+            <field name="NUM">1</field>
+          </block>
         </value>
       </block>
       <block type="kiwi_camera_get_read_only_position"></block>
@@ -780,11 +1067,17 @@
           <shadow type="math_number">
             <field name="NUM">1</field>
           </shadow>
+          <block type="math_number">
+            <field name="NUM">1</field>
+          </block>
         </value>
         <value name="AMPLITUDE">
           <shadow type="math_number">
             <field name="NUM">5</field>
           </shadow>
+          <block type="math_number">
+            <field name="NUM">5</field>
+          </block>
         </value>
       </block>
 
@@ -792,6 +1085,7 @@
       <block type="kiwi_camera_center_on_instance">
         <value name="INSTANCE">
           <shadow type="kiwi_instance_self"></shadow>
+          <block type="kiwi_instance_self"></block>
         </value>
       </block>
       <block type="kiwi_camera_state"></block>
@@ -800,11 +1094,13 @@
       <block type="kiwi_camera_set_min">
         <value name="VALUE">
           <shadow type="math_number"></shadow>
+          <block type="math_number"></block>
         </value>
       </block>
       <block type="kiwi_camera_set_max">
         <value name="VALUE">
           <shadow type="math_number"></shadow>
+          <block type="math_number"></block>
         </value>
       </block>
       <block type="kiwi_camera_get_min"></block>
@@ -814,6 +1110,7 @@
       <block type="kiwi_instance_move">
         <value name="INST_ONE">
           <shadow type="kiwi_instance_self"></shadow>
+          <block type="kiwi_instance_self"></block>
         </value>
         <value name="INST_TWO">
           <shadow type="kiwi_instance_self"></shadow>
@@ -833,6 +1130,7 @@
     <block type="kiwi_instance_exists">
       <value name="INST">
         <shadow type="kiwi_instance_self"></shadow>
+        <block type="kiwi_instance_self"></block>
       </value>
     </block>
 
@@ -840,9 +1138,11 @@
       <block type="kiwi_input_mouse"></block>
       <block type="math_arithmetic">
         <value name="A">
+          <shadow type="math_number"></shadow>
           <block type="kiwi_input_mouse"></block>
         </value>
         <value name="B">
+          <shadow type="math_number"></shadow>
           <block type="kiwi_camera_get_read_only_position"></block>
         </value>
       </block>
@@ -854,16 +1154,19 @@
       <block type="kiwi_input_finger_get_coords">
         <value name="POINTER">
           <shadow type="kiwi_input_finger_select"></shadow>
+          <block type="kiwi_input_finger_select"></block>
         </value>
       </block>
       <block type="kiwi_input_finger_get_bool">
         <value name="POINTER">
           <shadow type="kiwi_input_finger_select"></shadow>
+          <block type="kiwi_input_finger_select"></block>
         </value>
       </block>
       <block type="kiwi_input_finger_get_times">
         <value name="POINTER">
           <shadow type="kiwi_input_finger_select"></shadow>
+          <block type="kiwi_input_finger_select"></block>
         </value>
       </block>
 
@@ -873,6 +1176,9 @@
           <shadow type="text">
             <field name="TEXT">tag name</field>
           </shadow>
+          <block type="text">
+            <field name="TEXT">tag name</field>
+          </block>
         </value>
         <value name="INSTANCE">
           <shadow type="kiwi_instance_self"></shadow>
@@ -883,9 +1189,13 @@
           <shadow type="text">
             <field name="TEXT">tag name</field>
           </shadow>
+          <block type="text">
+            <field name="TEXT">tag name</field>
+          </block>
         </value>
         <value name="INSTANCE">
           <shadow type="kiwi_instance_self"></shadow>
+          <block type="kiwi_instance_self"></block>
         </value>
       </block>
       <block type="kiwi_instance_get_by_tag">
@@ -893,6 +1203,9 @@
           <shadow type="text">
             <field name="TEXT">tag name</field>
           </shadow>
+          <block type="text">
+            <field name="TEXT">tag name</field>
+          </block>
         </value>
       </block>
       <block type="kiwi_instance_get_all_by_tag">
@@ -900,6 +1213,9 @@
           <shadow type="text">
             <field name="TEXT">tag name</field>
           </shadow>
+          <block type="text">
+            <field name="TEXT">tag name</field>
+          </block>
         </value>
       </block>
 
@@ -911,10 +1227,16 @@
       <block type="kiwi_classes_instance_type">
         <value name="INST">
           <shadow type="kiwi_instance_self"></shadow>
+          <block type="kiwi_instance_self"></block>
         </value>
       </block>
       <block type="kiwi_classes_get_instance">
         <value name="CLASS">
+          <shadow type="kiwi_classes_instance_type">
+            <value name="INST">
+              <shadow type="kiwi_instance_self"></shadow>
+            </value>
+          </shadow>
           <block type="variables_get">
             <field name="TYPE">Class</field>
             <field name="VAR">Class</field>
@@ -923,6 +1245,11 @@
       </block>
       <block type="kiwi_classes_get_all_instances">
         <value name="CLASS">
+          <shadow type="kiwi_classes_instance_type">
+            <value name="INST">
+              <shadow type="kiwi_instance_self"></shadow>
+            </value>
+          </shadow>
           <block type="variables_get">
             <field name="TYPE">Class</field>
             <field name="VAR">Class</field>
@@ -934,6 +1261,9 @@
           <shadow type="text">
             <field name="TEXT">name</field>
           </shadow>
+          <block type="text">
+            <field name="TEXT">name</field>
+          </block>
         </value>
       </block>
 
@@ -941,6 +1271,7 @@
       <block type="kiwi_intersects_instance_to_instance">
         <value name="INST_ONE">
           <shadow type="kiwi_instance_self"></shadow>
+          <block type="kiwi_instance_self"></block>
         </value>
         <value name="INST_TWO">
           <shadow type="kiwi_instance_self"></shadow>
@@ -953,17 +1284,21 @@
       <block type="kiwi_intersects_instance_to_xy">
         <value name="INST">
           <shadow type="kiwi_instance_self"></shadow>
+          <block type="kiwi_instance_self"></block>
         </value>
         <value name="X_LOC">
           <shadow type="math_number"></shadow>
+          <block type="math_number"></block>
         </value>
         <value name="Y_LOC">
           <shadow type="math_number"></shadow>
+          <block type="math_number"></block>
         </value>
       </block>
       <block type="kiwi_math_instance">
         <value name="INST_ONE">
           <shadow type="kiwi_instance_self"></shadow>
+          <block type="kiwi_instance_self"></block>
         </value>
         <value name="INST_TWO">
           <shadow type="kiwi_instance_self"></shadow>
@@ -976,38 +1311,48 @@
       <block type="kiwi_math_xy_to_xy">
         <value name="X_LOC_ONE">
           <shadow type="math_number"></shadow>
+          <block type="math_number"></block>
         </value>
         <value name="Y_LOC_ONE">
           <shadow type="math_number"></shadow>
+          <block type="math_number"></block>
         </value>
         <value name="X_LOC_TWO">
           <shadow type="math_number"></shadow>
+          <block type="math_number"></block>
         </value>
         <value name="Y_LOC_TWO">
           <shadow type="math_number"></shadow>
+          <block type="math_number"></block>
         </value>
       </block>
       <block type="kiwi_math_lerp">
         <value name="VALUE_A">
-          <shadow type="math_number">
-            <field name="NUM">0</field>
-          </shadow>
+          <shadow type="math_number"></shadow>
+          <block type="math_number"></block>
         </value>
         <value name="VALUE_B">
           <shadow type="math_number">
             <field name="NUM">100</field>
           </shadow>
+          <block type="math_number">
+            <field name="NUM">100</field>
+          </block>
         </value>
         <value name="TIME">
           <shadow type="math_number">
             <field name="NUM">0.5</field>
           </shadow>
+          <block type="math_number">
+            <field name="NUM">0.5</field>
+          </block>
         </value>
       </block>
 
       <block type="kiwi_mechanics_easing">
         <value name="VALUE">
           <shadow type="math_number"></shadow>
+          <block type="math_number"></block>
         </value>
       </block>
 
@@ -1037,14 +1382,16 @@
         <shadow type="math_number">
           <field name="NUM">100</field>
         </shadow>
+        <block type="math_number">
+          <field name="NUM">100</field>
+        </block>
       </value>
     </block>
-
-
 
     <block type="kiwi_sound_set_mute">
       <value name="STATE">
         <shadow type="logic_boolean"></shadow>
+        <block type="logic_boolean"></block>
       </value>
     </block>
     <block type="kiwi_sound_get_volume"></block>
@@ -1055,8 +1402,26 @@
   <category name="Operators" colour="#21aefe" >
 
     <block type="kiwi_block_category" message="Boolean"></block>
-      <block type="logic_compare"></block>
-      <block type="logic_operation"></block>
+      <block type="logic_compare">
+        <value name="A">
+          <shadow type="logic_boolean"></shadow>
+        </value>
+        <value name="B">
+          <shadow type="logic_boolean">
+            <field name="BOOL">false</field>
+          </shadow>
+        </value>
+      </block>
+      <block type="logic_operation">
+        <value name="A">
+          <shadow type="logic_boolean"></shadow>
+        </value>
+        <value name="B">
+          <shadow type="logic_boolean">
+            <field name="BOOL">false</field>
+          </shadow>
+        </value>
+      </block>
       <block type="logic_negate"></block>
       <block type="logic_boolean"></block>
       <block type="logic_null"></block>
@@ -1065,13 +1430,28 @@
     <block type="kiwi_block_category" message="Numeric"></block>
 
       <block type="math_number"></block>
-      <block type="math_arithmetic"></block>
+      <block type="math_arithmetic">
+        <value name="A">
+          <shadow type="math_number">
+            <field name="NUM">1</field>
+          </shadow>
+        </value>
+        <value name="B">
+          <shadow type="math_number">
+            <field name="NUM">1</field>
+          </shadow>
+        </value></block>
       <block type="math_single"></block>
       <block type="math_trig"></block>
       <block type="math_constant"></block>
-      <block type="math_number_property"></block>
+      <block type="math_number_property">
+
+      </block>
       <block type="math_change">
         <value name="DELTA">
+          <shadow type="math_number">
+            <field name="NUM">1</field>
+          </shadow>
           <block type="math_number">
             <field name="NUM">1</field>
           </block>
@@ -1085,11 +1465,17 @@
           <shadow type="math_number">
             <field name="NUM">1</field>
           </shadow>
+          <block type="math_number">
+            <field name="NUM">1</field>
+          </block>
         </value>
         <value name="HIGH">
           <shadow type="math_number">
             <field name="NUM">100</field>
           </shadow>
+          <block type="math_number">
+            <field name="NUM">100</field>
+          </block>
         </value>
       </block>
       <block type="math_random_int">
@@ -1097,23 +1483,31 @@
           <shadow type="math_number">
             <field name="NUM">1</field>
           </shadow>
+          <block type="math_number">
+            <field name="NUM">1</field>
+          </block>
         </value>
         <value name="TO">
           <shadow type="math_number">
             <field name="NUM">100</field>
           </shadow>
+          <block type="math_number">
+            <field name="NUM">100</field>
+          </block>
         </value>
       </block>
       <block type="math_random_float"></block>
       <block type="kiwi_math_utils">
         <value name="INPUT">
           <shadow type="math_number"></shadow>
+          <block type="math_number"></block>
         </value>
       </block>
       <block type="text_prompt_number">
-          <value name="TEXT">
-              <block type="text"></block>
-          </value>
+        <value name="TEXT">
+          <shadow type="text"></shadow>
+          <block type="text"></block>
+        </value>
       </block>
 
     <block type="kiwi_block_category" message="Text"></block>
@@ -1168,6 +1562,9 @@
           <shadow type="math_number">
             <field name="NUM">5</field>
           </shadow>
+          <block type="math_number">
+            <field name="NUM">5</field>
+          </block>
         </value>
       </block>
       <block type="lists_length"></block>
@@ -1213,6 +1610,9 @@
           <shadow type="text">
             <field name="TEXT">,</field>
           </shadow>
+          <block type="text">
+            <field name="TEXT">,</field>
+          </block>
         </value>
       </block>
       <block type="lists_add">
@@ -1233,16 +1633,21 @@
           <shadow type="math_number">
             <field name="NUM">100</field>
           </shadow>
+          <block type="math_number">
+            <field name="NUM">100</field>
+          </block>
         </value>
         <value name="GREEN">
           <shadow type="math_number">
             <field name="NUM">50</field>
           </shadow>
+          <block type="math_number">
+            <field name="NUM">50</field>
+          </block>
         </value>
         <value name="BLUE">
-          <shadow type="math_number">
-            <field name="NUM">0</field>
-          </shadow>
+          <shadow type="math_number"></shadow>
+          <block type="math_number"></block>
         </value>
       </block>
       <block type="colour_blend">
@@ -1250,16 +1655,25 @@
           <shadow type="colour_picker">
             <field name="COLOUR">#ff0000</field>
           </shadow>
+          <block type="colour_picker">
+            <field name="COLOUR">#ff0000</field>
+          </block>
         </value>
         <value name="COLOUR2">
           <shadow type="colour_picker">
             <field name="COLOUR">#3333ff</field>
           </shadow>
+          <block type="colour_picker">
+            <field name="COLOUR">#3333ff</field>
+          </block>
         </value>
         <value name="RATIO">
           <shadow type="math_number">
             <field name="NUM">0.5</field>
           </shadow>
+          <block type="math_number">
+            <field name="NUM">0.5</field>
+          </block>
         </value>
       </block>
 
@@ -1286,11 +1700,17 @@
           <shadow type="math_number">
               <field name="NUM">100</field>
           </shadow>
+          <block type="math_number">
+              <field name="NUM">100</field>
+          </block>
         </value>
         <value name="HEIGHT">
           <shadow type="math_number">
               <field name="NUM">100</field>
           </shadow>
+          <block type="math_number">
+              <field name="NUM">100</field>
+          </block>
         </value>
     </block>
 
@@ -1299,6 +1719,9 @@
           <shadow type="math_number">
               <field name="NUM">100</field>
           </shadow>
+          <block type="math_number">
+              <field name="NUM">100</field>
+          </block>
         </value>
     </block>
 
@@ -1307,16 +1730,25 @@
           <shadow type="math_number">
               <field name="NUM">50</field>
           </shadow>
+          <block type="math_number">
+              <field name="NUM">50</field>
+          </block>
         </value>
         <value name="Y">
           <shadow type="math_number">
               <field name="NUM">0</field>
           </shadow>
+          <block type="math_number">
+              <field name="NUM">0</field>
+          </block>
         </value>
         <value name="WIDTH">
           <shadow type="math_number">
               <field name="NUM">5</field>
           </shadow>
+          <block type="math_number">
+              <field name="NUM">5</field>
+          </block>
         </value>
     </block>
 
@@ -1325,11 +1757,17 @@
           <shadow type="math_number">
               <field name="NUM">50</field>
           </shadow>
+          <block type="math_number">
+              <field name="NUM">50</field>
+          </block>
         </value>
         <value name="POINTS">
           <shadow type="math_number">
               <field name="NUM">5</field>
           </shadow>
+          <block type="math_number">
+              <field name="NUM">5</field>
+          </block>
         </value>
     </block>
 
@@ -1338,11 +1776,17 @@
         <shadow type="math_number">
             <field name="NUM">100</field>
         </shadow>
+        <block type="math_number">
+            <field name="NUM">100</field>
+        </block>
       </value>
       <value name="NUM_EDGES">
         <shadow type="math_number">
             <field name="NUM">5</field>
         </shadow>
+        <block type="math_number">
+            <field name="NUM">5</field>
+        </block>
       </value>
     </block>
 
@@ -1355,6 +1799,7 @@
         </value>
         <value name="COLOUR">
           <shadow type="colour_picker"></shadow>
+          <block type="colour_picker"></block>
         </value>
     </block>
 
@@ -1373,6 +1818,7 @@
     <block type="kiwi_text_create">
       <value name="TEXT">
         <shadow type="text"></shadow>
+        <block type="text"></block>
       </value>
     </block>
 
@@ -1385,6 +1831,7 @@
       </value>
       <value name="TEXT">
         <shadow type="text"></shadow>
+        <block type="text"></block>
       </value>
     </block>
 
@@ -1399,6 +1846,9 @@
           <shadow type="math_number">
               <field name="NUM">32</field>
           </shadow>
+          <block type="math_number">
+              <field name="NUM">32</field>
+          </block>
       </value>
     </block>
 
@@ -1411,6 +1861,7 @@
       </value>
       <value name="COLOUR">
         <shadow type="colour_picker"></shadow>
+        <block type="colour_picker"></block>
       </value>
     </block>
 
@@ -1440,6 +1891,7 @@
         </block>
       </value>
       <value name="FAMILY">
+        <block type="kiwi_text_font_presets"></block>
         <block type="kiwi_text_font_presets"></block>
       </value>
     </block>
