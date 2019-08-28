@@ -1402,16 +1402,7 @@
   <category name="Operators" colour="#21aefe" >
 
     <block type="kiwi_block_category" message="Boolean"></block>
-      <block type="logic_compare">
-        <value name="A">
-          <shadow type="logic_boolean"></shadow>
-        </value>
-        <value name="B">
-          <shadow type="logic_boolean">
-            <field name="BOOL">false</field>
-          </shadow>
-        </value>
-      </block>
+      <block type="logic_compare"></block>
       <block type="logic_operation">
         <value name="A">
           <shadow type="logic_boolean"></shadow>
